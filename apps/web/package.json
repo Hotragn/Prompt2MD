@@ -2,12 +2,24 @@
   "name": "@prompt2md/web",
   "version": "0.1.0",
   "private": true,
-  "description": "prompt2md web app: drag-and-drop conversion studio, token savings dashboard, daily digest, and docs site.",
+  "description": "prompt2md web studio: paste-to-Markdown conversion with live token reports and compression savings.",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "node -e \"console.log('web app lands in Epic 5 (docs/ROADMAP.md) - nothing to build yet')\""
+    "dev": "next dev -p 3100",
+    "build": "next build",
+    "start": "next start -p 3100"
   },
   "dependencies": {
-    "@prompt2md/core": "workspace:*"
+    "@prompt2md/core": "workspace:*",
+    "@prompt2md/hermes-mcp": "workspace:*",
+    "next": "^15.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.7.2"
   }
 }
