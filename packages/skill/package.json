@@ -1,0 +1,9 @@
+{
+  "name": "@prompt2md/skill",
+  "version": "0.1.0",
+  "description": "Standalone /prompt2md agent skill definition (YAML/Markdown) for Claude Code and compatible agent runtimes.",
+  "license": "Apache-2.0",
+  "scripts": {
+    "lint": "node ./scripts/validate-skill.mjs"
+  }
+}
