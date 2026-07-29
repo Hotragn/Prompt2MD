@@ -37,15 +37,31 @@ body {
 
 .header {
   display: flex;
-  align-items: baseline;
-  gap: 14px;
+  align-items: center;
+  gap: 13px;
   padding: 8px 0 22px;
+}
+
+.header .mark {
+  display: block;
+  border-radius: 10px;
+}
+
+.brand-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 
 .brand {
   font-size: 22px;
   font-weight: 750;
   letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--text);
+}
+
+.brand-accent {
   background: linear-gradient(90deg, var(--accent), var(--accent-2));
   -webkit-background-clip: text;
   background-clip: text;
@@ -54,7 +70,10 @@ body {
 
 .tagline {
   color: var(--muted);
-  font-size: 13.5px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
 }
 
 .tabs {

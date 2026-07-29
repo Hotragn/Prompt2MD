@@ -1,6 +1,10 @@
+<p align="center">
+  <img src="apps/web/public/logo.svg" alt="prompt2md — A Markdown Magic" width="440">
+</p>
+
 # prompt2md
 
-**Turn anything into token-optimized, layout-aware Markdown — and know exactly what it saved you.**
+**A Markdown Magic** — turn anything into token-optimized, layout-aware Markdown, and know exactly what it saved you.
 
 prompt2md converts unstructured text, messy prompts, and complex documents
 (PDF, Office, HTML, scans) into clean Markdown built for LLM consumption. It is
