@@ -72,9 +72,18 @@ export default function Studio() {
           ...(budgetNum !== undefined && Number.isFinite(budgetNum) ? { tokenBudget: budgetNum } : {}),
         }),
       });
-      setResult((await res.json()) as ApiResult);
-    } catch (err) {
-      setResult({ error: err instanceof Error ? err.message : "request failed" });
+      let data: ApiResult;
+      try {
+        data = (await res.json()) as ApiResult;
+      } catch {
+        data = { error: `server responded ${res.status} without a readable body` };
+      }
+      setResult(data);
+    } catch {
+      setResult({
+        error:
+          "Could not reach the studio API. Is the dev server running? Start it with: pnpm --filter @prompt2md/web dev",
+      });
     } finally {
       setBusy(false);
     }

@@ -20,6 +20,16 @@ The input is an email thread. Additionally:
 - Content in quoted history ("> ...") counts only when not already restated above it.
 - Surface unresolved concerns under "## Open risks".`;
 
+const CODING_ADDENDUM = `
+
+The input is a software/coding request. Additionally:
+- Structure as: "# Task: <short name>" then "## Goal", "## Requirements" (bullets), "## Constraints" (language, runtime, versions, performance), "## Error handling", and "## Acceptance criteria" when inferable.
+- Keep identifiers, versions, error messages, file paths, and commands verbatim in backticks.
+- Surface implicit requirements the author scattered as afterthoughts; never invent new ones.`;
+
+const CODING_HINT =
+  /\b(code|coding|script|function|class|method|bug|error|exception|stack ?trace|traceback|implement|refactor|compile|debug|unit test|python|typescript|javascript|java|rust|golang|c\+\+|sql|regex|api|endpoint|cli|repo)\b/i;
+
 /**
  * Text path: messy prompts and email threads never touch a document engine —
  * they go through the LLM gateway with deterministic settings (temperature 0).
@@ -30,7 +40,12 @@ export function createPromptOptimizerEngine(gateway: LlmGateway): Engine {
 
     async convert(input: SourceInput, sniff: SniffReport, options: ConvertOptions): Promise<EngineResult> {
       const text = await materializeText(input);
-      const system = sniff.kind === "email" ? BASE_RULES + EMAIL_ADDENDUM : BASE_RULES;
+      const system =
+        sniff.kind === "email"
+          ? BASE_RULES + EMAIL_ADDENDUM
+          : sniff.kind === "prompt" && CODING_HINT.test(text)
+            ? BASE_RULES + CODING_ADDENDUM
+            : BASE_RULES;
       const response = await gateway.complete({
         messages: [
           { role: "system", content: system },
