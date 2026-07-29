@@ -1,0 +1,15 @@
+{
+  "id": "04-financial-pdf-table",
+  "title": "Two-level-header financial table in a native PDF",
+  "inputKind": "pdf-table",
+  "expectedEngine": "docling",
+  "routingReason": "PDF containing detected table structures with merged/multi-row headers — MarkItDown flattens these to run-on text; Docling's TableFormer reconstructs cell topology, so the router must escalate.",
+  "features": ["table-structure-recognition", "multi-level-header-flattening", "row-hierarchy-preservation", "footnote-blockquote"],
+  "tokens": {
+    "inputApprox": 280,
+    "expectedApprox": 300,
+    "maxRatio": 1.3,
+    "note": "Token count may INCREASE here — fidelity beats compression for tables. Every numeric cell must match the source exactly; the two-level header (year × metric) must flatten into unambiguous column names."
+  },
+  "binarySource": "fixtures/scripts/make_binary_fixtures.py::make_financial_pdf"
+}

@@ -1,0 +1,46 @@
+From: Priya Raman <priya.raman@acmecorp.example>
+Sent: Tuesday, July 21, 2026 4:47 PM
+To: Platform Team <platform-team@acmecorp.example>
+Subject: RE: RE: RE: Q3 migration plan - decisions from today
+
+Hi all,
+
+Quick recap since the thread is getting long. We agreed today:
+
+1. We're going with the blue/green cutover, NOT rolling. Marcus raised the
+   session-stickiness concern and we decided the LB drain window covers it.
+2. Freeze date is Aug 14. Anything not merged by then waits for Q4.
+3. Dana owns the rollback runbook, draft due Aug 1.
+
+@Tom - can you get the staging env sized by Friday? We need the numbers
+before the capacity review.
+
+Thanks,
+Priya
+
+> -----Original Message-----
+> From: Marcus Webb <marcus.webb@acmecorp.example>
+> Sent: Tuesday, July 21, 2026 2:03 PM
+> Subject: RE: RE: Q3 migration plan
+>
+> I still think rolling deploy is safer but I can live with blue/green if
+> we have a tested rollback. My concern is sticky sessions on the old
+> gateway - if we drain too fast we drop carts.
+>
+> Marcus
+>
+> Sent from my iPhone
+>
+>> -----Original Message-----
+>> From: Dana Ortiz <dana.ortiz@acmecorp.example>
+>> Sent: Tuesday, July 21, 2026 11:20 AM
+>> Subject: RE: Q3 migration plan
+>>
+>> +1 to deciding this week. Also flagging that the DB migration scripts
+>> are still untested against the prod snapshot. I can own the runbook.
+>>
+>> Dana
+>>
+>> This email and any attachments are confidential and intended solely
+>> for the addressee. If you have received this email in error please
+>> notify the sender. Acme Corp, 100 Main St, Springfield.

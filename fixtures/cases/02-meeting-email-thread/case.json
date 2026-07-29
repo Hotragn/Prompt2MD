@@ -1,0 +1,14 @@
+{
+  "id": "02-meeting-email-thread",
+  "title": "Nested email thread → decision log",
+  "inputKind": "email",
+  "expectedEngine": "prompt-optimizer",
+  "routingReason": "Plain text with email headers and quote markers — text path with email-aware preprocessor (strip headers, quoted history, signatures, legal footers).",
+  "features": ["quote-stripping", "signature-removal", "decision-extraction", "action-item-table", "date-normalization"],
+  "tokens": {
+    "inputApprox": 470,
+    "expectedApprox": 210,
+    "maxRatio": 0.55,
+    "note": "Legal footer, 'Sent from my iPhone', and quoted duplicates must vanish; every decision, owner, and date must survive."
+  }
+}

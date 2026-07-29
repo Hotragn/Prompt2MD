@@ -1,0 +1,15 @@
+{
+  "id": "06-scanned-invoice",
+  "title": "Image-only scanned invoice requiring OCR + structure recovery",
+  "inputKind": "scanned-pdf",
+  "expectedEngine": "docling",
+  "routingReason": "PDF with no extractable text layer — MarkItDown returns near-empty output; router must detect the empty text layer and escalate to Docling with OCR enabled.",
+  "features": ["ocr-route-detection", "ocr-error-correction", "key-value-extraction", "line-item-table", "totals-verification"],
+  "tokens": {
+    "inputApprox": 300,
+    "expectedApprox": 330,
+    "maxRatio": 1.3,
+    "note": "OCR artifacts (spaced digits '08 1 44', O/0 confusion '1,734.OO') must be corrected; totals must arithmetically reconcile (subtotal + tax = total) or the pipeline flags a warning."
+  },
+  "binarySource": "fixtures/scripts/make_binary_fixtures.py::make_scanned_invoice"
+}

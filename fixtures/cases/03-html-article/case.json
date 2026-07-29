@@ -1,0 +1,14 @@
+{
+  "id": "03-html-article",
+  "title": "News article with nav, ads, cookie banner, newsletter interstitial",
+  "inputKind": "html",
+  "expectedEngine": "markitdown",
+  "routingReason": "HTML is a fast-path format; MarkItDown converts it directly, then the boilerplate stripper removes nav/footer/ad/cookie/newsletter chrome.",
+  "features": ["boilerplate-removal", "heading-hierarchy", "list-preservation", "byline-normalization"],
+  "tokens": {
+    "inputApprox": 620,
+    "expectedApprox": 275,
+    "maxRatio": 0.5,
+    "note": "Cookie banner, nav, ad slots, newsletter CTA, related-stories aside, and footer must be dropped; all article facts and the bullet list must survive verbatim."
+  }
+}

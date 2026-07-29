@@ -1,0 +1,14 @@
+{
+  "id": "05-csv-inventory",
+  "title": "CSV export → Markdown table with derived flags",
+  "inputKind": "csv",
+  "expectedEngine": "markitdown",
+  "routingReason": "Structured text format — always the fast path; Docling would add latency for zero fidelity gain.",
+  "features": ["csv-to-table", "header-humanization", "numeric-alignment", "derived-summary-line"],
+  "tokens": {
+    "inputApprox": 125,
+    "expectedApprox": 215,
+    "maxRatio": 2.0,
+    "note": "Markdown table syntax inflates raw CSV — readability and structure beat compression for tabular data. The derived Flags line comes from the optional LLM enrichment pass (off by default); without enrichment, expected output is the table only."
+  }
+}

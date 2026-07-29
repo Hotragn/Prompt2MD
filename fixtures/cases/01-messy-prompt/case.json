@@ -1,0 +1,14 @@
+{
+  "id": "01-messy-prompt",
+  "title": "Rambling coding request with duplicates and afterthoughts",
+  "inputKind": "prompt",
+  "expectedEngine": "prompt-optimizer",
+  "routingReason": "Plain text, no document structure or file container — routes to the LLM prompt-optimizer path, never to a document engine.",
+  "features": ["deduplication", "requirement-extraction", "section-structuring", "constraint-surfacing"],
+  "tokens": {
+    "inputApprox": 260,
+    "expectedApprox": 160,
+    "maxRatio": 0.75,
+    "note": "Duplicated instructions ('skip empty files', 'use pandas', 'merge into parquet') must collapse to one mention each; no requirement may be dropped."
+  }
+}
