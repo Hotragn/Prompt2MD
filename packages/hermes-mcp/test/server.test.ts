@@ -97,6 +97,25 @@ describe("hermes MCP server (in-memory client integration)", () => {
     expect(contents(retrieved)[0]!.text).toBe("tiny document");
   });
 
+  it("exposes the optimize prompt for chat-box integration", async () => {
+    const { prompts } = await client.listPrompts();
+    expect(prompts.map((p) => p.name)).toContain("optimize");
+
+    const result = await client.getPrompt({
+      name: "optimize",
+      arguments: {
+        text: "please fix the bug\n\nSent from my iPhone\n\nplease fix the bug",
+      },
+    });
+    const first = result.messages[0];
+    expect(first?.role).toBe("user");
+    const content = first?.content as { type: string; text: string };
+    expect(content.text).not.toMatch(/sent from my iphone/i);
+    expect(content.text).toContain("please fix the bug");
+    // dedupe: repeated instruction collapses to one mention
+    expect(content.text.match(/please fix the bug/g)).toHaveLength(1);
+  });
+
   it("convert reports unavailable engines as a tool error, not a crash", async () => {
     const result = await client.callTool({
       name: "convert",

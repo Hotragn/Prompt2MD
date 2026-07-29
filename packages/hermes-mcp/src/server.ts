@@ -99,6 +99,28 @@ export function createHermesServer(deps: HermesDeps): McpServer {
     },
   );
 
+  // Chat-box integration: MCP clients with prompt support (Claude Desktop,
+  // Claude Code, Cursor, ...) surface this in their prompt menu — the user
+  // pastes raw text and the model receives optimized Markdown instead.
+  server.prompt(
+    "optimize",
+    "Convert pasted raw text into token-optimized Markdown before the model sees it.",
+    { text: z.string().describe("The raw text to optimize") },
+    async ({ text: raw }) => {
+      let markdown: string;
+      if (deps.convert !== undefined) {
+        markdown = (await deps.convert({ kind: "text", text: raw }, {})).markdown;
+      } else {
+        // Deterministic 4-phase pipeline with an unbounded budget: strip +
+        // structure only, no summarization.
+        markdown = (await deps.compress(raw, { tokenBudget: Number.MAX_SAFE_INTEGER })).markdown;
+      }
+      return {
+        messages: [{ role: "user" as const, content: { type: "text" as const, text: markdown } }],
+      };
+    },
+  );
+
   server.tool(
     "retrieve_original",
     "Fetch the verbatim original text behind a compressed section — compression is never destructive. Pass either the `anchor` string exactly as it appears in the Markdown comment (p2md:src=<id>#<start>-<end>), or an explicit sourceId (with optional start/end character offsets for a span; omit them for the full original).",

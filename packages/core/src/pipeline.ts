@@ -5,7 +5,15 @@ import { parseMarkdown } from "./markdown/parse.js";
 import { approxCounter } from "./tokens/counter.js";
 import { buildTokenReport } from "./tokens/report.js";
 import type { ConversionWarning, MarkdownDoc } from "./types/document.js";
-import type { ConvertOptions, Engine, EngineId, RoutingDecision, SniffReport, SourceInput } from "./types/engine.js";
+import type {
+  ConvertOptions,
+  Engine,
+  EngineId,
+  EngineResult,
+  RoutingDecision,
+  SniffReport,
+  SourceInput,
+} from "./types/engine.js";
 import type { TokenCounter, TokenReport } from "./types/tokens.js";
 
 export interface PipelineDeps {
@@ -38,25 +46,48 @@ export async function convertDocument(
   const warnings: ConversionWarning[] = [];
 
   let engineId = decision.engine;
-  let result = await deps.engines[engineId].convert(input, sniff, {
-    ...options,
-    ocr: decision.ocr,
-  });
+  let result: EngineResult;
+  try {
+    result = await deps.engines[engineId].convert(input, sniff, {
+      ...options,
+      ocr: decision.ocr,
+    });
+  } catch (err) {
+    // A missing sidecar must not make textual input unconvertible: anything
+    // with a decodable text layer degrades to the text path with a warning.
+    const textual = input.kind === "text" || sniff.text !== undefined;
+    if (engineId === "prompt-optimizer" || !textual) throw err;
+    warnings.push({
+      code: "engine-error",
+      message: `${engineId} unavailable (${errorMessage(err)}) — fell back to the text path`,
+    });
+    engineId = "prompt-optimizer";
+    result = await deps.engines["prompt-optimizer"].convert(input, sniff, options);
+  }
   let escalated = false;
 
-  if (decision.postChecks.length > 0) {
+  if (decision.postChecks.length > 0 && engineId === decision.engine) {
     const verdict = shouldEscalate(decision, sniff, result.markdown);
     if (verdict.escalate) {
-      escalated = true;
-      warnings.push({
-        code: "engine-fallback",
-        message: `fast path failed checks [${verdict.failedChecks.join(", ")}] — escalated to docling`,
-      });
-      engineId = "docling";
-      result = await deps.engines.docling.convert(input, sniff, {
-        ...options,
-        ocr: verdict.ocr || decision.ocr,
-      });
+      try {
+        const escalatedResult = await deps.engines.docling.convert(input, sniff, {
+          ...options,
+          ocr: verdict.ocr || decision.ocr,
+        });
+        escalated = true;
+        engineId = "docling";
+        result = escalatedResult;
+        warnings.push({
+          code: "engine-fallback",
+          message: `fast path failed checks [${verdict.failedChecks.join(", ")}] — escalated to docling`,
+        });
+      } catch (err) {
+        // Escalation is best-effort: a degraded fast-path result beats no result.
+        warnings.push({
+          code: "engine-error",
+          message: `docling escalation failed (${errorMessage(err)}) — keeping fast-path output despite failed checks [${verdict.failedChecks.join(", ")}]`,
+        });
+      }
     }
   }
 
@@ -78,6 +109,10 @@ export async function convertDocument(
   });
 
   return { doc: docWithWarnings, markdown: result.markdown, report, decision, sniff, escalated };
+}
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
 }
 
 /**

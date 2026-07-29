@@ -39,7 +39,14 @@ verbatim; middle prose is summarized; tables/code/headings are never
 summarized. The output may exceed a very small budget — check the
 `budget-exceeded` warning instead of assuming.
 
-**4. Recovering detail.** Compressed sections end with an anchor comment:
+**4. Chat-box optimization.** When the user pastes long raw content (logs,
+emails, docs, rambling requirements) intended as context for further work,
+convert or compress it FIRST, then work from the optimized Markdown — and tell
+the user what it saved. For coding requests, the optimizer emits a
+Task/Goal/Requirements/Constraints structure with identifiers and error
+messages kept verbatim in backticks; use that structure as the working spec.
+
+**5. Recovering detail.** Compressed sections end with an anchor comment:
 `<!-- p2md:src=<id>#<start>-<end> -->`. When the user asks about anything in a
 summarized region, call `retrieve_original` with that anchor BEFORE answering —
 never answer from a summary when the verbatim source is one call away. Quote
