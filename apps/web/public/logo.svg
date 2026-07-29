@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="470" height="118" viewBox="0 0 470 118" role="img" aria-label="prompt2md — A Markdown Magic">
+  <defs>
+    <linearGradient id="p2md-g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7C5CFF"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+  </defs>
+  <!-- self-contained backdrop so the lockup reads on light or dark pages -->
+  <rect x="0" y="0" width="470" height="118" rx="20" fill="#0B0E14"/>
+  <g transform="translate(16,19) scale(1.25)">
+    <rect x="1" y="1" width="62" height="62" rx="14" fill="url(#p2md-g)"/>
+    <path d="M17 46 V24 L32 39 L47 24 V46" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M50 8 Q51.4 12.6 56 14 Q51.4 15.4 50 20 Q48.6 15.4 44 14 Q48.6 12.6 50 8 Z" fill="#FFF3C4"/>
+    <path d="M13 49 Q13.8 51.7 16.5 52.5 Q13.8 53.3 13 56 Q12.2 53.3 9.5 52.5 Q12.2 51.7 13 49 Z" fill="#FFF3C4" opacity="0.92"/>
+  </g>
+  <text x="118" y="63" font-family="'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', sans-serif" font-size="44" font-weight="700" letter-spacing="-1.2" fill="#E8ECF4">prompt<tspan fill="url(#p2md-g)">2md</tspan></text>
+  <text x="121" y="92" font-family="'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', sans-serif" font-size="15" font-weight="600" letter-spacing="5.5" fill="#8E97AB">A MARKDOWN MAGIC</text>
+</svg>

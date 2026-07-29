@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "prompt2md studio",
+  title: "prompt2md — A Markdown Magic",
   description:
     "Turn anything into token-optimized, layout-aware Markdown — and know exactly what it saved you.",
 };
@@ -14,10 +14,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <div className="shell">
           <header className="header">
-            <span className="brand">prompt2md</span>
-            <span className="tagline">
-              token-optimized Markdown, with receipts — nothing is ever lost
-            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand-icon.svg" alt="" width={40} height={40} className="mark" />
+            <div className="brand-block">
+              <span className="brand">
+                prompt<span className="brand-accent">2md</span>
+              </span>
+              <span className="tagline">A Markdown Magic</span>
+            </div>
           </header>
           {children}
           <footer className="footer">
