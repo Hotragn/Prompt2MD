@@ -95,6 +95,51 @@ describe("prompt2md studio (Selenium E2E)", () => {
     expect(markdown).not.toContain(retrieved.text);
   });
 
+  it("renders the markdown preview toggle after converting", async () => {
+    await clickButtonByText("Convert", "tab");
+    await clickButtonByText("Load sample", "ghost");
+    await clickButtonByText("Convert", "btn");
+    await outputText();
+
+    await clickButtonByText("Preview", "chip");
+    const prose = await driver.wait(until.elementLocated(By.css(".output.prose")), 15_000);
+    const hasStructure = await prose.findElements(By.css("h1, h2, p, ul"));
+    expect(hasStructure.length).toBeGreaterThan(0);
+    await clickButtonByText("Raw", "chip");
+    await driver.wait(until.elementLocated(By.css("pre.output")), 15_000);
+  });
+
+  it("offers file upload on the input card", async () => {
+    const uploadButtons = await driver.findElements(
+      By.xpath('//button[contains(@class, "ghost") and normalize-space(text())="Upload file"]'),
+    );
+    expect(uploadButtons.length).toBe(1);
+    const fileInputs = await driver.findElements(By.css('input[type="file"]'));
+    expect(fileInputs.length).toBe(1);
+  });
+
+  it("daily digest tab loads live sources or degrades to a readable error", async () => {
+    await clickButtonByText("Daily Digest", "tab");
+    // Live network call: either the digest body or a friendly error must appear.
+    const outcome = await driver.wait(async () => {
+      const bodies = await driver.findElements(By.css(".digest-body"));
+      if (bodies.length > 0) return "digest";
+      const errors = await driver.findElements(By.css(".digest .error"));
+      if (errors.length > 0) return "error";
+      return null;
+    }, 60_000);
+
+    if (outcome === "digest") {
+      const stats = await driver.findElement(By.css(".digest .stats")).getText();
+      expect(stats).toMatch(/RAW SOURCE PAYLOADS/i);
+      expect(stats).toMatch(/THIS DIGEST/i);
+      expect(await driver.getPageSource()).toContain("stored losslessly");
+    } else {
+      const message = await driver.findElement(By.css(".digest .error")).getText();
+      expect(message.length).toBeGreaterThan(10); // readable, not a blank crash
+    }
+  });
+
   it("keeps working via API when the input routes to a missing sidecar (graceful degradation)", async () => {
     const res = await driver.executeAsyncScript<{ status: number; engine: string; warnings: string[] }>(
       `const done = arguments[arguments.length - 1];
