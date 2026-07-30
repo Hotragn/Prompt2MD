@@ -1,0 +1,5 @@
+{
+  "installCommand": "cd ../.. && pnpm install",
+  "buildCommand": "cd ../.. && pnpm build --filter=@prompt2md/core --filter=@prompt2md/hermes-mcp --filter=@prompt2md/web",
+  "framework": "nextjs"
+}
