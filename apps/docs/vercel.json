@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd ../.. && pnpm --filter @prompt2md/docs build",
+  "outputDirectory": ".vitepress/dist",
+  "installCommand": "cd ../.. && pnpm install"
+}
