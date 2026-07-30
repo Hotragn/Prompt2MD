@@ -1,542 +1,329 @@
-"use client";
+import Link from "next/link";
+import { LiveFold } from "../components/LiveFold";
+import { Reveal } from "../components/Reveal";
 
-import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
-import DOMPurify from "dompurify";
-import { marked } from "marked";
+export const metadata = {
+  title: "prompt2md — token-optimized Markdown, and proof of what it saved",
+};
 
-type Tab = "convert" | "compress" | "digest";
-
-interface Warning {
-  code: string;
-  message: string;
-}
-
-interface Report {
-  engine: string;
-  inputTokens: number;
-  outputTokens: number;
-  ratio: number;
-  budget?: number;
-  withinBudget?: boolean;
-}
-
-interface Savings {
-  rawTokens: number;
-  compressedTokens: number;
-  ratio: number;
-  subsequentSavingsVsRawPct: number;
-  cache: {
-    provider: string;
-    cacheEligible: boolean;
-    effectiveTokensPerSubsequentCall: number;
-  };
-}
-
-interface ApiResult {
-  markdown?: string;
-  report?: Report;
-  savings?: Savings;
-  sourceId?: string;
-  warnings?: Warning[];
-  error?: string;
-}
-
-interface DigestData {
-  date?: string;
-  markdown?: string;
-  rawTokens?: number;
-  digestTokens?: number;
-  ratio?: number;
-  sourceId?: string;
-  failures?: string[];
-  error?: string;
-}
-
-const SAMPLE_PROMPT = `ok so what i need is basically a python script that takes a folder of csv files and merges them but ONLY the ones that have a "date" column, and also it should skip empty files. oh and the output should be a single parquet file. also please use pandas. actually it also needs to handle dates in different formats, some are MM/DD/YYYY and some are ISO. like i said merge them all into one parquet. also add logging. did i mention to skip empty files? yeah skip those. one more thing - if a file fails to parse dont crash, just log it and continue. use pandas like i said. thanks!!! also python 3.11`;
-
-const SAMPLE_CONTEXT = [
-  "# Incident 4417 — full timeline",
-  ...Array.from({ length: 14 }, (_, i) =>
-    `Update ${i}: engineers investigated subsystem ${i} and recorded observations. ${"Extended narrative describing dashboards, hypotheses, and dead ends in detail. ".repeat(4)}Key finding f-${i}.`,
-  ),
-  "Resolution: root cause was a stale feature flag; fixed at 14:02 UTC.",
-].join("\n\n");
-
-const TEXT_EXTENSIONS = /\.(txt|md|markdown|html?|csv|json|log|eml)$/i;
-
-function renderMarkdown(md: string): string {
-  return DOMPurify.sanitize(String(marked.parse(md, { async: false })));
-}
-
-/** Minimal typing for the (Chromium-only) Web Speech recognition API. */
-interface SpeechRecognitionLike {
-  lang: string;
-  interimResults: boolean;
-  continuous: boolean;
-  onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> }) => void) | null;
-  onend: (() => void) | null;
-  start(): void;
-  stop(): void;
-}
-
-export default function Studio() {
-  const [tab, setTab] = useState<Tab>("convert");
-  const [text, setText] = useState("");
-  const [budget, setBudget] = useState<string>("");
-  const [provider, setProvider] = useState("anthropic");
-  const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<ApiResult | null>(null);
-  const [view, setView] = useState<"raw" | "preview">("raw");
-  const [digest, setDigest] = useState<DigestData | null>(null);
-  const [digestBusy, setDigestBusy] = useState(false);
-  const [dragging, setDragging] = useState(false);
-  const [speechIn, setSpeechIn] = useState(false);
-  const [speechOut, setSpeechOut] = useState(false);
-  const [listening, setListening] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
-  const [copyState, setCopyState] = useState<"idle" | "ok" | "blocked">("idle");
-  const fileInput = useRef<HTMLInputElement | null>(null);
-  const recognition = useRef<SpeechRecognitionLike | null>(null);
-  const outputRef = useRef<HTMLPreElement | null>(null);
-
-  useEffect(() => {
-    const w = window as unknown as { webkitSpeechRecognition?: new () => SpeechRecognitionLike };
-    setSpeechIn(typeof w.webkitSpeechRecognition === "function");
-    setSpeechOut("speechSynthesis" in window);
-  }, []);
-
-  /** The whole point is pasting the result into a chat box — make that one click. */
-  async function copyOutput(markdown: string) {
-    try {
-      await navigator.clipboard.writeText(markdown);
-      setCopyState("ok");
-    } catch {
-      // Clipboard can be refused (unfocused document, denied permission,
-      // insecure origin). Never claim a copy that did not happen — select the
-      // text instead so the keyboard fallback is one keystroke away.
-      const pre = outputRef.current;
-      if (pre !== null) {
-        const range = document.createRange();
-        range.selectNodeContents(pre);
-        const sel = window.getSelection();
-        sel?.removeAllRanges();
-        sel?.addRange(range);
-      }
-      setCopyState("blocked");
-    }
-    setTimeout(() => setCopyState("idle"), 2400);
-  }
-
-  const loadDigest = useCallback(async (refresh: boolean) => {
-    setDigestBusy(true);
-    try {
-      const res = await fetch(`/api/digest${refresh ? "?refresh=1" : ""}`);
-      setDigest((await res.json()) as DigestData);
-    } catch {
-      setDigest({ error: "Could not reach the digest API — is the dev server running?" });
-    } finally {
-      setDigestBusy(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (tab === "digest" && digest === null && !digestBusy) void loadDigest(false);
-  }, [tab, digest, digestBusy, loadDigest]);
-
-  async function run() {
-    setBusy(true);
-    setResult(null);
-    try {
-      const endpoint = tab === "convert" ? "/api/convert" : "/api/compress";
-      const budgetNum = budget.trim() === "" ? undefined : Number.parseInt(budget, 10);
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          text,
-          provider,
-          ...(budgetNum !== undefined && Number.isFinite(budgetNum) ? { tokenBudget: budgetNum } : {}),
-        }),
-      });
-      let data: ApiResult;
-      try {
-        data = (await res.json()) as ApiResult;
-      } catch {
-        data = { error: `server responded ${res.status} without a readable body` };
-      }
-      setResult(data);
-    } catch {
-      setResult({
-        error:
-          "Could not reach the studio API. Is the dev server running? Start it with: pnpm --filter @prompt2md/web dev",
-      });
-    } finally {
-      setBusy(false);
+const SURFACES = [
+  {
+    id: "cli",
+    name: "Command line",
+    body: `prompt2md convert ./contract.pdf -b 6000
+prompt2md compress big-context.md -b 4000
+prompt2md batch "docs/**/*.html" -d out/ --watch
+prompt2md retrieve "p2md:src=<id>#<start>-<end>"`,
+  },
+  {
+    id: "mcp",
+    name: "MCP server",
+    body: `{
+  "mcpServers": {
+    "prompt2md": {
+      "command": "node",
+      "args": ["<repo>/packages/hermes-mcp/dist/bin.js"]
     }
   }
+}`,
+  },
+  {
+    id: "skill",
+    name: "Agent skill",
+    body: `cp -r packages/skill/prompt2md ~/.claude/skills/
 
-  async function readFiles(files: FileList | null) {
-    const file = files?.[0];
-    if (file === undefined) return;
-    if (TEXT_EXTENSIONS.test(file.name) || file.type.startsWith("text/")) {
-      setText(await file.text());
-      setResult(null);
-      return;
-    }
-    // Binary formats (PDF, Office, ...) convert server-side through the engines.
-    await convertBinary(file);
-  }
+# then, in any conversation:
+/prompt2md convert this thread to markdown`,
+  },
+];
 
-  async function convertBinary(file: File) {
-    setBusy(true);
-    setResult(null);
-    try {
-      const form = new FormData();
-      form.set("file", file);
-      form.set("provider", provider);
-      const budgetNum = budget.trim() === "" ? undefined : Number.parseInt(budget, 10);
-      if (budgetNum !== undefined && Number.isFinite(budgetNum)) form.set("tokenBudget", String(budgetNum));
-      const res = await fetch("/api/convert", { method: "POST", body: form });
-      let data: ApiResult;
-      try {
-        data = (await res.json()) as ApiResult;
-      } catch {
-        data = { error: `server responded ${res.status} without a readable body` };
-      }
-      setResult(data);
-      setText(`(uploaded ${file.name} — converted server-side)`);
-    } catch {
-      setResult({ error: "Could not reach the studio API. Is the dev server running?" });
-    } finally {
-      setBusy(false);
-    }
-  }
+const PIPELINE = [
+  { step: "Sniff", detail: "Cheap byte-level probes read the content itself — never the file extension." },
+  { step: "Route", detail: "Fast path for text-layer PDFs, HTML, Office, CSV. High-fidelity path for scans and complex tables." },
+  { step: "Escalate", detail: "The fast path's output is inspected for damage. Degraded tables or low yield trigger a re-run on the heavy engine." },
+  { step: "Optimize", detail: "Boilerplate, navigation chrome, signatures, and duplicated passages come out. Structure stays." },
+  { step: "Layout", detail: "Stable content first, volatile last, provider-specific cache breakpoints in between." },
+];
 
-  function onDrop(event: DragEvent<HTMLTextAreaElement>) {
-    event.preventDefault();
-    setDragging(false);
-    void readFiles(event.dataTransfer.files);
-  }
-
-  function toggleDictation() {
-    if (listening) {
-      recognition.current?.stop();
-      return;
-    }
-    const w = window as unknown as { webkitSpeechRecognition: new () => SpeechRecognitionLike };
-    const rec = new w.webkitSpeechRecognition();
-    rec.lang = "en-US";
-    rec.interimResults = false;
-    rec.continuous = true;
-    rec.onresult = (event) => {
-      const chunks: string[] = [];
-      for (let i = 0; i < event.results.length; i++) {
-        const r = event.results[i]!;
-        if (r.isFinal) chunks.push(r[0]!.transcript);
-      }
-      if (chunks.length > 0) setText((prev) => `${prev}${prev.endsWith(" ") || prev === "" ? "" : " "}${chunks.join(" ").trim()}`);
-    };
-    rec.onend = () => setListening(false);
-    recognition.current = rec;
-    setListening(true);
-    rec.start();
-  }
-
-  function toggleReadback(markdown: string) {
-    if (speaking) {
-      window.speechSynthesis.cancel();
-      setSpeaking(false);
-      return;
-    }
-    const plain = markdown.replace(/<!--[\s\S]*?-->/g, "").replace(/[#*_`>|[\]()-]/g, " ").replace(/\s+/g, " ").slice(0, 1500);
-    const utterance = new SpeechSynthesisUtterance(plain);
-    utterance.onend = () => setSpeaking(false);
-    setSpeaking(true);
-    window.speechSynthesis.speak(utterance);
-  }
-
-  const inTokens = result?.savings?.rawTokens ?? result?.report?.inputTokens;
-  const outTokens = result?.savings?.compressedTokens ?? result?.report?.outputTokens;
-  const pctOfInput =
-    inTokens !== undefined && outTokens !== undefined && inTokens > 0
-      ? Math.round((outTokens / inTokens) * 100)
-      : undefined;
-
+export default function Home() {
   return (
-    <main>
-      <div className="tabs" role="tablist">
-        <button className="tab" data-active={tab === "convert"} onClick={() => setTab("convert")}>
-          Convert
-        </button>
-        <button className="tab" data-active={tab === "compress"} onClick={() => setTab("compress")}>
-          Compress
-        </button>
-        <button className="tab" data-active={tab === "digest"} onClick={() => setTab("digest")}>
-          Daily Digest
-        </button>
-      </div>
-
-      {tab !== "digest" && (
-        <div className="grid">
-          <section className="card">
-            <h2>{tab === "convert" ? "Raw input" : "Oversized context"}</h2>
-            <textarea
-              className="input"
-              data-dragging={dragging}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragging(true);
-              }}
-              onDragLeave={() => setDragging(false)}
-              onDrop={onDrop}
-              onKeyDown={(e) => {
-                if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && !busy && text.trim() !== "") {
-                  e.preventDefault();
-                  void run();
-                }
-              }}
-              placeholder={
-                tab === "convert"
-                  ? "Paste a messy prompt, email thread, HTML, or CSV — or drop a text file here…"
-                  : "Paste the context block to compress to a token budget — or drop a text file here…"
-              }
-            />
-            <div className="controls">
-              <label>
-                token budget
-                <input
-                  type="number"
-                  min={1}
-                  value={budget}
-                  onChange={(e) => setBudget(e.target.value)}
-                  placeholder={tab === "compress" ? "required" : "optional"}
-                />
-              </label>
-              <label>
-                cache profile
-                <select value={provider} onChange={(e) => setProvider(e.target.value)}>
-                  <option value="anthropic">anthropic</option>
-                  <option value="openai">openai</option>
-                  <option value="gemini">gemini</option>
-                  <option value="kimi">kimi</option>
-                </select>
-              </label>
-              <button
-                className="btn"
-                onClick={() => void run()}
-                disabled={busy || text.trim() === ""}
-                title="Ctrl/⌘ + Enter"
-              >
-                {busy ? "Working…" : tab === "convert" ? "Convert" : "Compress"}
-              </button>
-              <button
-                className="btn ghost"
-                onClick={() => setText(tab === "convert" ? SAMPLE_PROMPT : SAMPLE_CONTEXT)}
-              >
-                Load sample
-              </button>
-              <button className="btn ghost" onClick={() => fileInput.current?.click()}>
-                Upload file
-              </button>
-              {speechIn && (
-                <button className="btn ghost" data-live={listening} onClick={toggleDictation}>
-                  {listening ? "◼ Stop dictating" : "🎙 Dictate"}
-                </button>
-              )}
-              <input
-                ref={fileInput}
-                type="file"
-                accept=".txt,.md,.markdown,.html,.htm,.csv,.json,.log,.eml,.pdf,.docx,.xlsx,.pptx,text/*"
-                hidden
-                onChange={(e) => void readFiles(e.target.files)}
-              />
-            </div>
-            <p className="hint">
-              Everything runs locally. Compression is lossless — summarized sections carry p2md:src
-              anchors resolvable via retrieve. Text files load into the editor; PDF/Office uploads
-              convert server-side through the engines.
+    <>
+      {/* ---------------------------------------------------------------- hero */}
+      <section className="hero">
+        <div className="container">
+          <Reveal>
+            <p className="eyebrow">
+              <span className="dot" aria-hidden="true" />
+              Apache-2.0 · CLI · MCP server · agent skill
             </p>
-          </section>
+          </Reveal>
 
-          <section className="card">
-            <div className="card-head">
-              <h2>Token-optimized Markdown</h2>
-              {result?.markdown !== undefined && (
-                <div className="view-toggle">
-                  <button
-                    className="chip"
-                    data-done={copyState === "ok"}
-                    title="Copy the Markdown, ready to paste into any chat box"
-                    onClick={() => void copyOutput(result.markdown ?? "")}
-                  >
-                    {copyState === "ok" ? "✓ Copied" : copyState === "blocked" ? "Selected — press Ctrl+C" : "Copy"}
-                  </button>
-                  <button className="chip" data-active={view === "raw"} onClick={() => setView("raw")}>
-                    Raw
-                  </button>
-                  <button className="chip" data-active={view === "preview"} onClick={() => setView("preview")}>
-                    Preview
-                  </button>
-                  {speechOut && (
-                    <button className="chip" onClick={() => toggleReadback(result.markdown ?? "")}>
-                      {speaking ? "◼ Stop" : "🔊 Read"}
-                    </button>
-                  )}
-                </div>
-              )}
+          <Reveal delay={60}>
+            <h1 className="hero-title">
+              Fold any text into <span className="grad">token-optimized Markdown</span>
+            </h1>
+          </Reveal>
+
+          <Reveal delay={120}>
+            <p className="hero-sub">
+              Folding makes something smaller without removing anything from it. Every other tool
+              cuts — truncates the middle, drops what it guesses you won&rsquo;t miss, and never tells
+              you what it cost. prompt2md folds, reports the real numbers, and hands back the
+              byte-exact original whenever you ask.
+            </p>
+          </Reveal>
+
+          <Reveal delay={180}>
+            <div className="hero-cta">
+              <Link className="btn" href="/studio">
+                Open the studio
+              </Link>
+              <a className="btn ghost" href="#install">
+                Install in your tools
+              </a>
             </div>
-            {result?.error !== undefined && <div className="error">{result.error}</div>}
-            {result !== null && result.error === undefined && (
-              <>
-                <div className="stats">
-                  {inTokens !== undefined && (
-                    <div className="stat">
-                      <div className="k">input tokens</div>
-                      <div className="v">{inTokens.toLocaleString()}</div>
-                    </div>
-                  )}
-                  {outTokens !== undefined && (
-                    <div className="stat">
-                      <div className="k">output tokens</div>
-                      <div className="v">{outTokens.toLocaleString()}</div>
-                    </div>
-                  )}
-                  {pctOfInput !== undefined && (
-                    <div className="stat">
-                      <div className="k">size vs input</div>
-                      <div className="v">{pctOfInput}%</div>
-                    </div>
-                  )}
-                  {result.report?.engine !== undefined && (
-                    <div className="stat">
-                      <div className="k">engine</div>
-                      <div className="v">{result.report.engine}</div>
-                    </div>
-                  )}
-                  {result.savings !== undefined && (
-                    <div className="stat" data-hero="true">
-                      <div className="k">repeat-call cost ({result.savings.cache.provider})</div>
-                      <div className="v ok">
-                        {result.savings.cache.effectiveTokensPerSubsequentCall.toLocaleString()} tok ·{" "}
-                        {result.savings.subsequentSavingsVsRawPct}% saved
-                      </div>
-                    </div>
-                  )}
-                </div>
+          </Reveal>
 
-                {inTokens !== undefined && outTokens !== undefined && inTokens > 0 && (
-                  <div className="meter">
-                    <div className="row">
-                      <span style={{ width: 46 }}>input</span>
-                      <div className="bar in" style={{ width: "100%" }} />
-                    </div>
-                    <div className="row">
-                      <span style={{ width: 46 }}>output</span>
-                      <div
-                        className="bar out"
-                        style={{ width: `${Math.min(100, (outTokens / inTokens) * 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {(result.warnings ?? []).map((w, i) => (
-                  <div key={i} className="warning">
-                    {w.code}: {w.message}
-                  </div>
-                ))}
-
-                {result.sourceId !== undefined && (
-                  <p className="hint">original stored — sourceId {result.sourceId}</p>
-                )}
-
-                {view === "raw" ? (
-                  <pre className="output" ref={outputRef}>
-                    {result.markdown}
-                  </pre>
-                ) : (
-                  <div
-                    className="output prose"
-                    dangerouslySetInnerHTML={{ __html: renderMarkdown(result.markdown ?? "") }}
-                  />
-                )}
-              </>
-            )}
-            {result === null && (
-              <div className="empty">
-                <p className="lead">
-                  {tab === "convert"
-                    ? "Folding makes text smaller without removing anything from it."
-                    : "Fit an oversized context to a budget — and keep every word you cut."}
-                </p>
-                <p className="sub">
-                  {tab === "convert"
-                    ? "Paste a rambling prompt and convert it. You get clean Markdown, an honest token count, and a copy button — nothing is summarized away."
-                    : "Every summarized section carries a p2md:src anchor. Retrieve returns the byte-exact original, so compression is never a one-way door."}
-                </p>
-                <p className="sub">
-                  Try <strong>Load sample</strong>, then <strong>{tab === "convert" ? "Convert" : "Compress"}</strong>{" "}
-                  — or press <span className="kbd">Ctrl</span> <span className="kbd">↵</span> in the editor.
-                </p>
-              </div>
-            )}
-          </section>
+          <Reveal delay={240}>
+            <LiveFold />
+          </Reveal>
         </div>
-      )}
+      </section>
 
-      {tab === "digest" && (
-        <section className="card digest">
-          <div className="card-head">
-            <h2>Daily Digest{digest?.date !== undefined ? ` — ${digest.date}` : ""}</h2>
-            <div className="view-toggle">
-              <button className="chip" onClick={() => void loadDigest(true)} disabled={digestBusy}>
-                {digestBusy ? "Refreshing…" : "↻ Refresh"}
-              </button>
-              {speechOut && digest?.markdown !== undefined && (
-                <button className="chip" onClick={() => toggleReadback(digest.markdown ?? "")}>
-                  {speaking ? "◼ Stop" : "🔊 Read"}
-                </button>
-              )}
-            </div>
+      {/* ------------------------------------------------------------ proof bar */}
+      <section className="proof">
+        <div className="container proof-row">
+          <Reveal className="proof-item">
+            <strong>126</strong>
+            <span>tests, green on Linux &amp; Windows</span>
+          </Reveal>
+          <Reveal className="proof-item" delay={60}>
+            <strong>0</strong>
+            <span>telemetry, accounts, or uploads</span>
+          </Reveal>
+          <Reveal className="proof-item" delay={120}>
+            <strong>6</strong>
+            <span>tools wired by one command</span>
+          </Reveal>
+          <Reveal className="proof-item" delay={180}>
+            <strong>100%</strong>
+            <span>of savings figures reproducible</span>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* --------------------------------------------------------- the argument */}
+      <section className="section" id="why">
+        <div className="container">
+          <Reveal>
+            <h2 className="section-title">Everything else cuts. This folds.</h2>
+            <p className="section-lead">
+              The distinction is not stylistic. It is the difference between a transformation you can
+              undo and one you cannot.
+            </p>
+          </Reveal>
+
+          <div className="compare">
+            <Reveal className="compare-col" delay={60}>
+              <h3 className="compare-h cut">Cutting</h3>
+              <ul>
+                <li>Truncates to fit a window</li>
+                <li>Drops the middle and hopes</li>
+                <li>Summaries replace the source</li>
+                <li>Savings are estimated, or unstated</li>
+                <li>The detail is gone for good</li>
+              </ul>
+            </Reveal>
+            <Reveal className="compare-col fold" delay={120}>
+              <h3 className="compare-h">Folding</h3>
+              <ul>
+                <li>Structures, dedupes, then summarizes only what is safe</li>
+                <li>Head and tail stay verbatim — models attend to them most</li>
+                <li>Tables, code, and headings are never summarized</li>
+                <li>Every figure comes from a real run you can repeat</li>
+                <li>
+                  <code>retrieve_original</code> returns the exact source bytes
+                </li>
+              </ul>
+            </Reveal>
           </div>
-          {digestBusy && digest === null && <p className="hint">Fetching today’s sources…</p>}
-          {digest?.error !== undefined && <div className="error">{digest.error}</div>}
-          {digest !== null && digest.error === undefined && digest.markdown !== undefined && (
-            <>
-              <div className="stats">
-                <div className="stat">
-                  <div className="k">raw source payloads</div>
-                  <div className="v">{digest.rawTokens?.toLocaleString()} tok</div>
+        </div>
+      </section>
+
+      {/* ----------------------------------------------------------- how it works */}
+      <section className="section alt" id="how">
+        <div className="container">
+          <Reveal>
+            <h2 className="section-title">How a document becomes cheap context</h2>
+            <p className="section-lead">
+              Five stages. The interesting one is the third: the pipeline checks its own work and
+              escalates when the cheap engine got it wrong.
+            </p>
+          </Reveal>
+
+          <ol className="pipeline">
+            {PIPELINE.map((p, i) => (
+              <Reveal as="li" key={p.step} delay={i * 70} className="pipeline-step">
+                <span className="pipeline-n">{String(i + 1).padStart(2, "0")}</span>
+                <div>
+                  <h3>{p.step}</h3>
+                  <p>{p.detail}</p>
                 </div>
-                <div className="stat">
-                  <div className="k">this digest</div>
-                  <div className="v ok">{digest.digestTokens?.toLocaleString()} tok</div>
-                </div>
-                {digest.ratio !== undefined && (
-                  <div className="stat">
-                    <div className="k">size vs raw</div>
-                    <div className="v">{Math.round(digest.ratio * 100)}%</div>
+              </Reveal>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* -------------------------------------------------------------- features */}
+      <section className="section" id="features">
+        <div className="container">
+          <Reveal>
+            <h2 className="section-title">Built for context budgets, not demos</h2>
+          </Reveal>
+
+          <div className="bento">
+            <Reveal className="tile wide" delay={40}>
+              <h3>Token cost is an output, not a footnote</h3>
+              <p>
+                Every conversion returns a report: tokens in, tokens out, compression ratio,
+                per-section costs, and the effective cost of each repeat call under your
+                provider&rsquo;s cache pricing. Set a budget and it is enforced, not suggested.
+              </p>
+            </Reveal>
+            <Reveal className="tile" delay={80}>
+              <h3>Lossless by construction</h3>
+              <p>
+                Originals are stored content-addressed before anything is transformed. Summarized
+                sections carry <code>p2md:src</code> anchors that resolve to exact bytes.
+              </p>
+            </Reveal>
+            <Reveal className="tile" delay={120}>
+              <h3>Dual-engine routing</h3>
+              <p>
+                ~0.6 s fast path for most inputs; TableFormer and OCR only when the content proves it
+                needs them.
+              </p>
+            </Reveal>
+            <Reveal className="tile" delay={160}>
+              <h3>Cache-aware layout</h3>
+              <p>
+                Sections are ordered so prompt caches hit. Repeat calls can cost a fraction of the
+                first one.
+              </p>
+            </Reveal>
+            <Reveal className="tile wide" delay={200}>
+              <h3>Works with nothing installed</h3>
+              <p>
+                No API key, no sidecar, no account. With zero configuration you get deterministic
+                cleanup and honest numbers; add an LLM gateway and the same pipeline restructures far
+                more aggressively. Text input never hard-fails.
+              </p>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* -------------------------------------------------------------- surfaces */}
+      <section className="section alt" id="surfaces">
+        <div className="container">
+          <Reveal>
+            <h2 className="section-title">Four surfaces, one pipeline</h2>
+            <p className="section-lead">
+              The same engine behind a command line, an MCP server, an agent skill, and this studio.
+            </p>
+          </Reveal>
+
+          <div className="surfaces">
+            {SURFACES.map((s, i) => (
+              <Reveal key={s.id} delay={i * 80} className="surface">
+                <div className="win">
+                  <div className="win-bar">
+                    <span className="win-dot" />
+                    <span className="win-dot" />
+                    <span className="win-dot" />
+                    <span className="win-name">{s.name}</span>
                   </div>
-                )}
-              </div>
-              {(digest.failures ?? []).map((f, i) => (
-                <div key={i} className="warning">
-                  source unavailable: {f}
+                  <pre className="win-body">{s.body}</pre>
                 </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --------------------------------------------------------------- install */}
+      <section className="section" id="install">
+        <div className="container">
+          <Reveal>
+            <h2 className="section-title">One command wires every tool you use</h2>
+            <p className="section-lead">
+              Detects what is installed, backs up every config before touching it, and is safe to
+              re-run. Preview it first with <code>--dry-run</code>.
+            </p>
+          </Reveal>
+
+          <Reveal delay={80}>
+            <div className="win install-win">
+              <div className="win-bar">
+                <span className="win-dot" />
+                <span className="win-dot" />
+                <span className="win-dot" />
+                <span className="win-name">setup</span>
+              </div>
+              <pre className="win-body">{`git clone https://github.com/Hotragn/Prompt2MD.git prompt2md
+cd prompt2md && pnpm install && pnpm build
+pnpm setup`}</pre>
+            </div>
+          </Reveal>
+
+          <Reveal delay={140}>
+            <ul className="tool-list">
+              {[
+                "Claude Code",
+                "Claude Desktop",
+                "Cursor",
+                "Windsurf",
+                "Gemini CLI",
+                "Codex CLI",
+                "any MCP client",
+              ].map((t) => (
+                <li key={t}>{t}</li>
               ))}
-              {digest.sourceId !== undefined && (
-                <p className="hint">raw payloads stored losslessly — sourceId {digest.sourceId}</p>
-              )}
-              <div
-                className="output prose digest-body"
-                dangerouslySetInnerHTML={{ __html: renderMarkdown(digest.markdown) }}
-              />
-            </>
-          )}
-        </section>
-      )}
-    </main>
+            </ul>
+            <p className="section-lead small">
+              Model providers are independent of the tool: point <code>P2MD_LITELLM_BASE_URL</code> at
+              any OpenAI-compatible endpoint — Claude, GPT, Gemini, Grok, Kimi, or a local model.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------- cta */}
+      <section className="section cta-band">
+        <div className="container">
+          <Reveal>
+            <h2 className="section-title">See it fold something of yours</h2>
+            <p className="section-lead">
+              Paste a rambling prompt, a contract, or an email thread. You will get clean Markdown, a
+              number you can check, and a way back to the original.
+            </p>
+            <div className="hero-cta">
+              <Link className="btn" href="/studio">
+                Open the studio
+              </Link>
+              <a
+                className="btn ghost"
+                href="https://github.com/Hotragn/Prompt2MD"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Read the source
+              </a>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+    </>
   );
 }
