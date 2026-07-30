@@ -14,6 +14,7 @@ import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync, copyFileSyn
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveTargets } from "./lib/targets.mjs";
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const HOME = process.env.P2MD_INSTALL_HOME ?? homedir();
@@ -114,17 +115,6 @@ function installClaudeCode() {
   note("Claude Code MCP", "manual", `run: claude mcp add --scope user prompt2md -- node "${MCP_BIN}"`);
 }
 
-const JSON_TARGETS = [
-  {
-    tool: "Claude Desktop",
-    detectDir: process.platform === "win32" ? join(APPDATA, "Claude") : process.platform === "darwin" ? join(HOME, "Library", "Application Support", "Claude") : join(HOME, ".config", "Claude"),
-    config: "claude_desktop_config.json",
-  },
-  { tool: "Cursor", detectDir: join(HOME, ".cursor"), config: "mcp.json" },
-  { tool: "Windsurf", detectDir: join(HOME, ".codeium", "windsurf"), config: "mcp_config.json" },
-  { tool: "Gemini CLI", detectDir: join(HOME, ".gemini"), config: "settings.json" },
-];
-
 // --- run ---------------------------------------------------------------
 
 if (!existsSync(MCP_BIN)) {
@@ -134,14 +124,23 @@ if (!existsSync(MCP_BIN)) {
 
 installClaudeCode();
 
-for (const { tool, detectDir, config } of JSON_TARGETS) {
-  if (existsSync(detectDir)) mergeJsonConfig(tool, join(detectDir, config));
-  else note(tool, "not detected", "skipped");
-}
+// P2MD_INSTALL_PLATFORM lets the test suite exercise macOS/Linux layouts
+// from any machine; unset, it is simply the real platform.
+const targets = resolveTargets({
+  home: HOME,
+  appData: APPDATA,
+  ...(process.env.P2MD_INSTALL_PLATFORM ? { platform: process.env.P2MD_INSTALL_PLATFORM } : {}),
+});
 
-const codexDir = join(HOME, ".codex");
-if (existsSync(codexDir)) mergeTomlConfig("Codex CLI", join(codexDir, "config.toml"));
-else note("Codex CLI", "not detected", "skipped");
+for (const { tool, dir, config, format } of targets) {
+  if (!existsSync(dir)) {
+    note(tool, "not detected", "skipped");
+  } else if (format === "toml") {
+    mergeTomlConfig(tool, join(dir, config));
+  } else {
+    mergeJsonConfig(tool, join(dir, config));
+  }
+}
 
 // --- report ------------------------------------------------------------
 

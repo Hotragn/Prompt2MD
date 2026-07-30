@@ -21,6 +21,7 @@ import { createRequire } from "node:module";
 import { homedir, tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { resolveTargets } from "./lib/targets.mjs";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -77,7 +78,15 @@ const cursorCfg = seed(".cursor/mcp.json", '{"mcpServers":{"existing-server":{"c
 // UTF-8 BOM: how Windows editors commonly save JSON.
 const geminiCfg = seed(".gemini/settings.json", `﻿${JSON.stringify({ theme: "dark", mcpServers: {} })}`);
 const codexCfg = seed(".codex/config.toml", 'model = "o4"\napproval_policy = "on-request"\n');
-const desktopCfg = seed("AppData/Roaming/Claude/claude_desktop_config.json", "{}");
+
+// Claude Desktop lives somewhere different on every OS — ask the shared
+// resolver rather than hard-coding the Windows layout (which silently
+// skipped this tool, and failed this test, on Linux CI).
+const targets = resolveTargets({ home: sandbox });
+const desktopTarget = targets.find((t) => t.tool === "Claude Desktop");
+mkdirSync(desktopTarget.dir, { recursive: true });
+const desktopCfg = join(desktopTarget.dir, desktopTarget.config);
+writeFileSync(desktopCfg, "{}", "utf8");
 
 const before = fingerprint();
 
@@ -91,6 +100,20 @@ const runInstaller = (args = []) =>
 
 const firstRun = runInstaller();
 const secondRun = runInstaller();
+
+// --- 0. cross-platform path resolution (verifiable from any OS) -------
+
+const linux = resolveTargets({ home: "/home/u", platform: "linux" });
+const mac = resolveTargets({ home: "/Users/u", platform: "darwin" });
+const win = resolveTargets({ home: "C:\\Users\\u", platform: "win32", appData: "C:\\Users\\u\\AppData\\Roaming" });
+const desktopDir = (list) => list.find((t) => t.tool === "Claude Desktop").dir.replace(/\\/g, "/");
+check(desktopDir(linux) === "/home/u/.config/Claude", "linux claude desktop path", desktopDir(linux));
+check(
+  desktopDir(mac) === "/Users/u/Library/Application Support/Claude",
+  "macos claude desktop path",
+  desktopDir(mac),
+);
+check(desktopDir(win).endsWith("AppData/Roaming/Claude"), "windows claude desktop path", desktopDir(win));
 
 // --- 1. configs are valid and preserve prior content ------------------
 
@@ -146,6 +169,30 @@ check(skill.includes("retrieve_original"), "installed skill documents retrieve_o
 check(secondRun.includes("already registered"), "second run reports already-registered (idempotent)");
 const backups = readdirSync(join(sandbox, ".cursor")).filter((f) => f.includes(".bak-p2md-"));
 check(backups.length >= 1, "modified configs were backed up");
+
+// --- 4b. simulated Linux/macOS runs (what CI executes) ----------------
+
+for (const platform of ["linux", "darwin"]) {
+  const home = mkdtempSync(join(tmpdir(), `p2md-${platform}-`));
+  const target = resolveTargets({ home, platform }).find((t) => t.tool === "Claude Desktop");
+  mkdirSync(target.dir, { recursive: true });
+  writeFileSync(join(target.dir, target.config), "{}", "utf8");
+  mkdirSync(join(home, ".claude"), { recursive: true });
+
+  execFileSync(process.execPath, [join(REPO, "scripts", "install.mjs")], {
+    encoding: "utf8",
+    env: { ...process.env, P2MD_INSTALL_HOME: home, P2MD_INSTALL_PLATFORM: platform },
+  });
+
+  let cfg = {};
+  try {
+    cfg = JSON.parse(readFileSync(join(target.dir, target.config), "utf8"));
+  } catch {
+    /* reported below */
+  }
+  check(cfg.mcpServers?.prompt2md !== undefined, `${platform}: claude desktop wired at its real path`, target.dir.replace(home, "~"));
+  rmSync(home, { recursive: true, force: true });
+}
 
 // --- 5. nothing outside the sandbox changed ---------------------------
 
