@@ -42,15 +42,25 @@ const check = (cond, label) => {
   if (!cond) failures++;
 };
 
-/** Real user configs that must never be touched by a sandboxed run. */
+/**
+ * Real user configs that must never be touched by a sandboxed run.
+ *
+ * Every tool path is derived from the shared resolver for ALL platforms, not
+ * just the one we happen to be running on — otherwise the isolation assertion
+ * has a blind spot on whichever platform is not enumerated (it previously
+ * missed Linux's ~/.config/Claude entirely, so a Linux CI run could not have
+ * caught the installer writing to a real config).
+ */
 const REAL_CONFIG_PATHS = [
   join(REAL_HOME, ".claude", "skills", "prompt2md", "SKILL.md"),
   join(REAL_HOME, ".claude.json"),
-  join(REAL_HOME, ".cursor", "mcp.json"),
-  join(REAL_HOME, ".codex", "config.toml"),
-  join(REAL_HOME, ".gemini", "settings.json"),
-  join(process.env.APPDATA ?? join(REAL_HOME, "AppData", "Roaming"), "Claude", "claude_desktop_config.json"),
-  join(REAL_HOME, "Library", "Application Support", "Claude", "claude_desktop_config.json"),
+  ...["win32", "darwin", "linux"].flatMap((platform) =>
+    resolveTargets({
+      home: REAL_HOME,
+      platform,
+      ...(process.env.APPDATA !== undefined ? { appData: process.env.APPDATA } : {}),
+    }).map((t) => join(t.dir, t.config)),
+  ),
 ];
 
 function fingerprint() {
