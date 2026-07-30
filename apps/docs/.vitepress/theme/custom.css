@@ -1,0 +1,91 @@
+/* prompt2md docs theme — mirrors apps/web/app/globals.css.
+   See docs/BRAND.md. Warm ink substrate + paper grain, so the docs and the
+   studio read as one product rather than two sites that share a logo. */
+
+:root {
+  --p2md-brand: #7c5cff;
+  --p2md-brand-2: #22d3ee;
+  --p2md-display: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+
+  --vp-c-brand-1: #9b83ff;
+  --vp-c-brand-2: #8b6bff;
+  --vp-c-brand-3: var(--p2md-brand);
+  --vp-c-brand-soft: rgb(124 92 255 / 0.14);
+
+  --vp-home-hero-name-background: linear-gradient(100deg, var(--p2md-brand), var(--p2md-brand-2));
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-image-background-image: linear-gradient(-45deg, var(--p2md-brand) 40%, var(--p2md-brand-2));
+  --vp-home-hero-image-filter: blur(56px);
+}
+
+.dark {
+  /* Warm ink, matching --surface-* in the studio. */
+  --vp-c-bg: #0b0a0c;
+  --vp-c-bg-alt: #131217;
+  --vp-c-bg-elv: #1a1820;
+  --vp-c-bg-soft: #1a1820;
+  --vp-c-divider: #272430;
+  --vp-c-border: #272430;
+  --vp-c-gutter: #272430;
+
+  --vp-c-text-1: #f2efea;
+  --vp-c-text-2: #9c96a8;
+  --vp-c-text-3: #6e6879;
+}
+
+/* Paper grain — the fold story made tactile, identical to the studio. */
+.dark body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* The one deliberate typographic gesture: serif italic for the hero tagline. */
+.VPHero .tagline {
+  font-family: var(--p2md-display);
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+
+.VPHero .name {
+  letter-spacing: -0.03em;
+}
+
+/* Tabular figures everywhere numbers appear — savings tables must not jitter. */
+.vp-doc table {
+  font-variant-numeric: tabular-nums;
+}
+
+.vp-doc table th {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-2);
+}
+
+.vp-doc code {
+  font-size: 0.86em;
+}
+
+/* Rounder, softer feature cards to match the studio's --r-lg. */
+.VPFeature {
+  border-radius: 16px;
+  transition: border-color 220ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.VPFeature:hover {
+  border-color: #38334a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

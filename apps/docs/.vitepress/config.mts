@@ -13,7 +13,9 @@ export default defineConfig({
     nav: [
       { text: "Guide", link: "/getting-started" },
       { text: "Architecture", link: "/architecture" },
+      { text: "Brand", link: "/BRAND" },
       { text: "Roadmap", link: "/ROADMAP" },
+      { text: "Studio", link: "https://prompt2md.vercel.app" },
     ],
     sidebar: [
       {
@@ -30,6 +32,13 @@ export default defineConfig({
           { text: "ADR-001 · Dual-engine pipeline", link: "/adr/ADR-001-dual-engine" },
           { text: "ADR-002 · Engine selection", link: "/adr/ADR-002-engine-selection" },
           { text: "ADR-003 · Token savings math", link: "/adr/ADR-003-token-savings" },
+        ],
+      },
+      {
+        text: "Design",
+        items: [
+          { text: "Brand & UI profile", link: "/BRAND" },
+          { text: "UI landscape research", link: "/research/UI-LANDSCAPE" },
         ],
       },
       {

@@ -1,17 +1,75 @@
+/* ==========================================================================
+   prompt2md design system — see docs/BRAND.md for the story and the rules.
+
+   Story: The Fold. Folding makes something smaller without removing anything
+   from it; unfold and you have the original exactly. Competitors cut. We fold.
+
+   Differentiation is in the SUBSTRATE, not the accent: developer tooling has
+   converged on cool near-black, so we use warm ink + paper grain (on-story,
+   and rare in this category) while keeping the violet→cyan brand gradient,
+   which carries recognition equity and would collide with warning colours if
+   it were warm.
+   ========================================================================== */
+
 :root {
-  --bg: #0b0e14;
-  --panel: #11151f;
-  --panel-2: #161b28;
-  --border: #232b3d;
-  --text: #e8ecf4;
-  --muted: #8e97ab;
-  --accent: #7c5cff;
-  --accent-2: #22d3ee;
-  --ok: #34d399;
+  /* --- substrate: warm ink, never pure black ---------------------------- */
+  --surface-0: #0b0a0c;
+  --surface-1: #131217;
+  --surface-2: #1a1820;
+  --surface-3: #221f2a;
+  --border: #272430;
+  --border-lit: #38334a;
+
+  /* --- ink: warm off-white, not clinical blue-white --------------------- */
+  --text: #f2efea;
+  --text-muted: #9c96a8;
+  --text-faint: #6e6879;
+
+  /* --- brand: identity only, never status ------------------------------- */
+  --brand: #7c5cff;
+  --brand-2: #22d3ee;
+  --brand-grad: linear-gradient(100deg, var(--brand), var(--brand-2));
+
+  /* --- semantic: status only, never decoration -------------------------- */
+  --ok: #4ade80;
   --warn: #fbbf24;
-  --err: #f87171;
-  --radius: 12px;
-  --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+  --err: #fb7185;
+
+  /* --- type ------------------------------------------------------------- */
+  --font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
+  --font-display: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+  /* legacy alias — older rules referenced --mono */
+  --mono: var(--font-mono);
+
+  /* --- shape ------------------------------------------------------------ */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-full: 999px;
+  --radius: var(--r-md);
+  --shadow-lift: 0 8px 28px -12px rgb(0 0 0 / 0.65);
+
+  /* --- motion: explains change, never decorates ------------------------- */
+  --t-fast: 120ms;
+  --t-base: 220ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-fast: 0.01ms;
+    --t-base: 0.01ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 * {
@@ -22,18 +80,49 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: var(--bg);
+  background: var(--surface-0);
   color: var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
+  font-family: var(--font-ui);
   font-size: 15px;
   line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Paper grain — the fold story made tactile. Fixed so it reads as the
+   substrate the interface sits on rather than as texture on the content. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* A single warm bloom behind the masthead, so the page has a light source. */
+body::after {
+  content: "";
+  position: fixed;
+  top: -220px;
+  left: 50%;
+  width: 900px;
+  height: 460px;
+  transform: translateX(-50%);
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(50% 50% at 50% 50%, rgb(124 92 255 / 0.13), transparent 70%);
 }
 
 .shell {
-  max-width: 1180px;
+  position: relative;
+  z-index: 1;
+  max-width: 1240px;
   margin: 0 auto;
   padding: 24px 20px 64px;
 }
+
+/* --- masthead ----------------------------------------------------------- */
 
 .header {
   display: flex;
@@ -44,30 +133,13 @@ body {
 
 .header .mark {
   display: block;
-  border-radius: 10px;
+  border-radius: 11px;
 }
 
 .brand-block {
   display: flex;
   flex-direction: column;
   gap: 1px;
-}
-
-.header-nav {
-  display: flex;
-  gap: 18px;
-  margin-left: auto;
-}
-
-.header-nav a {
-  color: var(--muted, #9099ab);
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.header-nav a:hover {
-  color: var(--accent, #7c5cff);
 }
 
 .brand {
@@ -79,26 +151,47 @@ body {
 }
 
 .brand-accent {
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  background: var(--brand-grad);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
+/* Serif, italic, sentence case — the one deliberate typographic gesture. */
 .tagline {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 650;
-  letter-spacing: 0.34em;
-  text-transform: uppercase;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13.5px;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
 }
+
+.header-nav {
+  display: flex;
+  gap: 18px;
+  margin-left: auto;
+}
+
+.header-nav a {
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color var(--t-fast) var(--ease);
+}
+
+.header-nav a:hover {
+  color: var(--text);
+}
+
+/* --- tabs --------------------------------------------------------------- */
 
 .tabs {
   display: inline-flex;
   gap: 4px;
-  background: var(--panel);
+  background: var(--surface-1);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--r-full);
   padding: 4px;
   margin-bottom: 18px;
 }
@@ -106,35 +199,45 @@ body {
 .tab {
   border: 0;
   background: transparent;
-  color: var(--muted);
+  color: var(--text-muted);
   font: inherit;
   font-weight: 600;
   padding: 7px 18px;
-  border-radius: 999px;
+  border-radius: var(--r-full);
   cursor: pointer;
+  transition:
+    color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
+}
+
+.tab:hover {
+  color: var(--text);
 }
 
 .tab[data-active="true"] {
-  background: linear-gradient(90deg, var(--accent), #5b8cff);
+  background: var(--brand-grad);
   color: #fff;
 }
+
+/* --- layout ------------------------------------------------------------- */
 
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 18px;
+  align-items: start;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 940px) {
   .grid {
     grid-template-columns: 1fr;
   }
 }
 
 .card {
-  background: var(--panel);
+  background: var(--surface-1);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--r-lg);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -147,26 +250,49 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--muted);
+  color: var(--text-muted);
 }
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* --- fields ------------------------------------------------------------- */
 
 textarea.input {
   width: 100%;
   min-height: 320px;
   resize: vertical;
-  background: var(--panel-2);
+  background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-md);
   padding: 12px 14px;
-  font-family: var(--mono);
+  font-family: var(--font-mono);
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.55;
+  transition: border-color var(--t-fast) var(--ease);
 }
 
-textarea.input:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: -1px;
+textarea.input:hover {
+  border-color: var(--border-lit);
+}
+
+textarea.input[data-dragging="true"] {
+  outline: 2px dashed var(--brand-2);
+  outline-offset: -3px;
+  background: color-mix(in srgb, var(--brand-2) 6%, var(--surface-2));
 }
 
 .controls {
@@ -180,35 +306,61 @@ textarea.input:focus {
   display: flex;
   align-items: center;
   gap: 7px;
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 13px;
 }
 
 .controls input[type="number"],
 .controls select {
-  background: var(--panel-2);
+  background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   padding: 7px 10px;
   font: inherit;
   font-size: 13.5px;
   width: 110px;
+  transition: border-color var(--t-fast) var(--ease);
 }
 
 .controls select {
   width: auto;
 }
 
+.controls input[type="number"]:hover,
+.controls select:hover {
+  border-color: var(--border-lit);
+}
+
+/* One focus treatment, applied once, for every interactive element. */
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--brand-2);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* --- actions ------------------------------------------------------------ */
+
 .btn {
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--r-md);
   padding: 10px 22px;
   font: inherit;
   font-weight: 700;
   cursor: pointer;
   color: #fff;
-  background: linear-gradient(90deg, var(--accent), #5b8cff);
+  background: var(--brand-grad);
+  transition:
+    transform var(--t-fast) var(--ease),
+    filter var(--t-fast) var(--ease);
+}
+
+.btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .btn:disabled {
@@ -217,18 +369,22 @@ textarea.input:focus {
 }
 
 .btn.ghost {
-  background: var(--panel-2);
-  color: var(--muted);
+  background: var(--surface-2);
+  color: var(--text-muted);
   border: 1px solid var(--border);
   font-weight: 600;
   padding: 8px 14px;
 }
 
-.card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+.btn.ghost:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--border-lit);
+  filter: none;
+}
+
+.btn.ghost[data-live="true"] {
+  color: var(--err);
+  border-color: var(--err);
 }
 
 .view-toggle {
@@ -238,20 +394,34 @@ textarea.input:focus {
 
 .chip {
   border: 1px solid var(--border);
-  background: var(--panel-2);
-  color: var(--muted);
+  background: var(--surface-2);
+  color: var(--text-muted);
   font: inherit;
   font-size: 12px;
   font-weight: 650;
-  border-radius: 999px;
+  border-radius: var(--r-full);
   padding: 4px 12px;
   cursor: pointer;
+  transition:
+    color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
+}
+
+.chip:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--border-lit);
 }
 
 .chip[data-active="true"] {
   color: #fff;
-  border-color: var(--accent);
-  background: rgba(124, 92, 255, 0.18);
+  border-color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 20%, transparent);
+}
+
+.chip[data-done="true"] {
+  color: var(--ok);
+  border-color: var(--ok);
 }
 
 .chip:disabled {
@@ -259,47 +429,69 @@ textarea.input:focus {
   cursor: wait;
 }
 
-.btn.ghost[data-live="true"] {
-  color: var(--err);
-  border-color: var(--err);
+/* Keyboard affordance — power users should see the shortcut, not discover it. */
+.kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-faint);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 1px 5px;
+  background: var(--surface-2);
+  white-space: nowrap;
 }
 
-textarea.input[data-dragging="true"] {
-  outline: 2px dashed var(--accent-2);
-  outline-offset: -2px;
-}
+/* --- output ------------------------------------------------------------- */
 
 .output {
-  background: var(--panel-2);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-md);
   padding: 12px 14px;
   min-height: 320px;
   max-height: 560px;
   overflow: auto;
   white-space: pre-wrap;
   word-break: break-word;
-  font-family: var(--mono);
+  font-family: var(--font-mono);
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.55;
   margin: 0;
 }
 
+/* --- the ledger: numbers are the product's claim, so they lead ---------- */
+
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   gap: 10px;
 }
 
 .stat {
-  background: var(--panel-2);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: var(--r-md);
+  padding: 11px 13px;
+}
+
+/* Bento: the savings tile is the claim, so it carries more weight. */
+.stat[data-hero="true"] {
+  grid-column: span 2;
+  border-color: color-mix(in srgb, var(--ok) 35%, var(--border));
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--ok) 9%, transparent), transparent 60%),
+    var(--surface-2);
+}
+
+@media (max-width: 520px) {
+  .stat[data-hero="true"] {
+    grid-column: span 1;
+  }
 }
 
 .stat .k {
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 11.5px;
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -310,6 +502,10 @@ textarea.input[data-dragging="true"] {
   font-weight: 750;
   font-variant-numeric: tabular-nums;
   margin-top: 2px;
+}
+
+.stat[data-hero="true"] .v {
+  font-size: 24px;
 }
 
 .stat .v.ok {
@@ -327,25 +523,30 @@ textarea.input[data-dragging="true"] {
   align-items: center;
   gap: 10px;
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .meter .bar {
   height: 10px;
-  border-radius: 999px;
+  border-radius: var(--r-full);
   min-width: 6px;
+  /* Width animates on value change so a savings drop is seen, not just read. */
+  transition: width var(--t-base) var(--ease);
 }
 
 .meter .bar.in {
-  background: #3a4258;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
 }
 
 .meter .bar.out {
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  background: var(--brand-grad);
 }
 
+/* --- rendered markdown -------------------------------------------------- */
+
 .prose {
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
+  font-family: var(--font-ui);
   font-size: 14px;
   white-space: normal;
 }
@@ -368,7 +569,7 @@ textarea.input[data-dragging="true"] {
 }
 
 .prose a {
-  color: var(--accent-2);
+  color: var(--brand-2);
   text-decoration: none;
 }
 
@@ -400,7 +601,7 @@ textarea.input[data-dragging="true"] {
   border-left: 3px solid var(--border);
   margin: 10px 0;
   padding: 2px 12px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .prose hr {
@@ -410,9 +611,9 @@ textarea.input[data-dragging="true"] {
 }
 
 .prose code {
-  font-family: var(--mono);
+  font-family: var(--font-mono);
   font-size: 12.5px;
-  background: rgba(124, 92, 255, 0.12);
+  background: color-mix(in srgb, var(--brand) 14%, transparent);
   border-radius: 5px;
   padding: 1px 5px;
 }
@@ -421,32 +622,66 @@ textarea.input[data-dragging="true"] {
   max-height: none;
 }
 
+/* --- status ------------------------------------------------------------- */
+
 .warning {
   border-left: 3px solid var(--warn);
-  background: rgba(251, 191, 36, 0.07);
+  background: color-mix(in srgb, var(--warn) 8%, transparent);
   color: #fde68a;
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
   padding: 8px 12px;
   font-size: 13px;
 }
 
 .error {
   border-left: 3px solid var(--err);
-  background: rgba(248, 113, 113, 0.08);
+  background: color-mix(in srgb, var(--err) 9%, transparent);
   color: #fecaca;
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
   padding: 8px 12px;
   font-size: 13px;
 }
 
 .hint {
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 12.5px;
+}
+
+/* Empty state: state the promise in the product's own voice, with the
+   serif gesture, rather than leaving an inert grey panel. */
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 320px;
+  border: 1px dashed var(--border);
+  border-radius: var(--r-md);
+  padding: 22px 24px;
+  background: var(--surface-2);
+}
+
+.empty .lead {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--text);
+  margin: 0;
+  max-width: 34ch;
+}
+
+.empty .sub {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 0;
+  max-width: 46ch;
 }
 
 .footer {
   margin-top: 34px;
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 12.5px;
   border-top: 1px solid var(--border);
   padding-top: 16px;

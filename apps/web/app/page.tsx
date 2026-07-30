@@ -94,14 +94,38 @@ export default function Studio() {
   const [speechOut, setSpeechOut] = useState(false);
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [copyState, setCopyState] = useState<"idle" | "ok" | "blocked">("idle");
   const fileInput = useRef<HTMLInputElement | null>(null);
   const recognition = useRef<SpeechRecognitionLike | null>(null);
+  const outputRef = useRef<HTMLPreElement | null>(null);
 
   useEffect(() => {
     const w = window as unknown as { webkitSpeechRecognition?: new () => SpeechRecognitionLike };
     setSpeechIn(typeof w.webkitSpeechRecognition === "function");
     setSpeechOut("speechSynthesis" in window);
   }, []);
+
+  /** The whole point is pasting the result into a chat box — make that one click. */
+  async function copyOutput(markdown: string) {
+    try {
+      await navigator.clipboard.writeText(markdown);
+      setCopyState("ok");
+    } catch {
+      // Clipboard can be refused (unfocused document, denied permission,
+      // insecure origin). Never claim a copy that did not happen — select the
+      // text instead so the keyboard fallback is one keystroke away.
+      const pre = outputRef.current;
+      if (pre !== null) {
+        const range = document.createRange();
+        range.selectNodeContents(pre);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+      }
+      setCopyState("blocked");
+    }
+    setTimeout(() => setCopyState("idle"), 2400);
+  }
 
   const loadDigest = useCallback(async (refresh: boolean) => {
     setDigestBusy(true);
@@ -267,6 +291,12 @@ export default function Studio() {
               }}
               onDragLeave={() => setDragging(false)}
               onDrop={onDrop}
+              onKeyDown={(e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && !busy && text.trim() !== "") {
+                  e.preventDefault();
+                  void run();
+                }
+              }}
               placeholder={
                 tab === "convert"
                   ? "Paste a messy prompt, email thread, HTML, or CSV — or drop a text file here…"
@@ -293,7 +323,12 @@ export default function Studio() {
                   <option value="kimi">kimi</option>
                 </select>
               </label>
-              <button className="btn" onClick={() => void run()} disabled={busy || text.trim() === ""}>
+              <button
+                className="btn"
+                onClick={() => void run()}
+                disabled={busy || text.trim() === ""}
+                title="Ctrl/⌘ + Enter"
+              >
                 {busy ? "Working…" : tab === "convert" ? "Convert" : "Compress"}
               </button>
               <button
@@ -330,6 +365,14 @@ export default function Studio() {
               <h2>Token-optimized Markdown</h2>
               {result?.markdown !== undefined && (
                 <div className="view-toggle">
+                  <button
+                    className="chip"
+                    data-done={copyState === "ok"}
+                    title="Copy the Markdown, ready to paste into any chat box"
+                    onClick={() => void copyOutput(result.markdown ?? "")}
+                  >
+                    {copyState === "ok" ? "✓ Copied" : copyState === "blocked" ? "Selected — press Ctrl+C" : "Copy"}
+                  </button>
                   <button className="chip" data-active={view === "raw"} onClick={() => setView("raw")}>
                     Raw
                   </button>
@@ -373,7 +416,7 @@ export default function Studio() {
                     </div>
                   )}
                   {result.savings !== undefined && (
-                    <div className="stat">
+                    <div className="stat" data-hero="true">
                       <div className="k">repeat-call cost ({result.savings.cache.provider})</div>
                       <div className="v ok">
                         {result.savings.cache.effectiveTokensPerSubsequentCall.toLocaleString()} tok ·{" "}
@@ -410,7 +453,9 @@ export default function Studio() {
                 )}
 
                 {view === "raw" ? (
-                  <pre className="output">{result.markdown}</pre>
+                  <pre className="output" ref={outputRef}>
+                    {result.markdown}
+                  </pre>
                 ) : (
                   <div
                     className="output prose"
@@ -420,10 +465,22 @@ export default function Studio() {
               </>
             )}
             {result === null && (
-              <p className="hint">
-                Output, token report, and savings land here. Try “Load sample” →{" "}
-                {tab === "convert" ? "Convert" : "Compress"}.
-              </p>
+              <div className="empty">
+                <p className="lead">
+                  {tab === "convert"
+                    ? "Folding makes text smaller without removing anything from it."
+                    : "Fit an oversized context to a budget — and keep every word you cut."}
+                </p>
+                <p className="sub">
+                  {tab === "convert"
+                    ? "Paste a rambling prompt and convert it. You get clean Markdown, an honest token count, and a copy button — nothing is summarized away."
+                    : "Every summarized section carries a p2md:src anchor. Retrieve returns the byte-exact original, so compression is never a one-way door."}
+                </p>
+                <p className="sub">
+                  Try <strong>Load sample</strong>, then <strong>{tab === "convert" ? "Convert" : "Compress"}</strong>{" "}
+                  — or press <span className="kbd">Ctrl</span> <span className="kbd">↵</span> in the editor.
+                </p>
+              </div>
             )}
           </section>
         </div>

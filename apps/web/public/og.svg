@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="prompt2md — A Markdown Magic">
+  <defs>
+    <linearGradient id="badge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8B6BFF"/>
+      <stop offset="0.55" stop-color="#6D5AF5"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+    <linearGradient id="word" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8B6BFF"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+    <radialGradient id="bloom" cx="0.5" cy="0" r="0.75">
+      <stop offset="0" stop-color="#7C5CFF" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#7C5CFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="#0B0A0C"/>
+  <rect width="1200" height="630" fill="url(#bloom)"/>
+  <rect width="1200" height="630" filter="url(#grain)" opacity="0.035"/>
+
+  <!-- mark -->
+  <g transform="translate(84,74) scale(1.5)">
+    <rect x="1" y="1" width="62" height="62" rx="15" fill="url(#badge)"/>
+    <path d="M18 44V24M32 38L46 24" fill="none" stroke="#FFFFFF" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M18 24L32 38M46 24V44" fill="none" stroke="#CFC3F5" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M50 9 Q51.3 13.3 55.6 14.6 Q51.3 15.9 50 20.2 Q48.7 15.9 44.4 14.6 Q48.7 13.3 50 9 Z" fill="#FFE9C7"/>
+  </g>
+
+  <text x="192" y="140" font-family="'Segoe UI', system-ui, -apple-system, Roboto, sans-serif" font-size="52" font-weight="750" letter-spacing="-1.4" fill="#F2EFEA">prompt<tspan fill="url(#word)">2md</tspan></text>
+  <text x="195" y="176" font-family="ui-serif, 'Iowan Old Style', Palatino, Georgia, serif" font-style="italic" font-size="22" letter-spacing="2" fill="#9C96A8">A Markdown Magic</text>
+
+  <!-- the claim -->
+  <text x="84" y="292" font-family="ui-serif, 'Iowan Old Style', Palatino, Georgia, serif" font-style="italic" font-size="46" fill="#F2EFEA">Folding makes text smaller without</text>
+  <text x="84" y="350" font-family="ui-serif, 'Iowan Old Style', Palatino, Georgia, serif" font-style="italic" font-size="46" fill="#F2EFEA">removing anything from it.</text>
+
+  <text x="84" y="410" font-family="'Segoe UI', system-ui, sans-serif" font-size="22" fill="#9C96A8">Token-optimized, layout-aware Markdown — and an honest report of what it saved.</text>
+
+  <!-- the ledger: real measured numbers -->
+  <g transform="translate(84,452)">
+    <rect x="0" y="0" width="248" height="96" rx="14" fill="#1A1820" stroke="#272430"/>
+    <text x="18" y="34" font-family="'Segoe UI', system-ui, sans-serif" font-size="14" letter-spacing="1.2" fill="#9C96A8">RAW CONTEXT</text>
+    <text x="18" y="72" font-family="ui-monospace, Consolas, monospace" font-size="30" font-weight="700" fill="#F2EFEA">79,497</text>
+
+    <rect x="268" y="0" width="248" height="96" rx="14" fill="#1A1820" stroke="#272430"/>
+    <text x="286" y="34" font-family="'Segoe UI', system-ui, sans-serif" font-size="14" letter-spacing="1.2" fill="#9C96A8">AFTER prompt2md</text>
+    <text x="286" y="72" font-family="ui-monospace, Consolas, monospace" font-size="30" font-weight="700" fill="#F2EFEA">1,363</text>
+
+    <rect x="536" y="0" width="330" height="96" rx="14" fill="#161B18" stroke="#2C4636"/>
+    <text x="554" y="34" font-family="'Segoe UI', system-ui, sans-serif" font-size="14" letter-spacing="1.2" fill="#9C96A8">TOKENS SAVED · LOSSLESS</text>
+    <text x="554" y="72" font-family="ui-monospace, Consolas, monospace" font-size="30" font-weight="700" fill="#4ADE80">98.3%</text>
+  </g>
+
+  <text x="84" y="594" font-family="ui-monospace, Consolas, monospace" font-size="17" fill="#6E6879">Apache-2.0 · CLI · MCP server · agent skill · every number reproducible from the repo</text>
+</svg>

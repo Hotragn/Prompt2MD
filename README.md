@@ -151,6 +151,23 @@ Design decisions are recorded as ADRs: [dual-engine architecture](docs/adr/ADR-0
 [engine selection](docs/adr/ADR-002-engine-selection.md),
 [token-savings math](docs/adr/ADR-003-token-savings.md).
 
+## Design
+
+The interface has its own documented system — the story, the marks, the
+palette, and the rules — in **[docs/BRAND.md](docs/BRAND.md)**.
+
+> Folding makes something smaller without removing anything from it.
+> Unfold it and you have the original, exactly. Cutting is not reversible.
+> Folding is.
+
+That is the product's architecture, not a metaphor: originals are stored before
+any transformation, and every summarized section resolves back to byte-exact
+source. The icon is an accordion fold whose silhouette reads as **M**.
+
+The visual research behind it — what currently-funded developer-tool companies
+do, and which of it survives contact with an open-source project that has no
+sales funnel — is in [docs/research/UI-LANDSCAPE.md](docs/research/UI-LANDSCAPE.md).
+
 ## Project layout
 
 | Package | Purpose |
