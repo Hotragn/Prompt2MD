@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import { createRuntimeFromEnv } from "@prompt2md/hermes-mcp";
+import { getRuntime } from "../../../lib/runtime";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const rt = createRuntimeFromEnv();
 
 interface CompressBody {
   readonly text?: string;
@@ -27,7 +26,7 @@ export async function POST(req: Request): Promise<NextResponse> {
   }
 
   try {
-    const result = await rt.compress(body.text, {
+    const result = await getRuntime().compress(body.text, {
       tokenBudget: Math.floor(body.tokenBudget),
       ...(body.provider !== undefined ? { provider: body.provider } : {}),
     });

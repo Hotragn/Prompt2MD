@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { createRuntimeFromEnv, parseAnchor } from "@prompt2md/hermes-mcp";
+import { parseAnchor } from "@prompt2md/hermes-mcp";
+import { getRuntime } from "../../../lib/runtime";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const rt = createRuntimeFromEnv();
 
 export async function GET(req: Request): Promise<NextResponse> {
   const url = new URL(req.url);
@@ -21,8 +21,8 @@ export async function GET(req: Request): Promise<NextResponse> {
 
   const text =
     anchor !== undefined
-      ? await rt.store.getSpan(sourceId, anchor.start, anchor.end)
-      : (await rt.store.get(sourceId))?.text;
+      ? await getRuntime().store.getSpan(sourceId, anchor.start, anchor.end)
+      : (await getRuntime().store.get(sourceId))?.text;
 
   if (text === undefined) {
     return NextResponse.json({ error: `no original stored for ${sourceId}` }, { status: 404 });

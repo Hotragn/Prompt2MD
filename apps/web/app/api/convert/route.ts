@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import type { Fidelity, SourceInput } from "@prompt2md/core";
-import { createRuntimeFromEnv, type CompressResult } from "@prompt2md/hermes-mcp";
+import type { CompressResult } from "@prompt2md/hermes-mcp";
+import { getRuntime } from "../../../lib/runtime";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const rt = createRuntimeFromEnv();
 
 type Provider = "anthropic" | "openai" | "gemini" | "kimi";
 
@@ -62,7 +62,7 @@ export async function POST(req: Request): Promise<NextResponse> {
   if ("error" in params) return NextResponse.json({ error: params.error }, { status: 400 });
 
   try {
-    const outcome = await rt.convert(params.input, {
+    const outcome = await getRuntime().convert(params.input, {
       fidelity: params.fidelity ?? "auto",
       ...(params.tokenBudget !== undefined ? { tokenBudget: params.tokenBudget } : {}),
     });
@@ -70,7 +70,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     let markdown = outcome.markdown;
     let compressed: CompressResult | undefined;
     if (params.tokenBudget !== undefined && outcome.report.outputTokens > params.tokenBudget) {
-      const attempt = await rt.compress(markdown, {
+      const attempt = await getRuntime().compress(markdown, {
         tokenBudget: params.tokenBudget,
         ...(params.provider !== undefined ? { provider: params.provider } : {}),
       });
