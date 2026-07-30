@@ -12,7 +12,7 @@ import {
   type SourceInput,
 } from "@prompt2md/core";
 import { compressContext, createFileStore, type HermesRuntime, type OriginalStore } from "@prompt2md/hermes-mcp";
-import { buildProgram, deriveOutPath, mapPool, type CliIo } from "../src/index.js";
+import { buildProgram, deriveOutPath, mapPool, watchFiles, type CliIo } from "../src/index.js";
 
 function captureIo(): { io: CliIo; out: string[]; err: string[] } {
   const out: string[] = [];
@@ -61,6 +61,31 @@ async function run(runtime: HermesRuntime, args: string[]): Promise<{ out: strin
 describe("helpers", () => {
   it("deriveOutPath swaps the extension and directory", () => {
     expect(deriveOutPath(join("docs", "Q2 report.docx"), "out")).toBe(join("out", "Q2 report.md"));
+  });
+
+  it("watchFiles fires debounced for matched files only", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "p2md-watch-"));
+    const watched = join(dir, "watched.txt");
+    const ignored = join(dir, "ignored.txt");
+    await writeFile(watched, "v1", "utf8");
+    await writeFile(ignored, "v1", "utf8");
+
+    const changes: string[] = [];
+    const dispose = watchFiles([watched], (f) => changes.push(f));
+    try {
+      await new Promise((r) => setTimeout(r, 300)); // let watchers settle
+      await writeFile(ignored, "v2", "utf8");
+      await writeFile(watched, "v2", "utf8");
+
+      const deadline = Date.now() + 8000;
+      while (changes.length === 0 && Date.now() < deadline) {
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      expect(changes.length).toBeGreaterThan(0);
+      expect(changes.every((f) => f === watched)).toBe(true);
+    } finally {
+      dispose();
+    }
   });
 
   it("mapPool preserves order under bounded concurrency", async () => {

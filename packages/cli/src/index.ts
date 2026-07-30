@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { realpathSync } from "node:fs";
+import { realpathSync, watch } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { basename, extname, join, resolve } from "node:path";
+import { basename, dirname, extname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Command, InvalidArgumentError, Option } from "commander";
 import { glob } from "tinyglobby";
@@ -56,6 +56,29 @@ export function summarizeSavings(result: CompressResult): string {
 
 export function deriveOutPath(inputPath: string, outDir: string): string {
   return join(outDir, `${basename(inputPath, extname(inputPath))}.md`);
+}
+
+/**
+ * Watches the parent directories of `files` and fires onChange (debounced
+ * 200ms per file) for events on exactly those files. Returns a disposer.
+ */
+export function watchFiles(files: readonly string[], onChange: (file: string) => void): () => void {
+  const fileSet = new Set(files.map((f) => resolve(f)));
+  const dirs = [...new Set([...fileSet].map((f) => dirname(f)))];
+  const timers = new Map<string, NodeJS.Timeout>();
+  const watchers = dirs.map((dir) =>
+    watch(dir, (_event, filename) => {
+      if (filename === null) return;
+      const full = resolve(dir, filename.toString());
+      if (!fileSet.has(full)) return;
+      clearTimeout(timers.get(full));
+      timers.set(full, setTimeout(() => onChange(full), 200));
+    }),
+  );
+  return () => {
+    for (const watcher of watchers) watcher.close();
+    for (const timer of timers.values()) clearTimeout(timer);
+  };
 }
 
 /** Bounded-concurrency map that preserves input order in its results. */
@@ -170,6 +193,7 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
     .addOption(providerOption)
     .option("--report", "write a .report.json beside each output")
     .option("--continue-on-error", "convert remaining files when one fails")
+    .option("--watch", "keep watching matched files and re-convert on change")
     .action(
       async (
         patterns: string[],
@@ -181,6 +205,7 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
           provider?: Provider;
           report?: boolean;
           continueOnError?: boolean;
+          watch?: boolean;
         },
       ) => {
         const files = await glob(patterns, { absolute: true, onlyFiles: true });
@@ -196,7 +221,7 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
           outTokens: number;
         }
 
-        const rows = await mapPool(files, flags.concurrency, async (file): Promise<BatchRow> => {
+        const convertOne = async (file: string): Promise<BatchRow> => {
           try {
             const outcome = await rt().convert(
               { kind: "file", path: file },
@@ -235,7 +260,7 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
               outTokens: compressed?.savings.compressedTokens ?? outcome.report.outputTokens,
             };
           } catch (err) {
-            if (flags.continueOnError !== true) throw err;
+            if (flags.continueOnError !== true && flags.watch !== true) throw err;
             return {
               file,
               ok: false,
@@ -244,7 +269,9 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
               outTokens: 0,
             };
           }
-        });
+        };
+
+        const rows = await mapPool(files, flags.concurrency, convertOne);
 
         for (const row of rows) {
           io.out(`${row.ok ? "ok  " : "FAIL"} ${basename(row.file)} — ${row.detail}`);
@@ -257,6 +284,16 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
           `${converted.length} converted, ${failed} failed — tokens ${totalIn}→${totalOut}${totalIn > 0 ? ` (${Math.round((totalOut / totalIn) * 100)}%)` : ""}`,
         );
         if (failed > 0) process.exitCode = 1;
+
+        if (flags.watch === true) {
+          io.err(`watching ${files.length} file(s) for changes — Ctrl+C to stop`);
+          watchFiles(files, (file) => {
+            void convertOne(file).then((row) =>
+              io.out(`${row.ok ? "ok  " : "FAIL"} ${basename(row.file)} — ${row.detail} (watch)`),
+            );
+          });
+          await new Promise(() => {}); // runs until interrupted
+        }
       },
     );
 
