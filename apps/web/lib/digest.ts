@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { approxCounter } from "@prompt2md/core";
 import type { OriginalStore } from "@prompt2md/hermes-mcp";
@@ -224,9 +225,21 @@ export async function generateDigest(options: DigestOptions = {}): Promise<Diges
   };
 }
 
+/**
+ * Default cache dir. Serverless platforms (Vercel, Lambda) ship the deploy
+ * bundle read-only and only allow writes under the OS temp dir, so prefer
+ * that when set (P2MD_ON_SERVERLESS / VERCEL are both set by Vercel).
+ */
+function defaultCacheDir(): string {
+  if (process.env["VERCEL"] !== undefined || process.env["P2MD_ON_SERVERLESS"] !== undefined) {
+    return join(tmpdir(), "prompt2md", "digests");
+  }
+  return join(process.cwd(), "data", "digests");
+}
+
 /** Cached daily entry point: one generation per UTC day per cache dir. */
 export async function getDailyDigest(options: DigestOptions = {}): Promise<DigestResult> {
-  const cacheDir = options.cacheDir ?? join(process.cwd(), "data", "digests");
+  const cacheDir = options.cacheDir ?? defaultCacheDir();
   const dateKey = (options.date ?? new Date()).toISOString().slice(0, 10);
   const cachePath = join(cacheDir, `${dateKey}.json`);
 
