@@ -2,7 +2,6 @@
   <img src="apps/web/public/logo.svg" alt="prompt2md — A Markdown Magic" width="440">
 </p>
 
-<h1 align="center">prompt2md</h1>
 
 <p align="center">
   <strong>Turn anything into token-optimized, layout-aware Markdown — and know exactly what it saved you.</strong>
