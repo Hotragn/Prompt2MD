@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm --filter @prompt2md/docs build",
-  "outputDirectory": "apps/docs/.vitepress/dist",
+  "buildCommand": "pnpm --filter @prompt2md/docs build && cp -r apps/docs/.vitepress/dist dist",
+  "outputDirectory": "dist",
   "installCommand": "pnpm install"
 }
