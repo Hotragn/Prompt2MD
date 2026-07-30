@@ -22,6 +22,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               </span>
               <span className="tagline">A Markdown Magic</span>
             </div>
+            <nav className="header-nav">
+              <a href={process.env["NEXT_PUBLIC_DOCS_URL"] ?? "https://github.com/Hotragn/Prompt2MD#readme"} target="_blank" rel="noreferrer">
+                Docs
+              </a>
+              <a href="https://github.com/Hotragn/Prompt2MD" target="_blank" rel="noreferrer">
+                GitHub
+              </a>
+            </nav>
           </header>
           {children}
           <footer className="footer">

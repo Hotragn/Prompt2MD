@@ -1,5 +1,6 @@
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { homedir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   approxCounter,
@@ -96,11 +97,23 @@ export function createUnavailableEngine(id: Engine["id"], hint: string): Engine 
   };
 }
 
+/**
+ * ~/.prompt2md/originals persists across CLI/MCP runs on a real machine.
+ * On serverless platforms (Vercel, Lambda) HOME often points at a directory
+ * that doesn't exist and can't be created, so fall back to the OS temp dir
+ * — the only writable path there — rather than crashing on first use.
+ */
+function resolveDefaultStoreDir(): string {
+  const home = homedir();
+  const base = existsSync(home) ? home : tmpdir();
+  return join(base, ".prompt2md", "originals");
+}
+
 export function createRuntimeFromEnv(env: Env = process.env): HermesRuntime {
   const gateway = buildGateway(env);
   const doclingUrl = env["P2MD_DOCLING_URL"];
   const pythonBin = env["P2MD_PYTHON_BIN"];
-  const store = createFileStore(env["P2MD_STORE_DIR"] ?? join(homedir(), ".prompt2md", "originals"));
+  const store = createFileStore(env["P2MD_STORE_DIR"] ?? resolveDefaultStoreDir());
   const summarizer = gateway !== undefined ? createLlmSummarizer(gateway) : undefined;
 
   const markitdown = createMarkitdownEngine(pythonBin !== undefined ? { pythonBin } : {});

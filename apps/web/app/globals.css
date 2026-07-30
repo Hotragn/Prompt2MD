@@ -53,6 +53,23 @@ body {
   gap: 1px;
 }
 
+.header-nav {
+  display: flex;
+  gap: 18px;
+  margin-left: auto;
+}
+
+.header-nav a {
+  color: var(--muted, #9099ab);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.header-nav a:hover {
+  color: var(--accent, #7c5cff);
+}
+
 .brand {
   font-size: 22px;
   font-weight: 750;
