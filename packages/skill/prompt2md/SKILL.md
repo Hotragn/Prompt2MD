@@ -44,7 +44,10 @@ emails, docs, rambling requirements) intended as context for further work,
 convert or compress it FIRST, then work from the optimized Markdown — and tell
 the user what it saved. For coding requests, the optimizer emits a
 Task/Goal/Requirements/Constraints structure with identifiers and error
-messages kept verbatim in backticks; use that structure as the working spec.
+messages kept verbatim in backticks, ending with a ponytail-style "## Approach"
+minimal-code directive; use that structure as the working spec and honor the
+directive (least code that satisfies the requirements). If the ponytail skill
+is installed, run its review flow on the resulting diff.
 
 **5. Recovering detail.** Compressed sections end with an anchor comment:
 `<!-- p2md:src=<id>#<start>-<end> -->`. When the user asks about anything in a

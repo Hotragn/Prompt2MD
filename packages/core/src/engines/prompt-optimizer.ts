@@ -25,7 +25,9 @@ const CODING_ADDENDUM = `
 The input is a software/coding request. Additionally:
 - Structure as: "# Task: <short name>" then "## Goal", "## Requirements" (bullets), "## Constraints" (language, runtime, versions, performance), "## Error handling", and "## Acceptance criteria" when inferable.
 - Keep identifiers, versions, error messages, file paths, and commands verbatim in backticks.
-- Surface implicit requirements the author scattered as afterthoughts; never invent new ones.`;
+- Surface implicit requirements the author scattered as afterthoughts; never invent new ones.
+- End with an "## Approach" section containing exactly this implementation directive (ponytail discipline, github.com/DietrichGebert/ponytail):
+  "Write the least code that satisfies the requirements. Decision ladder: skip it > reuse existing code > stdlib/native > well-maintained dependency > minimal custom code."`;
 
 const CODING_HINT =
   /\b(code|coding|script|function|class|method|bug|error|exception|stack ?trace|traceback|implement|refactor|compile|debug|unit test|python|typescript|javascript|java|rust|golang|c\+\+|sql|regex|api|endpoint|cli|repo)\b/i;
