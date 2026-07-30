@@ -30,6 +30,7 @@ export {
 
 // Optimize
 export { stripBoilerplate, type StripResult } from "./optimize/boilerplate.js";
+export { stripPromptFiller, type FillerStripResult } from "./optimize/filler.js";
 
 // Tokens
 export { approxCounter } from "./tokens/counter.js";

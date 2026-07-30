@@ -93,9 +93,24 @@ export async function compressContext(
   }
   phases.push({ phase: "summarize", tokens: totalTokens(doc) });
 
-  // Phase 4 — cache-aligned reassembly
-  doc = alignForCache(doc, profile.breakpointStyle === "explicit", counter);
+  // Phase 4 — cache-aligned reassembly. Cache-breakpoint and generation-stamp
+  // markers cost a handful of tokens; on an already-small input that
+  // overhead can exceed what phases 2-3 saved. Rather than hand back
+  // something bigger than the raw input, skip layout metadata for inputs it
+  // can't possibly help (repeat-call caching only pays off at real size).
+  const rawTokens = counter.count(text);
+  const preLayout = doc;
+  const laidOut = alignForCache(doc, profile.breakpointStyle === "explicit", counter);
+  const layoutHelps = totalTokens(preLayout) < rawTokens ? totalTokens(laidOut) < rawTokens : true;
+  doc = layoutHelps ? laidOut : preLayout;
   phases.push({ phase: "layout", tokens: totalTokens(doc) });
+  if (!layoutHelps) {
+    warnings.push({
+      code: "layout-skipped",
+      message:
+        "input is small enough that cache-breakpoint/generation-stamp overhead would exceed the input size; layout metadata skipped",
+    });
+  }
 
   doc = { ...doc, warnings: [...doc.warnings, ...warnings] };
   return {

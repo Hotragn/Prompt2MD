@@ -70,11 +70,17 @@ export async function POST(req: Request): Promise<NextResponse> {
     let markdown = outcome.markdown;
     let compressed: CompressResult | undefined;
     if (params.tokenBudget !== undefined && outcome.report.outputTokens > params.tokenBudget) {
-      compressed = await rt.compress(markdown, {
+      const attempt = await rt.compress(markdown, {
         tokenBudget: params.tokenBudget,
         ...(params.provider !== undefined ? { provider: params.provider } : {}),
       });
-      markdown = compressed.markdown;
+      // Compression exists to shrink output — never adopt it if, on this
+      // input, it didn't (e.g. a prompt already too small for the anchor/
+      // cache-layout overhead to pay for itself).
+      if (attempt.savings.compressedTokens < outcome.report.outputTokens) {
+        compressed = attempt;
+        markdown = attempt.markdown;
+      }
     }
 
     return NextResponse.json({

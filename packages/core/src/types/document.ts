@@ -40,7 +40,8 @@ export interface ConversionWarning {
     | "totals-mismatch"
     | "budget-exceeded"
     | "engine-fallback"
-    | "engine-error";
+    | "engine-error"
+    | "layout-skipped";
   readonly message: string;
   readonly sectionId?: string;
 }

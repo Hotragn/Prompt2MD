@@ -11,6 +11,7 @@ import {
   createPromptOptimizerEngine,
   parseMarkdown,
   renderMarkdown,
+  stripPromptFiller,
   type ConversionOutcome,
   type ConvertOptions,
   type Engine,
@@ -66,14 +67,18 @@ function buildGateway(env: Env): LlmGateway | undefined {
 export function createDeterministicTextEngine(): Engine {
   return {
     id: "prompt-optimizer",
-    async convert(input, _sniff, _options) {
+    async convert(input, sniff, _options) {
       const raw =
         input.kind === "text"
           ? input.text
           : input.kind === "buffer"
             ? Buffer.from(input.data).toString("utf8")
             : await readFile(input.path, "utf8");
-      const stripped = stripBoilerplate(parseMarkdown(raw, approxCounter), approxCounter);
+      // Rambling chat-box prompts are a single free-text blob, not a
+      // structured document — sentence-level filler/dedup cleanup applies
+      // before markdown parsing, which otherwise has nothing to strip.
+      const text = sniff.kind === "prompt" ? stripPromptFiller(raw, approxCounter).text : raw;
+      const stripped = stripBoilerplate(parseMarkdown(text, approxCounter), approxCounter);
       return {
         markdown: renderMarkdown(stripped.doc),
         warnings: [
