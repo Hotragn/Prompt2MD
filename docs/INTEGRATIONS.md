@@ -68,7 +68,29 @@ No gateway configured? Everything still works — deterministic cleanup and
 extractive summarization take over, with an `engine-fallback` warning so you
 know.
 
-## 4. Programmatic
+## 4. Pairing with Ponytail (recommended for coding agents)
+
+[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT) makes agents write
+minimal code via a decision ladder: *skip > reuse > stdlib > dependency >
+minimal custom code*. The two tools compose end-to-end:
+
+- **prompt2md governs what goes IN** — your rambling coding request becomes a
+  structured Task/Goal/Requirements/Constraints spec, deduplicated and
+  token-optimized. When prompt2md detects a coding request, the optimized spec
+  already ends with a ponytail-style `## Approach` directive.
+- **Ponytail governs what comes OUT** — the agent implements against that spec
+  with minimal-code discipline, and `/ponytail-review` audits the diff.
+
+Install both:
+
+```bash
+# prompt2md skill
+cp -r packages/skill/prompt2md ~/.claude/skills/prompt2md
+# ponytail plugin (Claude Code)
+# /plugin marketplace add DietrichGebert/ponytail && /plugin install ponytail
+```
+
+## 5. Programmatic
 
 ```ts
 import { createRuntimeFromEnv } from "@prompt2md/hermes-mcp";
