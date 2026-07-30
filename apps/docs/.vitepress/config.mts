@@ -41,7 +41,11 @@ export default defineConfig({
       },
       {
         text: "Project",
-        items: [{ text: "Roadmap", link: "/ROADMAP" }],
+        items: [
+          { text: "Roadmap", link: "/ROADMAP" },
+          { text: "Daily Digest archive", link: "/digests/" },
+          { text: "Digest sources & vetting", link: "/DIGEST-SOURCES" },
+        ],
       },
     ],
     search: { provider: "local" },

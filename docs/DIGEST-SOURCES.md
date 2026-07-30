@@ -23,13 +23,13 @@ row only after completing the checklist and a code review of the adapter.
 |---|---|---|---|---|
 | Hacker News front page | `hn.algolia.com/api/v1/search?tags=front_page` | [Algolia HN API](https://hn.algolia.com/api) — free, attribution appreciated | 10k req/h (we use 1/day) | 2026-07-29 |
 | Wikipedia featured feed | `api.wikimedia.org/feed/v1/wikipedia/en/featured/{y}/{m}/{d}` | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/); [Wikimedia API terms](https://api.wikimedia.org/wiki/Terms_of_Use) | 200 req/h anonymous (we use 1/day) | 2026-07-29 |
+| Spaceflight News API | `api.spaceflightnewsapi.net/v4/articles` | [SNAPI](https://spaceflightnewsapi.net) — free, no key; summaries attributed to original news sites | generous (we use 1/day) | 2026-07-30 |
 
 ## Vetted candidates (next up)
 
 | Source | Endpoint | Notes |
 |---|---|---|
 | GDELT DOC 2.0 | `api.gdeltproject.org/api/v2/doc/doc` | Free, no key; needs relevance filtering before it earns a section |
-| Spaceflight News API | `api.spaceflightnewsapi.net/v4/articles` | Free, no key, CC-licensed summaries |
 | Open-Meteo | `api.open-meteo.com/v1/forecast` | Free non-commercial, no key; would add a local-weather line (needs user locale opt-in first) |
 
 ## Operating it daily
