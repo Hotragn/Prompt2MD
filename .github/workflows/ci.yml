@@ -42,13 +42,18 @@ jobs:
       # Pointing the profile at an empty scratch directory makes any such scan
       # harmless. USERPROFILE is what os.homedir() reads on Windows and is
       # ignored on Linux, so this is safe to set unconditionally.
+      # turbo resolves its global config from the profile, so the scratch home
+      # needs the AppData layout Windows tools expect — otherwise the build
+      # fails with "Global config path not found".
       - name: Prepare hermetic build home
         shell: bash
-        run: mkdir -p "${{ runner.temp }}/build-home"
+        run: mkdir -p "${{ runner.temp }}/build-home/AppData/Roaming" "${{ runner.temp }}/build-home/AppData/Local"
 
       - name: Build
         env:
           USERPROFILE: ${{ runner.temp }}/build-home
+          APPDATA: ${{ runner.temp }}/build-home/AppData/Roaming
+          LOCALAPPDATA: ${{ runner.temp }}/build-home/AppData/Local
         run: pnpm build
 
       - name: Typecheck
