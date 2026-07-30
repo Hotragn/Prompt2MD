@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LiveFold } from "../components/LiveFold";
 import { Reveal } from "../components/Reveal";
+import { SUPPORTED_TOOLS, TOTAL_TESTS } from "../lib/facts";
 
 export const metadata = {
   title: "prompt2md — token-optimized Markdown, and proof of what it saved",
@@ -94,7 +95,7 @@ export default function Home() {
       <section className="proof">
         <div className="container proof-row">
           <Reveal className="proof-item">
-            <strong>131</strong>
+            <strong>{TOTAL_TESTS}</strong>
             <span>tests, green on Linux &amp; Windows</span>
           </Reveal>
           <Reveal className="proof-item" delay={60}>
@@ -102,7 +103,7 @@ export default function Home() {
             <span>telemetry, accounts, or uploads</span>
           </Reveal>
           <Reveal className="proof-item" delay={120}>
-            <strong>6</strong>
+            <strong>{SUPPORTED_TOOLS}</strong>
             <span>tools wired by one command</span>
           </Reveal>
           <Reveal className="proof-item" delay={180}>

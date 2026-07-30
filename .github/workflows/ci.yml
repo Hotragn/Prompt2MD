@@ -65,6 +65,12 @@ jobs:
       - name: Validate skill definition
         run: pnpm --filter @prompt2md/skill lint
 
+      # Numbers the project states about itself, re-derived from reality.
+      # Catches stale counts and any "N% lossless" claim, which conflates
+      # reduction with recoverability.
+      - name: Verify stated claims
+        run: pnpm check:claims
+
       - name: Installer check (sandboxed HOME, real configs untouched)
         run: pnpm test:install
 
