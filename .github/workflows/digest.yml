@@ -1,0 +1,41 @@
+name: Daily Digest
+
+on:
+  schedule:
+    - cron: "0 13 * * *" # 13:00 UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build pipeline packages
+        run: pnpm --filter @prompt2md/core build && pnpm --filter @prompt2md/hermes-mcp build
+
+      - name: Generate digest into the docs archive
+        run: pnpm --filter @prompt2md/web digest:archive
+
+      - name: Commit archive entry
+        run: |
+          git config user.name "prompt2md-digest[bot]"
+          git config user.email "digest-bot@users.noreply.github.com"
+          git add docs/digests
+          git diff --cached --quiet || git commit -m "chore(digest): daily archive entry [skip ci]"
+          git push

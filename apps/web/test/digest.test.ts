@@ -26,7 +26,18 @@ const WIKI_PAYLOAD = {
   ],
 };
 
-function fakeFetch(overrides: Partial<Record<"hn" | "wiki", () => Response>> = {}): {
+const SNAPI_PAYLOAD = {
+  results: [
+    {
+      title: "New crew launches to the station",
+      url: "https://example.com/launch",
+      summary: "A four-person crew lifted off successfully this morning.",
+      news_site: "SpaceNews",
+    },
+  ],
+};
+
+function fakeFetch(overrides: Partial<Record<"hn" | "wiki" | "snapi", () => Response>> = {}): {
   fetchImpl: typeof fetch;
   calls: string[];
 } {
@@ -36,6 +47,9 @@ function fakeFetch(overrides: Partial<Record<"hn" | "wiki", () => Response>> = {
     calls.push(u);
     if (u.includes("hn.algolia.com")) {
       return overrides.hn?.() ?? new Response(JSON.stringify(HN_PAYLOAD), { status: 200 });
+    }
+    if (u.includes("spaceflightnewsapi")) {
+      return overrides.snapi?.() ?? new Response(JSON.stringify(SNAPI_PAYLOAD), { status: 200 });
     }
     return overrides.wiki?.() ?? new Response(JSON.stringify(WIKI_PAYLOAD), { status: 200 });
   }) as typeof fetch;
@@ -55,6 +69,8 @@ describe("daily digest generation", () => {
     // url-less HN posts link to the discussion instead
     expect(digest.markdown).toContain("https://news.ycombinator.com/item?id=102");
     expect(digest.markdown).toContain("**Aurora borealis**");
+    expect(digest.markdown).toContain("[New crew launches to the station](https://example.com/launch)");
+    expect(digest.markdown).toContain("*(SpaceNews)*");
     // raw HTML in stories is stripped, not rendered
     expect(digest.markdown).toContain("fusion milestone");
     expect(digest.markdown).not.toContain("<b>");
@@ -90,6 +106,7 @@ describe("daily digest generation", () => {
     const allDown = fakeFetch({
       hn: () => new Response("nope", { status: 503 }),
       wiki: () => new Response("nope", { status: 503 }),
+      snapi: () => new Response("nope", { status: 503 }),
     });
     await expect(generateDigest({ fetchImpl: allDown.fetchImpl, date: FIXED_DATE })).rejects.toThrow(
       /all digest sources failed/,

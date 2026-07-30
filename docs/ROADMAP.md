@@ -28,10 +28,11 @@ folded into Epic 7.
 ✅ Shipped: Next.js studio (Convert/Compress/Daily Digest tabs, token stats +
 savings meter, warning surfacing, sample loaders, API routes over the shared
 runtime), brand identity (logo, icon, "A Markdown Magic" tagline),
-graceful-degradation UX, file upload + drag-drop for text formats, rendered
-markdown preview (sanitized), voice (Web Speech dictation + TTS readback).
+graceful-degradation UX, file upload + drag-drop (text formats client-side,
+PDF/Office server-side through the engines), rendered markdown preview
+(sanitized), voice (Web Speech dictation + TTS readback).
 Remaining: design-system pass (claudedesignskills, impeccable), Blender 3D
-brand artifacts, PDF/Office upload via server (currently CLI/MCP only).
+brand artifacts.
 
 ## Epic 6 — Daily Digest (live-data demo) ✅ v1 shipped
 ✅ Shipped: digest engine (apps/web/lib/digest.ts) pulling vetted keyless APIs
@@ -40,16 +41,21 @@ once-per-day cache, honest raw-vs-digest token report (measured live:
 ~52k raw tokens → ~0.9k digest, 2%), lossless raw-payload storage with
 retrievable sourceId, attribution footer, studio tab + /api/digest, source
 vetting checklist + API map (docs/DIGEST-SOURCES.md), 5 unit tests + live E2E.
-Remaining: more vetted sources (GDELT, Spaceflight News, Open-Meteo),
-scheduled workflow + dated archive page once the repo is on GitHub.
+Also shipped: third vetted source (Spaceflight News API), the daily scheduled
+workflow (.github/workflows/digest.yml, 13:00 UTC) committing dated entries to
+docs/digests/ with an archive index on the docs site, and the document
+boilerplate OPTIMIZE pass so every conversion is clean without a budget flag.
+Remaining: more vetted sources (GDELT, Open-Meteo).
 
 ## Epic 7 — Quality & release engineering 🔨 in progress
 ✅ Shipped: Vitest unit + golden tests (90+), Selenium WebDriver E2E (studio
 flows incl. lossless retrieve, headless Chrome/Edge), GitHub Actions CI
 (Linux/Windows × Node 20/22 + e2e job), SECURITY/CODE_OF_CONDUCT/CONTRIBUTING,
 VitePress docs site (apps/docs, built from /docs).
+Also shipped: CLI `batch --watch` mode, issue/PR templates, real-stdio MCP
+smoke script (verify-stdio.mjs).
 Remaining: round-trip QA eval harness (LLM judge), release automation
-(changesets, npm publish), CLI watch mode, issue/PR templates.
+(changesets, npm publish — meaningful once the repo is public).
 
 ## Epic 8 — Growth & community (operations/marketing/outreach)
 Launch checklist: GitHub repo polish (topics, social preview, README badges),

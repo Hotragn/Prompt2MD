@@ -43,6 +43,12 @@ const HN_SOURCE: DigestSource = {
   license: "Public API; links lead to original discussions",
 };
 
+const SNAPI_SOURCE: DigestSource = {
+  name: "Spaceflight News API",
+  url: "https://api.spaceflightnewsapi.net/v4/articles/?limit=5&ordering=-published_at",
+  license: "Free API; summaries attributed to their original news sites",
+};
+
 function wikiSource(date: Date): DigestSource {
   const y = date.getUTCFullYear();
   const m = String(date.getUTCMonth() + 1).padStart(2, "0");
@@ -60,6 +66,13 @@ interface HnHit {
   readonly points?: number;
   readonly num_comments?: number;
   readonly objectID?: string;
+}
+
+interface SnapiArticle {
+  readonly title?: string;
+  readonly url?: string;
+  readonly summary?: string;
+  readonly news_site?: string;
 }
 
 interface WikiFeed {
@@ -107,6 +120,22 @@ function hnSection(payload: unknown): string {
   return `## Hacker News front page\n\n${lines.join("\n")}`;
 }
 
+function snapiSection(payload: unknown): string {
+  const articles = ((payload as { results?: readonly SnapiArticle[] }).results ?? []).filter(
+    (a) => a.title !== undefined && a.url !== undefined,
+  );
+  if (articles.length === 0) throw new Error("no articles returned");
+  const lines = articles.slice(0, 5).map((a) => {
+    const summary =
+      a.summary !== undefined && a.summary.length > 0
+        ? ` — ${a.summary.length > 180 ? `${a.summary.slice(0, 180).trimEnd()}…` : a.summary}`
+        : "";
+    const site = a.news_site !== undefined ? ` *(${a.news_site})*` : "";
+    return `- [${a.title}](${a.url})${summary}${site}`;
+  });
+  return `## Space & science\n\n${lines.join("\n")}`;
+}
+
 function wikiSections(payload: unknown): string {
   const feed = payload as WikiFeed;
   const parts: string[] = [];
@@ -141,7 +170,7 @@ export async function generateDigest(options: DigestOptions = {}): Promise<Diges
   const date = options.date ?? new Date();
   const dateKey = date.toISOString().slice(0, 10);
   const wiki = wikiSource(date);
-  const sources: DigestSource[] = [HN_SOURCE, wiki];
+  const sources: DigestSource[] = [HN_SOURCE, wiki, SNAPI_SOURCE];
 
   const sections: string[] = [];
   const failures: string[] = [];
@@ -150,6 +179,7 @@ export async function generateDigest(options: DigestOptions = {}): Promise<Diges
   const jobs: readonly [DigestSource, (payload: unknown) => string][] = [
     [HN_SOURCE, hnSection],
     [wiki, wikiSections],
+    [SNAPI_SOURCE, snapiSection],
   ];
   for (const [source, render] of jobs) {
     try {
@@ -170,7 +200,7 @@ export async function generateDigest(options: DigestOptions = {}): Promise<Diges
   const attribution = [
     "---",
     "",
-    `*Sources: [Hacker News](https://news.ycombinator.com) via the [Algolia HN API](https://hn.algolia.com/api) · [Wikipedia](https://en.wikipedia.org) featured content ([CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)). All content belongs to its original authors — links lead to the originals.*`,
+    `*Sources: [Hacker News](https://news.ycombinator.com) via the [Algolia HN API](https://hn.algolia.com/api) · [Wikipedia](https://en.wikipedia.org) featured content ([CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)) · [Spaceflight News API](https://spaceflightnewsapi.net) (summaries attributed to their original news sites). All content belongs to its original authors — links lead to the originals.*`,
   ].join("\n");
 
   const notes =
