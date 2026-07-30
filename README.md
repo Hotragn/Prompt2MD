@@ -206,7 +206,8 @@ Contributions are welcome. Two house rules keep the project honest:
    the alternatives considered.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow,
-[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community expectations, and
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community expectations,
+[CHANGELOG.md](CHANGELOG.md) for what has landed, and
 [SECURITY.md](SECURITY.md) to report a vulnerability privately.
 
 ## Privacy

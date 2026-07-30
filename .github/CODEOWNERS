@@ -1,0 +1,10 @@
+# Default owner for everything.
+*                       @Hotragn
+
+# Areas where a change can quietly break the project's core promises —
+# losslessness, honest numbers, and reproducible routing.
+/packages/core/src/markdown/   @Hotragn
+/packages/hermes-mcp/src/      @Hotragn
+/fixtures/                     @Hotragn
+/docs/adr/                     @Hotragn
+/.github/workflows/            @Hotragn

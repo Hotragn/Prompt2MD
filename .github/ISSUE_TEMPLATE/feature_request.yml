@@ -1,0 +1,67 @@
+name: Feature request
+description: Propose a capability, an engine, or a new Daily Digest source
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Proposals are welcome. Two house rules keep this project honest, and
+        both apply here:
+
+        - **Data first** — behaviour changes start with a fixture, not with code.
+        - **Decisions get ADRs** — architectural changes come with a short record
+          of the alternatives considered.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem this solves
+      description: What are you unable to do today? Concrete beats abstract.
+    validations:
+      required: true
+
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Proposed behaviour
+      description: What should happen instead, and on which surface?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of change is this?
+      options:
+        - Conversion or compression behaviour
+        - New or improved engine / routing
+        - A new Daily Digest source
+        - CLI / MCP / skill ergonomics
+        - Web studio
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: fixture
+    attributes:
+      label: Fixture sketch
+      description: >
+        Behaviour changes need a fixture case (raw input, expected.md,
+        case.json). Sketch it here if you can — even roughly.
+      render: markdown
+
+  - type: checkboxes
+    id: digest-vetting
+    attributes:
+      label: For a new Daily Digest source only
+      description: >
+        Sources must clear the checklist in docs/DIGEST-SOURCES.md before they
+        can be merged. Tick what you have confirmed.
+      options:
+        - label: Keyless, or free tier sufficient for a daily pull
+        - label: Terms of service permit republishing with attribution
+        - label: Rate limits documented, and a daily pull is comfortably inside them
+        - label: Stable, versioned endpoint
+        - label: No personal data in the payload
+        - label: Attribution and a link back to the original are possible

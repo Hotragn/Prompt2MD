@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # Grouped so a routine week produces one reviewable PR rather than a dozen.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      types:
+        patterns: ["@types/*"]
+      dev-tooling:
+        patterns: ["vitest", "typescript", "turbo", "prettier", "rimraf", "selenium-webdriver"]
+      next:
+        patterns: ["next", "react", "react-dom", "@next/*"]
+    ignore:
+      # Majors change behaviour; take those deliberately, not on a schedule.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
