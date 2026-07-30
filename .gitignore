@@ -12,6 +12,10 @@ out/
 # Turborepo
 .turbo/
 
+# VitePress
+**/.vitepress/cache/
+**/.vitepress/dist/
+
 # Python (engine sidecars)
 __pycache__/
 *.pyc
