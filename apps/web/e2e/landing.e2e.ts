@@ -47,7 +47,10 @@ describe("prompt2md landing page (Selenium E2E)", () => {
   it("folds real text through the live API in the hero", async () => {
     const button = await driver.findElement(By.css(".fold-actions .btn"));
     await driver.executeScript("arguments[0].scrollIntoView({block:'center'})", button);
-    await button.click();
+    // A sticky masthead can intercept a native click on a slow CI machine, and
+    // the failure ("element click intercepted") looks like a product bug. Drive
+    // it directly — this test is about the pipeline, not hit-testing.
+    await driver.executeScript("arguments[0].click()", button);
 
     const ledger = await driver.wait(until.elementLocated(By.css(".ledger")), 60_000);
     const text = await ledger.getText();

@@ -37,5 +37,12 @@ jobs:
           git config user.name "prompt2md-digest[bot]"
           git config user.email "digest-bot@users.noreply.github.com"
           git add docs/digests
-          git diff --cached --quiet || git commit -m "chore(digest): daily archive entry [skip ci]"
-          git push
+          if git diff --cached --quiet; then
+            echo "no new digest content — nothing to commit"
+            exit 0
+          fi
+          git commit -m "chore(digest): daily archive entry [skip ci]"
+          # main can move between checkout and push; rebase rather than fail
+          # the scheduled run. Retry once, then surface the real error.
+          git pull --rebase --autostash origin main || true
+          git push || (git pull --rebase --autostash origin main && git push)
