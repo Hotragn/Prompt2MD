@@ -28,6 +28,9 @@ export {
   type CacheProvider,
 } from "./gateway/cache-profiles.js";
 
+// Optimize
+export { stripBoilerplate, type StripResult } from "./optimize/boilerplate.js";
+
 // Tokens
 export { approxCounter } from "./tokens/counter.js";
 export { buildTokenReport, type ReportContext } from "./tokens/report.js";

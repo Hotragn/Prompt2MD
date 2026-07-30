@@ -2,6 +2,8 @@ import { shouldEscalate } from "./router/escalation.js";
 import { route } from "./router/router.js";
 import { sniffInput } from "./router/sniffer.js";
 import { parseMarkdown } from "./markdown/parse.js";
+import { stripBoilerplate } from "./optimize/boilerplate.js";
+import { renderMarkdown } from "./types/document.js";
 import { approxCounter } from "./tokens/counter.js";
 import { buildTokenReport } from "./tokens/report.js";
 import type { ConversionWarning, MarkdownDoc } from "./types/document.js";
@@ -91,7 +93,18 @@ export async function convertDocument(
     }
   }
 
-  const doc = parseMarkdown(result.markdown, counter);
+  let doc = parseMarkdown(result.markdown, counter);
+  let markdown = result.markdown;
+  // OPTIMIZE stage for document paths: deterministic boilerplate strip (nav,
+  // cookie banners, ad figures, footers). The text path already cleans via
+  // the optimizer; email/prompt content is never engine output.
+  if (sniff.kind !== "prompt" && sniff.kind !== "email" && engineId !== "prompt-optimizer") {
+    const stripped = stripBoilerplate(doc, counter);
+    if (stripped.removedSections > 0) {
+      doc = stripped.doc;
+      markdown = renderMarkdown(doc);
+    }
+  }
   const docWithWarnings: MarkdownDoc = {
     ...doc,
     warnings: [...doc.warnings, ...result.warnings, ...warnings],
@@ -108,7 +121,7 @@ export async function convertDocument(
     ...(options.tokenBudget !== undefined ? { budget: options.tokenBudget } : {}),
   });
 
-  return { doc: docWithWarnings, markdown: result.markdown, report, decision, sniff, escalated };
+  return { doc: docWithWarnings, markdown, report, decision, sniff, escalated };
 }
 
 function errorMessage(err: unknown): string {

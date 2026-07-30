@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { convertDocument } from "../src/pipeline.js";
+import { approxCounter } from "../src/tokens/counter.js";
 import type { Engine } from "../src/types/engine.js";
 import { FIXTURES_DIR, syntheticTextPdf } from "./helpers.js";
 
@@ -85,6 +86,36 @@ describe("pipeline resilience (missing sidecars must not break textual input)", 
     expect(outcome.escalated).toBe(true);
     expect(outcome.report.engine).toBe("docling");
     expect(outcome.markdown).toContain("| Segment |");
+  });
+
+  it("cleans document chrome from fast-path output even without a budget", async () => {
+    const rawEngineOutput = [
+      "We use cookies to improve your experience. Accept all Manage preferences",
+      "* [Home](/)\n* [Tech](/tech)\n* [Subscribe](/subscribe)",
+      "![Advertisement](/ads/banner.gif)",
+      "# Solid-State Batteries Reach Pilot Production",
+      "Two battery manufacturers said this week they have begun pilot-line production.",
+      "© 2026 TechWire Daily · [Privacy](/privacy) · [Terms](/terms)",
+    ].join("\n\n");
+    const outcome = await convertDocument(
+      { kind: "text", text: "<html><body>article</body></html>", filename: "page.html" },
+      {
+        engines: {
+          "prompt-optimizer": textEngine,
+          markitdown: echoing("markitdown", rawEngineOutput),
+          docling: failing("docling", "unused"),
+        },
+      },
+    );
+
+    expect(outcome.markdown).toContain("# Solid-State Batteries Reach Pilot Production");
+    expect(outcome.markdown).toContain("pilot-line production");
+    expect(outcome.markdown).not.toContain("cookies");
+    expect(outcome.markdown).not.toContain("[Home](/)");
+    expect(outcome.markdown).not.toContain("Advertisement");
+    expect(outcome.markdown).not.toContain("© 2026");
+    // the report counts the cleaned document, not the raw engine dump
+    expect(outcome.report.outputTokens).toBeLessThan(approxCounter.count(rawEngineOutput));
   });
 
   it("does not mask failures for non-textual input (binary needs a real engine)", async () => {
