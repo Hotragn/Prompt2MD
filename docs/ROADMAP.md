@@ -24,13 +24,13 @@ Commander.js CLI (convert/batch/compress/retrieve/doctor), `/prompt2md` skill
 definition + validator. Still open: `watch` mode, npm publish pipeline —
 folded into Epic 7.
 
-## Epic 5 — Web app & UX
-Next.js conversion studio: drag-drop, before/after token meter, TokenReport
-dashboard, dark mode, WCAG 2.1 AA. Design system pass using open-source design
-skill references (claudedesignskills, impeccable). 3D hero/brand artifacts
-rendered in Blender. Tabs: Convert · Compress · Daily Digest · Docs · Playground.
-Optional voice: Web Speech API input + TTS readback of summaries ("LLM bot with
-speech").
+## Epic 5 — Web app & UX 🔨 in progress
+✅ Shipped: Next.js studio (Convert/Compress tabs, token stats + savings meter,
+warning surfacing, sample loaders, API routes over the shared runtime), brand
+identity (logo, icon, "A Markdown Magic" tagline), graceful-degradation UX.
+Remaining: file upload/drag-drop, rendered markdown preview, Daily Digest tab,
+design-system pass (claudedesignskills, impeccable), Blender 3D brand
+artifacts, optional voice (Web Speech input + TTS readback).
 
 ## Epic 6 — Daily Digest (live-data demo)
 Automated daily job pulls from vetted free public APIs (curated from
@@ -40,11 +40,13 @@ converts to token-optimized Markdown → publishes a dated digest page. Serves a
 living proof of reliability and as SEO/content marketing. API map grows over time
 with a documented vetting checklist per source (rate limits, attribution, license).
 
-## Epic 7 — Quality & release engineering
-Vitest unit + golden tests; browser E2E on the web app (Selenium WebDriver per
-requirement, Playwright optional alongside); GitHub Actions CI matrix; release
-automation (changesets); SECURITY.md, CODE_OF_CONDUCT.md, CONTRIBUTING.md,
-issue/PR templates.
+## Epic 7 — Quality & release engineering 🔨 in progress
+✅ Shipped: Vitest unit + golden tests (90+), Selenium WebDriver E2E (studio
+flows incl. lossless retrieve, headless Chrome/Edge), GitHub Actions CI
+(Linux/Windows × Node 20/22 + e2e job), SECURITY/CODE_OF_CONDUCT/CONTRIBUTING,
+VitePress docs site (apps/docs, built from /docs).
+Remaining: round-trip QA eval harness (LLM judge), release automation
+(changesets, npm publish), CLI watch mode, issue/PR templates.
 
 ## Epic 8 — Growth & community (operations/marketing/outreach)
 Launch checklist: GitHub repo polish (topics, social preview, README badges),
