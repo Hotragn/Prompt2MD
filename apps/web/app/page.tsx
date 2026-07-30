@@ -94,7 +94,7 @@ export default function Home() {
       <section className="proof">
         <div className="container proof-row">
           <Reveal className="proof-item">
-            <strong>126</strong>
+            <strong>131</strong>
             <span>tests, green on Linux &amp; Windows</span>
           </Reveal>
           <Reveal className="proof-item" delay={60}>
