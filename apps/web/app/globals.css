@@ -207,6 +207,51 @@ textarea.input:focus {
   padding: 8px 14px;
 }
 
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.view-toggle {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.chip {
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  border-radius: 999px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.chip[data-active="true"] {
+  color: #fff;
+  border-color: var(--accent);
+  background: rgba(124, 92, 255, 0.18);
+}
+
+.chip:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.btn.ghost[data-live="true"] {
+  color: var(--err);
+  border-color: var(--err);
+}
+
+textarea.input[data-dragging="true"] {
+  outline: 2px dashed var(--accent-2);
+  outline-offset: -2px;
+}
+
 .output {
   background: var(--panel-2);
   border: 1px solid var(--border);
@@ -280,6 +325,83 @@ textarea.input:focus {
 
 .meter .bar.out {
   background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+.prose {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
+  font-size: 14px;
+  white-space: normal;
+}
+
+.prose h1,
+.prose h2,
+.prose h3 {
+  line-height: 1.3;
+  margin: 0.9em 0 0.45em;
+}
+
+.prose h1 {
+  font-size: 20px;
+}
+
+.prose h2 {
+  font-size: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 5px;
+}
+
+.prose a {
+  color: var(--accent-2);
+  text-decoration: none;
+}
+
+.prose a:hover {
+  text-decoration: underline;
+}
+
+.prose ul {
+  padding-left: 20px;
+}
+
+.prose li {
+  margin: 5px 0;
+}
+
+.prose table {
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid var(--border);
+  padding: 5px 10px;
+  text-align: left;
+}
+
+.prose blockquote {
+  border-left: 3px solid var(--border);
+  margin: 10px 0;
+  padding: 2px 12px;
+  color: var(--muted);
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
+
+.prose code {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  background: rgba(124, 92, 255, 0.12);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+
+.digest .output {
+  max-height: none;
 }
 
 .warning {

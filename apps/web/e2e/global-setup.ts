@@ -22,18 +22,30 @@ export default async function setup(): Promise<() => void> {
     stdio: ["ignore", "pipe", "pipe"],
     env: { ...process.env, NODE_ENV: "production" },
   });
+  let outputTail = "";
+  const capture = (chunk: Buffer): void => {
+    outputTail = (outputTail + chunk.toString("utf8")).slice(-1500);
+  };
+  server.stdout?.on("data", capture);
+  server.stderr?.on("data", capture);
 
   const deadline = Date.now() + 90_000;
   for (;;) {
+    let lastStatus = 0;
     try {
       const res = await fetch(E2E_BASE_URL);
       if (res.ok) break;
+      lastStatus = res.status;
     } catch {
       // not up yet
     }
     if (Date.now() > deadline) {
       killServer();
-      throw new Error(`web server did not become ready on :${E2E_PORT} within 90s`);
+      throw new Error(
+        `web server did not become ready on :${E2E_PORT} within 90s` +
+          `${lastStatus > 0 ? ` (last status ${lastStatus} — a 500 usually means .next holds a dev build; run next build first)` : ""}` +
+          `${outputTail !== "" ? `\nserver output:\n${outputTail}` : ""}`,
+      );
     }
     await new Promise((r) => setTimeout(r, 500));
   }
