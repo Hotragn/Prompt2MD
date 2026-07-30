@@ -23,32 +23,61 @@ function classifyBlock(block: string): Classified {
   return { kind: "paragraph" };
 }
 
-/** Split markdown into blocks on blank lines, keeping fenced code intact. */
-function splitBlocks(markdown: string): string[] {
-  const lines = markdown.split(/\r?\n/);
-  const blocks: string[] = [];
-  let current: string[] = [];
+interface Block {
+  readonly text: string;
+  readonly start: number;
+  readonly end: number;
+}
+
+/**
+ * Split markdown into blocks on blank lines, keeping fenced code intact.
+ *
+ * Offsets are tracked against the ORIGINAL string rather than re-locating
+ * rejoined text, so `markdown.slice(block.start, block.end) === block.text`
+ * holds for every line-ending style. This is what makes `retrieve_original`
+ * byte-exact on CRLF content (the default for Windows Git checkouts).
+ */
+function splitBlocks(markdown: string): Block[] {
+  const blocks: Block[] = [];
   let inFence = false;
+  let start = -1;
+  let end = -1;
 
   const flush = (): void => {
-    const text = current.join("\n").trim();
-    if (text.length > 0) blocks.push(text);
-    current = [];
+    if (start < 0) return;
+    let s = start;
+    let e = end;
+    while (s < e && /\s/.test(markdown[s]!)) s++;
+    while (e > s && /\s/.test(markdown[e - 1]!)) e--;
+    if (e > s) blocks.push({ text: markdown.slice(s, e), start: s, end: e });
+    start = -1;
+    end = -1;
   };
 
-  for (const line of lines) {
+  let pos = 0;
+  for (;;) {
+    const newline = markdown.indexOf("\n", pos);
+    const lineEnd = newline === -1 ? markdown.length : newline;
+    const line = markdown.slice(pos, lineEnd);
+
     if (/^\s*```/.test(line)) inFence = !inFence;
+
     if (!inFence && line.trim() === "") {
       flush();
     } else if (!inFence && /^#{1,6}\s/.test(line.trimStart())) {
       // Headings are line-scoped: always their own block, even without
       // surrounding blank lines.
       flush();
-      current.push(line);
+      start = pos;
+      end = lineEnd;
       flush();
     } else {
-      current.push(line);
+      if (start < 0) start = pos;
+      end = lineEnd;
     }
+
+    if (newline === -1) break;
+    pos = newline + 1;
   }
   flush();
   return blocks;
@@ -64,24 +93,20 @@ export function parseMarkdown(markdown: string, counter: TokenCounter): Markdown
   const sourceId = hashSource(markdown);
   const sections: MarkdownSection[] = [];
   let title: string | undefined;
-  let cursor = 0;
 
   for (const [index, block] of splitBlocks(markdown).entries()) {
-    const { kind, level } = classifyBlock(block);
+    const { kind, level } = classifyBlock(block.text);
     if (title === undefined && kind === "heading" && level === 1) {
-      title = block.replace(/^#\s*/, "").trim();
+      title = block.text.replace(/^#\s*/, "").trim();
     }
-    const start = markdown.indexOf(block, cursor);
-    const end = start >= 0 ? start + block.length : cursor;
-    if (start >= 0) cursor = end;
     sections.push({
       id: `s${index}`,
       kind,
       ...(level !== undefined ? { level } : {}),
-      markdown: block,
-      tokens: counter.count(block),
+      markdown: block.text,
+      tokens: counter.count(block.text),
       volatility: "stable",
-      source: { sourceId, start: Math.max(start, 0), end },
+      source: { sourceId, start: block.start, end: block.end },
     });
   }
 

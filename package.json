@@ -12,6 +12,7 @@
   "scripts": {
     "setup": "node scripts/install.mjs",
     "test:install": "node scripts/test-install.mjs",
+    "test:fresh": "node scripts/test-fresh-install.mjs",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
