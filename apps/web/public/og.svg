@@ -39,20 +39,26 @@
 
   <text x="84" y="410" font-family="'Segoe UI', system-ui, sans-serif" font-size="22" fill="#9C96A8">Token-optimized, layout-aware Markdown — and an honest report of what it saved.</text>
 
-  <!-- the ledger: real measured numbers -->
+  <!-- The ledger. Real measured numbers from today's Daily Digest run, labelled
+       as what they actually are: a SUMMARY of three live feeds, not lossless
+       compression of the same content. The guarantee is that the raw payload is
+       kept and retrievable byte-for-byte — never that the output retains
+       everything. Those are different claims and must not be blurred. -->
   <g transform="translate(84,452)">
     <rect x="0" y="0" width="248" height="96" rx="14" fill="#1A1820" stroke="#272430"/>
-    <text x="18" y="34" font-family="'Segoe UI', system-ui, sans-serif" font-size="14" letter-spacing="1.2" fill="#9C96A8">RAW CONTEXT</text>
-    <text x="18" y="72" font-family="ui-monospace, Consolas, monospace" font-size="30" font-weight="700" fill="#F2EFEA">79,497</text>
+    <text x="18" y="32" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" letter-spacing="1.2" fill="#9C96A8">RAW FEEDS (JSON)</text>
+    <text x="18" y="70" font-family="ui-monospace, Consolas, monospace" font-size="30" font-weight="700" fill="#F2EFEA">79,497</text>
 
     <rect x="268" y="0" width="248" height="96" rx="14" fill="#1A1820" stroke="#272430"/>
-    <text x="286" y="34" font-family="'Segoe UI', system-ui, sans-serif" font-size="14" letter-spacing="1.2" fill="#9C96A8">AFTER prompt2md</text>
-    <text x="286" y="72" font-family="ui-monospace, Consolas, monospace" font-size="30" font-weight="700" fill="#F2EFEA">1,363</text>
+    <text x="286" y="32" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" letter-spacing="1.2" fill="#9C96A8">DAILY DIGEST</text>
+    <text x="286" y="70" font-family="ui-monospace, Consolas, monospace" font-size="30" font-weight="700" fill="#F2EFEA">1,363</text>
+    <text x="286" y="88" font-family="'Segoe UI', system-ui, sans-serif" font-size="12" fill="#6E6879">selected + summarised</text>
 
     <rect x="536" y="0" width="330" height="96" rx="14" fill="#161B18" stroke="#2C4636"/>
-    <text x="554" y="34" font-family="'Segoe UI', system-ui, sans-serif" font-size="14" letter-spacing="1.2" fill="#9C96A8">TOKENS SAVED · LOSSLESS</text>
-    <text x="554" y="72" font-family="ui-monospace, Consolas, monospace" font-size="30" font-weight="700" fill="#4ADE80">98.3%</text>
+    <text x="554" y="32" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" letter-spacing="1.2" fill="#9C96A8">RAW PAYLOAD</text>
+    <text x="554" y="70" font-family="ui-monospace, Consolas, monospace" font-size="26" font-weight="700" fill="#4ADE80">kept, byte-exact</text>
+    <text x="554" y="88" font-family="'Segoe UI', system-ui, sans-serif" font-size="12" fill="#6E6879">recoverable via retrieve_original</text>
   </g>
 
-  <text x="84" y="594" font-family="ui-monospace, Consolas, monospace" font-size="17" fill="#6E6879">Apache-2.0 · CLI · MCP server · agent skill · every number reproducible from the repo</text>
+  <text x="84" y="594" font-family="ui-monospace, Consolas, monospace" font-size="16" fill="#6E6879">A digest is a summary, not a shrink — the source is stored, never discarded. Every number reproducible.</text>
 </svg>

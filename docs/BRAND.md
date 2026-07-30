@@ -37,6 +37,37 @@ Everything downstream follows from it:
 numbers. "150 → 120 tokens (80%)" — never "dramatically smaller". If a number
 isn't measured, it doesn't appear.
 
+### Two claims that must never be blurred
+
+This is the easiest way for this project to become dishonest, and it has
+already happened once (the launch image claimed "98.3% saved · LOSSLESS"):
+
+| Claim | What it means | Where it is true |
+|---|---|---|
+| **Reduction** | The output is smaller than the input | Every run, and the size varies enormously by input |
+| **Losslessness** | The *source* is stored and recoverable byte-for-byte | Always — via `p2md:src` anchors and `retrieve_original` |
+
+**Losslessness never means the output retains everything.** A summary
+necessarily drops detail from the output; the guarantee is that the detail is
+still *retrievable*, not that it is still *present*. Putting a large savings
+percentage and the word "lossless" side by side implies the first came free of
+the second, which is false.
+
+**Never present a best-case number as typical.** Real measured figures span a
+wide range, and the number depends far more on the input than on the tool:
+
+| Input | Measured | Note |
+|---|---|---|
+| Rambling chat prompt | 150 → 120 tokens (80%) | Deterministic path, no LLM key |
+| HTML article fixture | 363 → 257 tokens (71%) | Chrome and nav stripped |
+| Markdown doc, budgeted | 1,856 → 1,540 tokens (83%) | `compress --token-budget 500` |
+| Daily Digest | 79,497 → 1,363 tokens (2%) | **Selection + summary of raw JSON feeds — not compression of the same content** |
+
+The digest figure is the largest and the least representative: most of the
+79,497 is JSON scaffolding nobody wanted, and the output is a curated brief
+rather than a smaller version of the input. Quote it only with that label
+attached.
+
 ## 2. The mark
 
 The icon is an **accordion fold seen edge-on**. Its silhouette reads as **M**
