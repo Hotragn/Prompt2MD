@@ -16,6 +16,8 @@
 </p>
 
 <p align="center">
+  <a href="https://prompt2md.vercel.app"><strong>Live studio</strong></a> ·
+  <a href="https://prompt2md-docs.vercel.app"><strong>Docs site</strong></a> ·
   <a href="#quick-start">Quick start</a> ·
   <a href="#how-it-works">How it works</a> ·
   <a href="docs/INTEGRATIONS.md">Integrations</a> ·

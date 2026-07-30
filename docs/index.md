@@ -10,6 +10,9 @@ hero:
     alt: prompt2md
   actions:
     - theme: brand
+      text: Try the studio
+      link: https://prompt2md.vercel.app
+    - theme: alt
       text: Get started
       link: /getting-started
     - theme: alt
