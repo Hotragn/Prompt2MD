@@ -391,10 +391,16 @@ function isDirectRun(): boolean {
 }
 
 if (isDirectRun()) {
-  buildProgram()
+  const runtime = createRuntimeFromEnv();
+  buildProgram(runtime)
     .parseAsync(process.argv)
     .catch((err: unknown) => {
       process.stderr.write(`error: ${err instanceof Error ? err.message : String(err)}\n`);
-      process.exit(1);
+      process.exitCode = 1;
+    })
+    .finally(() => {
+      // Release the persistent markitdown worker — it would otherwise keep
+      // the event loop (and this process) alive forever.
+      runtime.dispose();
     });
 }

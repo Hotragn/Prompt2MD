@@ -26,6 +26,7 @@ function fakeRuntime(store: OriginalStore): HermesRuntime {
   return {
     store,
     gateway: undefined,
+    dispose: () => {},
     compress: (text, options) => compressContext(text, store, options),
     convert: (input: SourceInput, options: ConvertOptions): Promise<ConversionOutcome> => {
       const doc = parseMarkdown(FAKE_MARKDOWN, approxCounter);

@@ -38,6 +38,9 @@ export interface HermesRuntime {
   readonly gateway: LlmGateway | undefined;
   compress(text: string, options: CompressOptions): Promise<CompressResult>;
   convert(input: SourceInput, options: ConvertOptions): Promise<ConversionOutcome>;
+  /** Releases engine sidecars (the persistent markitdown worker keeps the
+   * Node event loop alive otherwise). Short-lived consumers (CLI) must call it. */
+  dispose(): void;
 }
 
 type Env = Record<string, string | undefined>;
@@ -99,10 +102,11 @@ export function createRuntimeFromEnv(env: Env = process.env): HermesRuntime {
   const store = createFileStore(env["P2MD_STORE_DIR"] ?? join(homedir(), ".prompt2md", "originals"));
   const summarizer = gateway !== undefined ? createLlmSummarizer(gateway) : undefined;
 
+  const markitdown = createMarkitdownEngine(pythonBin !== undefined ? { pythonBin } : {});
   const engines = {
     "prompt-optimizer":
       gateway !== undefined ? createPromptOptimizerEngine(gateway) : createDeterministicTextEngine(),
-    markitdown: createMarkitdownEngine(pythonBin !== undefined ? { pythonBin } : {}),
+    markitdown,
     docling:
       doclingUrl !== undefined && doclingUrl !== ""
         ? createDoclingEngine({ baseUrl: doclingUrl })
@@ -118,5 +122,6 @@ export function createRuntimeFromEnv(env: Env = process.env): HermesRuntime {
         ...(summarizer !== undefined && options.summarizer === undefined ? { summarizer } : {}),
       }),
     convert: (input, options) => convertDocument(input, { engines }, options),
+    dispose: () => markitdown.dispose(),
   };
 }
