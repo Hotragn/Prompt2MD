@@ -4,7 +4,20 @@ prompt2md plugs into your stack three ways: as an **MCP connector** (any MCP
 client), as an **agent skill**, or **programmatically**. All surfaces share one
 runtime and one set of env vars.
 
-## 1. MCP connector — "type in the chat box"
+## 0. One-command setup (recommended)
+
+```bash
+pnpm install && pnpm build && pnpm setup
+```
+
+`pnpm setup` detects every supported tool on the machine — **Claude Code**
+(MCP + `/prompt2md` skill), **Claude Desktop**, **Cursor**, **Windsurf**,
+**Gemini CLI**, **Codex CLI** — and registers the MCP server in each, backing
+up every config it touches. Idempotent; `--dry-run` previews without writing.
+Tools it can't detect (Kimi/Grok clients, VS Code, anything MCP-capable) get a
+copy-paste snippet at the end of the output.
+
+## 1. MCP connector — "type in the chat box" (manual per-client setup)
 
 Build once:
 
