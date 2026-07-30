@@ -211,10 +211,11 @@ const batch = run("node", [cli, "batch", `${join(clone, "fixtures", "cases").rep
 const outputs = existsSync(outDir)
   ? readdirSync(outDir).filter((f) => f.endsWith(".md")).map((f) => readFileSync(join(outDir, f), "utf8"))
   : [];
+const smallestOutput = outputs.length > 0 ? Math.min(...outputs.map((t) => t.trim().length)) : 0;
 check(
   batch.status === 0 && outputs.length >= 4 && outputs.every((t) => t.trim().length > 50),
   "cli batch writes non-empty output for every file",
-  `${outputs.length} files, smallest ${Math.min(...outputs.map((t) => t.trim().length), 0)} chars`,
+  `${outputs.length} files, smallest ${smallestOutput} chars`,
 );
 
 // --- 5. installer against the sandbox home ----------------------------
