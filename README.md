@@ -88,8 +88,10 @@ litellm --port 4000                                            # LLM optimizer; 
 ```bash
 pnpm install      # Node >= 20, pnpm >= 9
 pnpm build        # turbo build (core -> hermes-mcp -> cli -> web + docs site)
-pnpm test         # 95 unit/integration tests: golden corpus, MCP client, CLI
+pnpm test         # unit/integration: golden corpus, MCP client, CLI, digest
 pnpm test:e2e     # Selenium E2E against the built studio (headless Chrome/Edge)
+pnpm test:install # installer against a sandboxed HOME (your configs untouched)
+pnpm test:fresh   # full new-user simulation in a throwaway clone
 pnpm typecheck    # strict TS across workspaces
 
 pnpm --filter @prompt2md/docs dev   # docs site at http://localhost:3200

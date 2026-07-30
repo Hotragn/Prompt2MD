@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import {
@@ -64,15 +65,15 @@ function buildGateway(env: Env): LlmGateway | undefined {
 export function createDeterministicTextEngine(): Engine {
   return {
     id: "prompt-optimizer",
-    convert(input, _sniff, _options) {
+    async convert(input, _sniff, _options) {
       const raw =
         input.kind === "text"
           ? input.text
           : input.kind === "buffer"
             ? Buffer.from(input.data).toString("utf8")
-            : "";
+            : await readFile(input.path, "utf8");
       const stripped = stripBoilerplate(parseMarkdown(raw, approxCounter), approxCounter);
-      return Promise.resolve({
+      return {
         markdown: renderMarkdown(stripped.doc),
         warnings: [
           {
@@ -81,7 +82,7 @@ export function createDeterministicTextEngine(): Engine {
               "LLM gateway not configured — deterministic cleanup only (set P2MD_LITELLM_BASE_URL for full optimization)",
           },
         ],
-      });
+      };
     },
   };
 }

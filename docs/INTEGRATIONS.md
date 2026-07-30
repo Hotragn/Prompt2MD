@@ -23,6 +23,9 @@ copy-paste snippet at the end of the output.
 node scripts/install.mjs --dry-run   # prints every change it would make, writes nothing
 pnpm test:install                    # runs the installer against a throwaway HOME and
                                      # asserts your real configs are byte-identical after
+pnpm test:fresh                      # full new-user simulation: clones into a temp dir,
+                                     # installs/builds/tests there, exercises CLI + MCP +
+                                     # skill + installer + digest, all sandboxed
 ```
 
 `pnpm test:install` also proves the generated config actually launches a working

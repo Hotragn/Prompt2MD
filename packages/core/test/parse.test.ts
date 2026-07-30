@@ -30,6 +30,33 @@ describe("markdown IR parsing on golden outputs", () => {
     }
   });
 
+  it("round-trips spans on CRLF content (Windows git checkouts)", () => {
+    // Regression: blocks were previously rejoined with \n and re-located with
+    // indexOf, which never matched CRLF sources — spans silently pointed at
+    // the wrong text, breaking retrieve_original.
+    const crlf = golden.replace(/\r?\n/g, "\r\n");
+    const parsed = parseMarkdown(crlf, approxCounter);
+
+    expect(parsed.title).toBe("Q3 Migration Plan — Decisions (2026-07-21)");
+    expect(parsed.sections.length).toBe(doc.sections.length);
+    for (const section of parsed.sections) {
+      expect(crlf.slice(section.source!.start, section.source!.end)).toBe(section.markdown);
+    }
+    // multi-line blocks (the action-item table) must survive intact
+    const table = parsed.sections.find((s) => s.kind === "table");
+    expect(table?.markdown).toContain("Dana Ortiz");
+    expect(crlf.slice(table!.source!.start, table!.source!.end)).toBe(table!.markdown);
+  });
+
+  it("round-trips spans on mixed and CR-only line endings", () => {
+    const mixed = "# Title\r\n\r\nParagraph one line A\r\nline B\n\nSecond paragraph.";
+    const parsed = parseMarkdown(mixed, approxCounter);
+    for (const section of parsed.sections) {
+      expect(mixed.slice(section.source!.start, section.source!.end)).toBe(section.markdown);
+    }
+    expect(parsed.sections).toHaveLength(3);
+  });
+
   it("keeps fenced code blocks as single sections", () => {
     const withCode = parseMarkdown("intro\n\n```py\na = 1\n\nb = 2\n```\n\noutro", approxCounter);
     const code = withCode.sections.filter((s) => s.kind === "code");

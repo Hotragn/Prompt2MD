@@ -59,6 +59,26 @@ export function deriveOutPath(inputPath: string, outDir: string): string {
 }
 
 /**
+ * Output paths for a batch, disambiguated so files that share a basename
+ * across directories never overwrite each other (`report.md`,
+ * `report-2.md`, ...). Silent overwrites would be data loss.
+ */
+export function deriveBatchOutPaths(files: readonly string[], outDir: string): Map<string, string> {
+  const taken = new Set<string>();
+  const paths = new Map<string, string>();
+  for (const file of files) {
+    const base = basename(file, extname(file));
+    let candidate = `${base}.md`;
+    for (let n = 2; taken.has(candidate.toLowerCase()); n++) {
+      candidate = `${base}-${n}.md`;
+    }
+    taken.add(candidate.toLowerCase());
+    paths.set(file, join(outDir, candidate));
+  }
+  return paths;
+}
+
+/**
  * Watches the parent directories of `files` and fires onChange (debounced
  * 200ms per file) for events on exactly those files. Returns a disposer.
  */
@@ -212,6 +232,7 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
         if (files.length === 0) program.error(`no files match: ${patterns.join(" ")}`);
         const outDir = resolve(flags.outDir);
         await mkdir(outDir, { recursive: true });
+        const outPaths = deriveBatchOutPaths(files, outDir);
 
         interface BatchRow {
           file: string;
@@ -239,7 +260,7 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
               });
               markdown = compressed.markdown;
             }
-            const outPath = deriveOutPath(file, outDir);
+            const outPath = outPaths.get(file) ?? deriveOutPath(file, outDir);
             await writeFile(outPath, markdown, "utf8");
             if (flags.report === true) {
               await writeFile(

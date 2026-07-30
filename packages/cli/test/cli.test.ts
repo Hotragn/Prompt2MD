@@ -12,7 +12,14 @@ import {
   type SourceInput,
 } from "@prompt2md/core";
 import { compressContext, createFileStore, type HermesRuntime, type OriginalStore } from "@prompt2md/hermes-mcp";
-import { buildProgram, deriveOutPath, mapPool, watchFiles, type CliIo } from "../src/index.js";
+import {
+  buildProgram,
+  deriveBatchOutPaths,
+  deriveOutPath,
+  mapPool,
+  watchFiles,
+  type CliIo,
+} from "../src/index.js";
 
 function captureIo(): { io: CliIo; out: string[]; err: string[] } {
   const out: string[] = [];
@@ -61,6 +68,21 @@ async function run(runtime: HermesRuntime, args: string[]): Promise<{ out: strin
 describe("helpers", () => {
   it("deriveOutPath swaps the extension and directory", () => {
     expect(deriveOutPath(join("docs", "Q2 report.docx"), "out")).toBe(join("out", "Q2 report.md"));
+  });
+
+  it("deriveBatchOutPaths disambiguates files sharing a basename", () => {
+    // Regression: same-named inputs in different directories silently
+    // overwrote each other in the output directory.
+    const paths = deriveBatchOutPaths(
+      [join("a", "input.txt"), join("b", "input.txt"), join("c", "input.md"), join("d", "other.txt")],
+      "out",
+    );
+    const values = [...paths.values()];
+    expect(new Set(values).size).toBe(4);
+    expect(values).toContain(join("out", "input.md"));
+    expect(values).toContain(join("out", "input-2.md"));
+    expect(values).toContain(join("out", "input-3.md"));
+    expect(values).toContain(join("out", "other.md"));
   });
 
   it("watchFiles fires debounced for matched files only", async () => {
