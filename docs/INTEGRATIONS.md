@@ -17,6 +17,19 @@ up every config it touches. Idempotent; `--dry-run` previews without writing.
 Tools it can't detect (Kimi/Grok clients, VS Code, anything MCP-capable) get a
 copy-paste snippet at the end of the output.
 
+**Nervous about your existing setup?** Two safety nets, both enforced in CI:
+
+```bash
+node scripts/install.mjs --dry-run   # prints every change it would make, writes nothing
+pnpm test:install                    # runs the installer against a throwaway HOME and
+                                     # asserts your real configs are byte-identical after
+```
+
+`pnpm test:install` also proves the generated config actually launches a working
+MCP server, that pre-existing servers survive the merge, and that re-running is
+idempotent. Every config the installer modifies is copied to
+`<config>.bak-p2md-<timestamp>` first.
+
 ## 1. MCP connector — "type in the chat box" (manual per-client setup)
 
 Build once:

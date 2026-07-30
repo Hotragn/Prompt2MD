@@ -11,6 +11,7 @@
   },
   "scripts": {
     "setup": "node scripts/install.mjs",
+    "test:install": "node scripts/test-install.mjs",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",

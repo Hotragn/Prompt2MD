@@ -41,6 +41,12 @@ jobs:
       - name: Validate skill definition
         run: pnpm --filter @prompt2md/skill lint
 
+      - name: Installer check (sandboxed HOME, real configs untouched)
+        run: pnpm test:install
+
+      - name: MCP stdio smoke test (built binary, real transport)
+        run: node packages/hermes-mcp/scripts/verify-stdio.mjs
+
       - name: CLI smoke test (built binary, zero sidecars)
         run: node packages/cli/dist/index.js convert --text "smoke test input for ci" --json
 
