@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "next dev -p 3100",
     "build": "next build",
-    "start": "next start -p 3100"
+    "start": "next start -p 3100",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts"
   },
   "dependencies": {
     "@prompt2md/core": "workspace:*",
@@ -20,6 +21,9 @@
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "typescript": "^5.7.2"
+    "@types/selenium-webdriver": "^4.1.27",
+    "selenium-webdriver": "^4.27.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
   }
 }
