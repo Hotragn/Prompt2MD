@@ -2,6 +2,10 @@
   <img src="apps/web/public/logo.svg" alt="prompt2md — A Markdown Magic" width="440">
 </p>
 
+<p align="center">
+  <a href="https://github.com/Hotragn/Prompt2MD/actions/workflows/ci.yml"><img src="https://github.com/Hotragn/Prompt2MD/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+</p>
+
 # prompt2md
 
 **A Markdown Magic** — turn anything into token-optimized, layout-aware Markdown, and know exactly what it saved you.

@@ -8,7 +8,7 @@ optional sidecars unlock more capability without ever being required.
 ## Install & build
 
 ```bash
-git clone <your-repo-url> prompt2md && cd prompt2md
+git clone https://github.com/Hotragn/Prompt2MD.git prompt2md && cd prompt2md
 pnpm install && pnpm build        # Node >= 20, pnpm >= 9
 pnpm test                         # 90+ tests: golden corpus, MCP integration, CLI
 ```
