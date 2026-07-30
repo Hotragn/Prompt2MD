@@ -6,6 +6,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@prompt2md/web", "dev"],
       "port": 3100
+    },
+    {
+      "name": "docs",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@prompt2md/docs", "dev"],
+      "port": 3200
     }
   ]
 }

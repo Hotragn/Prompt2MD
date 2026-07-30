@@ -80,14 +80,19 @@ litellm --port 4000                                            # LLM optimizer; 
 
 ```bash
 pnpm install      # Node >= 20, pnpm >= 9
-pnpm build        # turbo build (core -> hermes-mcp -> cli)
-pnpm test         # 81 tests: golden-fixture conformance, MCP client integration, CLI
+pnpm build        # turbo build (core -> hermes-mcp -> cli -> web + docs site)
+pnpm test         # 95 unit/integration tests: golden corpus, MCP client, CLI
+pnpm test:e2e     # Selenium E2E against the built studio (headless Chrome/Edge)
 pnpm typecheck    # strict TS across workspaces
+
+pnpm --filter @prompt2md/docs dev   # docs site at http://localhost:3200
+pnpm --filter @prompt2md/web dev    # studio at http://localhost:3100
 ```
 
-Docs: [ARCHITECTURE.md](ARCHITECTURE.md) · [docs/adr/](docs/adr) ·
-[docs/research/](docs/research) · [docs/ROADMAP.md](docs/ROADMAP.md) ·
-[fixtures/README.md](fixtures/README.md)
+Docs: **docs website** (`apps/docs`, VitePress — run it locally with the
+command above) · [ARCHITECTURE.md](ARCHITECTURE.md) · [docs/adr/](docs/adr) ·
+[docs/research/](docs/research) · [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) ·
+[docs/ROADMAP.md](docs/ROADMAP.md) · [fixtures/README.md](fixtures/README.md)
 
 ## License
 
