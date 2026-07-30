@@ -1,0 +1,87 @@
+name: Bug report
+description: Something converted wrong, lost content, or crashed
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file this.
+
+        The single most useful thing you can include is a **minimal input that
+        reproduces it**. This project is data-first: a bug with a reproducing
+        fixture usually becomes a test and a fix in the same change, while a bug
+        without one usually stalls.
+
+        If your content is sensitive, please reproduce with synthetic data.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you expect, and what did you get instead?
+      placeholder: The table in section 3 came back as a single run-on paragraph.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal input that reproduces it
+      description: >
+        Ideally a fixture-style pair — the raw input plus the Markdown you
+        expected. Paste it inline, or attach a file.
+      render: markdown
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Which surface?
+      options:
+        - CLI
+        - MCP server (Claude Desktop / Cursor / Codex / Gemini CLI / other)
+        - Agent skill
+        - Web studio
+        - Programmatic (@prompt2md/core or hermes-mcp)
+    validations:
+      required: true
+
+  - type: input
+    id: invocation
+    attributes:
+      label: Exact command or tool call
+      placeholder: prompt2md convert ./contract.pdf -b 6000 --json
+    validations:
+      required: true
+
+  - type: textarea
+    id: report
+    attributes:
+      label: Report output
+      description: >
+        The TokenReport / savings JSON and any warnings. These carry the routing
+        evidence — which engine ran, whether it escalated, and why — so they are
+        usually what identifies the bug.
+      render: json
+
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Environment
+      description: Output of `prompt2md doctor`, plus your OS and Node version.
+      render: shell
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: losslessness
+    attributes:
+      label: Did this lose content?
+      description: >
+        Compression is meant to be reversible — summarized sections carry
+        p2md:src anchors that resolve to the byte-exact original. If content
+        disappeared irrecoverably, say so here; that is a severity escalation.
+      options:
+        - label: Content was lost and `retrieve_original` did not return it
+        - label: I checked that the original is recoverable via retrieve

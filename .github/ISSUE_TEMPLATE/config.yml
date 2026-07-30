@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://prompt2md-docs.vercel.app
+    about: Getting started, integrations, architecture, and the ADRs.
+  - name: Try it first
+    url: https://prompt2md.vercel.app/studio
+    about: Reproduce the behaviour in the live studio — the token report it shows is exactly what an issue needs.
+  - name: Report a security vulnerability
+    url: https://github.com/Hotragn/Prompt2MD/security/advisories/new
+    about: Please do NOT open a public issue for security problems. Report privately here.
