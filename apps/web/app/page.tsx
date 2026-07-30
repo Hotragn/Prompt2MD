@@ -154,14 +154,38 @@ export default function Studio() {
   async function readFiles(files: FileList | null) {
     const file = files?.[0];
     if (file === undefined) return;
-    if (!TEXT_EXTENSIONS.test(file.name) && !file.type.startsWith("text/")) {
-      setResult({
-        error: `"${file.name}" is not a text format the browser can read — use the CLI for PDFs/Office files: prompt2md convert "${file.name}"`,
-      });
+    if (TEXT_EXTENSIONS.test(file.name) || file.type.startsWith("text/")) {
+      setText(await file.text());
+      setResult(null);
       return;
     }
-    setText(await file.text());
+    // Binary formats (PDF, Office, ...) convert server-side through the engines.
+    await convertBinary(file);
+  }
+
+  async function convertBinary(file: File) {
+    setBusy(true);
     setResult(null);
+    try {
+      const form = new FormData();
+      form.set("file", file);
+      form.set("provider", provider);
+      const budgetNum = budget.trim() === "" ? undefined : Number.parseInt(budget, 10);
+      if (budgetNum !== undefined && Number.isFinite(budgetNum)) form.set("tokenBudget", String(budgetNum));
+      const res = await fetch("/api/convert", { method: "POST", body: form });
+      let data: ApiResult;
+      try {
+        data = (await res.json()) as ApiResult;
+      } catch {
+        data = { error: `server responded ${res.status} without a readable body` };
+      }
+      setResult(data);
+      setText(`(uploaded ${file.name} — converted server-side)`);
+    } catch {
+      setResult({ error: "Could not reach the studio API. Is the dev server running?" });
+    } finally {
+      setBusy(false);
+    }
   }
 
   function onDrop(event: DragEvent<HTMLTextAreaElement>) {
@@ -289,14 +313,15 @@ export default function Studio() {
               <input
                 ref={fileInput}
                 type="file"
-                accept=".txt,.md,.markdown,.html,.htm,.csv,.json,.log,.eml,text/*"
+                accept=".txt,.md,.markdown,.html,.htm,.csv,.json,.log,.eml,.pdf,.docx,.xlsx,.pptx,text/*"
                 hidden
                 onChange={(e) => void readFiles(e.target.files)}
               />
             </div>
             <p className="hint">
               Everything runs locally. Compression is lossless — summarized sections carry p2md:src
-              anchors resolvable via retrieve. Binary formats (PDF/Office) go through the CLI or MCP.
+              anchors resolvable via retrieve. Text files load into the editor; PDF/Office uploads
+              convert server-side through the engines.
             </p>
           </section>
 

@@ -1,3 +1,5 @@
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { By, until, type WebDriver } from "selenium-webdriver";
 import { createDriver } from "./driver.js";
@@ -109,13 +111,18 @@ describe("prompt2md studio (Selenium E2E)", () => {
     await driver.wait(until.elementLocated(By.css("pre.output")), 15_000);
   });
 
-  it("offers file upload on the input card", async () => {
-    const uploadButtons = await driver.findElements(
-      By.xpath('//button[contains(@class, "ghost") and normalize-space(text())="Upload file"]'),
+  it("loads an uploaded text file into the editor", async () => {
+    const fixture = join(
+      dirname(fileURLToPath(import.meta.url)),
+      "..", "..", "..",
+      "fixtures", "cases", "05-csv-inventory", "input.csv",
     );
-    expect(uploadButtons.length).toBe(1);
-    const fileInputs = await driver.findElements(By.css('input[type="file"]'));
-    expect(fileInputs.length).toBe(1);
+    const fileInput = await driver.findElement(By.css('input[type="file"]'));
+    await fileInput.sendKeys(fixture);
+    await driver.wait(async () => {
+      const value = await driver.findElement(By.css("textarea.input")).getAttribute("value");
+      return value.includes("KB-2201");
+    }, 15_000);
   });
 
   it("daily digest tab loads live sources or degrades to a readable error", async () => {
