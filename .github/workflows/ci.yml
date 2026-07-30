@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  # Telemetry writes a config file under the user profile on first run. CI has
+  # no use for it, and touching the profile is pure risk on Windows runners.
+  NEXT_TELEMETRY_DISABLED: "1"
+
 jobs:
   verify:
     strategy:
