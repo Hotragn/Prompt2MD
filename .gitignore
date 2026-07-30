@@ -40,5 +40,6 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 
-# Local data workspace (real-data test runs, downloads)
+# Local data workspace (real-data test runs, downloads, generated digests)
 data/local/
+**/data/digests/
