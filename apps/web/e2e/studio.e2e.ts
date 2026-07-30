@@ -23,8 +23,9 @@ async function outputText(): Promise<string> {
 describe("prompt2md studio (Selenium E2E)", () => {
   beforeAll(async () => {
     driver = await createDriver();
-    await driver.get(E2E_BASE_URL);
-    await driver.wait(until.elementLocated(By.css(".brand")), 30_000);
+    // The studio moved to /studio when the landing page took over "/".
+    await driver.get(`${E2E_BASE_URL}/studio`);
+    await driver.wait(until.elementLocated(By.css(".tabs")), 30_000);
   });
 
   afterAll(async () => {

@@ -11,7 +11,7 @@ hero:
   actions:
     - theme: brand
       text: Try the studio
-      link: https://prompt2md.vercel.app
+      link: https://prompt2md.vercel.app/studio
     - theme: alt
       text: Get started
       link: /getting-started
