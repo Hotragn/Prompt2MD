@@ -1,5 +1,5 @@
 {
+  "installCommand": "cd ../.. && pnpm install --filter=@prompt2md/docs... --frozen-lockfile",
   "buildCommand": "cd ../.. && pnpm --filter @prompt2md/docs build",
-  "outputDirectory": ".vitepress/dist",
-  "installCommand": "cd ../.. && pnpm install"
+  "outputDirectory": ".vitepress/dist"
 }
