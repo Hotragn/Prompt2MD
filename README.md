@@ -55,6 +55,9 @@ through the right engine automatically and optimizes the result:
 
 ```bash
 pnpm install && pnpm build            # Node >= 20, pnpm >= 9
+pnpm setup                            # one command: registers the MCP server with every
+                                      # detected tool (Claude Code/Desktop, Cursor, Windsurf,
+                                      # Gemini CLI, Codex) + installs the /prompt2md skill
 
 # CLI (zero config: text path + deterministic fallbacks work immediately)
 node packages/cli/dist/index.js convert --text "your messy prompt here"
