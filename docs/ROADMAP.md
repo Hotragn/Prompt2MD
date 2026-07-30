@@ -25,20 +25,23 @@ definition + validator. Still open: `watch` mode, npm publish pipeline —
 folded into Epic 7.
 
 ## Epic 5 — Web app & UX 🔨 in progress
-✅ Shipped: Next.js studio (Convert/Compress tabs, token stats + savings meter,
-warning surfacing, sample loaders, API routes over the shared runtime), brand
-identity (logo, icon, "A Markdown Magic" tagline), graceful-degradation UX.
-Remaining: file upload/drag-drop, rendered markdown preview, Daily Digest tab,
-design-system pass (claudedesignskills, impeccable), Blender 3D brand
-artifacts, optional voice (Web Speech input + TTS readback).
+✅ Shipped: Next.js studio (Convert/Compress/Daily Digest tabs, token stats +
+savings meter, warning surfacing, sample loaders, API routes over the shared
+runtime), brand identity (logo, icon, "A Markdown Magic" tagline),
+graceful-degradation UX, file upload + drag-drop for text formats, rendered
+markdown preview (sanitized), voice (Web Speech dictation + TTS readback).
+Remaining: design-system pass (claudedesignskills, impeccable), Blender 3D
+brand artifacts, PDF/Office upload via server (currently CLI/MCP only).
 
-## Epic 6 — Daily Digest (live-data demo)
-Automated daily job pulls from vetted free public APIs (curated from
-public-apis/public-apis — e.g., Hacker News/Algolia, Wikipedia current events,
-GDELT; each vetted for ToS/licensing and attribution before inclusion) →
-converts to token-optimized Markdown → publishes a dated digest page. Serves as
-living proof of reliability and as SEO/content marketing. API map grows over time
-with a documented vetting checklist per source (rate limits, attribution, license).
+## Epic 6 — Daily Digest (live-data demo) ✅ v1 shipped
+✅ Shipped: digest engine (apps/web/lib/digest.ts) pulling vetted keyless APIs
+(Hacker News/Algolia + Wikipedia featured feed), per-source failure isolation,
+once-per-day cache, honest raw-vs-digest token report (measured live:
+~52k raw tokens → ~0.9k digest, 2%), lossless raw-payload storage with
+retrievable sourceId, attribution footer, studio tab + /api/digest, source
+vetting checklist + API map (docs/DIGEST-SOURCES.md), 5 unit tests + live E2E.
+Remaining: more vetted sources (GDELT, Spaceflight News, Open-Meteo),
+scheduled workflow + dated archive page once the repo is on GitHub.
 
 ## Epic 7 — Quality & release engineering 🔨 in progress
 ✅ Shipped: Vitest unit + golden tests (90+), Selenium WebDriver E2E (studio
