@@ -13,6 +13,7 @@ import {
   renderMarkdown,
   stripPromptFiller,
   type ConversionOutcome,
+  type ConversionWarning,
   type ConvertOptions,
   type Engine,
   type LlmGateway,
@@ -63,6 +64,15 @@ function buildGateway(env: Env): LlmGateway | undefined {
   });
 }
 
+/**
+ * Thousands separators without `toLocaleString`, which follows the host
+ * locale — on an en-IN machine it renders 1349989 as "13,49,989", so the same
+ * warning would read differently depending on where it ran.
+ */
+function groupDigits(n: number): string {
+  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 /** No-LLM text path: structure + deterministic boilerplate strip only. */
 export function createDeterministicTextEngine(): Engine {
   return {
@@ -79,16 +89,42 @@ export function createDeterministicTextEngine(): Engine {
       // before markdown parsing, which otherwise has nothing to strip.
       const text = sniff.kind === "prompt" ? stripPromptFiller(raw, approxCounter).text : raw;
       const stripped = stripBoilerplate(parseMarkdown(text, approxCounter), approxCounter);
-      return {
-        markdown: renderMarkdown(stripped.doc),
-        warnings: [
-          {
-            code: "engine-fallback" as const,
-            message:
-              "LLM gateway not configured — deterministic cleanup only (set P2MD_LITELLM_BASE_URL for full optimization)",
-          },
-        ],
-      };
+      const markdown = renderMarkdown(stripped.doc);
+
+      const warnings: ConversionWarning[] = [
+        {
+          code: "engine-fallback",
+          message:
+            "LLM gateway not configured — deterministic cleanup only (set P2MD_LITELLM_BASE_URL for full optimization)",
+        },
+      ];
+
+      // Deduplication runs at two stages — sentence level for prompts, section
+      // level for documents — and either can collapse an enormous amount of
+      // text: repeated content reduces to a single copy. This path stores no
+      // original to recover it from, so a large silent drop would make the
+      // savings figure look spectacular for a reason the user never agreed to.
+      //
+      // Measured end to end rather than per stage, so it stays accurate no
+      // matter which stage did the removing.
+      const before = approxCounter.count(raw);
+      const after = approxCounter.count(markdown);
+      const removed = before - after;
+      const removedShare = before > 0 ? removed / before : 0;
+      // Both thresholds matter. A share alone fires on every short prompt —
+      // trimming "thanks!!!" off an 18-token message is 30% — and a warning
+      // that cries wolf teaches people to ignore the ones that matter.
+      if (removedShare >= 0.25 && removed >= 200) {
+        warnings.push({
+          code: "content-removed",
+          message:
+            `deterministic cleanup removed ${groupDigits(removed)} of ${groupDigits(before)} tokens ` +
+            `(${Math.round(removedShare * 100)}%) — repeated sentences and sections are collapsed to one copy, ` +
+            `and boilerplate is dropped. Your source is unchanged; nothing here rewrites it.`,
+        });
+      }
+
+      return { markdown, warnings };
     },
   };
 }

@@ -43,7 +43,17 @@ export async function convertDocument(
   options: ConvertOptions = {},
 ): Promise<ConversionOutcome> {
   const counter = deps.counter ?? approxCounter;
-  const sniff = await sniffInput(input);
+  // A mistyped path is the most ordinary mistake there is; surfacing a raw
+  // ENOENT stack from somewhere inside the sniffer helps nobody.
+  const sniff = await sniffInput(input).catch((err: unknown) => {
+    if (input.kind === "file" && err instanceof Error && "code" in err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code === "ENOENT") throw new Error(`file not found: ${input.path}`);
+      if (code === "EACCES" || code === "EPERM") throw new Error(`cannot read (permission denied): ${input.path}`);
+      if (code === "EISDIR") throw new Error(`that is a directory, not a file: ${input.path}`);
+    }
+    throw err;
+  });
   const decision = route(sniff, options);
   const warnings: ConversionWarning[] = [];
 
@@ -58,7 +68,21 @@ export async function convertDocument(
     // A missing sidecar must not make textual input unconvertible: anything
     // with a decodable text layer degrades to the text path with a warning.
     const textual = input.kind === "text" || sniff.text !== undefined;
-    if (engineId === "prompt-optimizer" || !textual) throw err;
+    if (engineId === "prompt-optimizer") throw err;
+    if (!textual) {
+      // Binary input with no usable engine. Refusing is correct — decoding a
+      // PDF as UTF-8 would produce confident nonsense — but the raw spawn
+      // error ("spawn python ENOENT") tells a user nothing about what to do,
+      // and this is the first thing anyone hits on a deployment without the
+      // sidecars. Say what is missing and how to get it.
+      throw new Error(
+        `${sniff.kind} input needs a document engine, and ${engineId} is unavailable ` +
+          `(${errorMessage(err)}). Install the MarkItDown sidecar with ` +
+          `\`pip install "markitdown[all]"\`, or set P2MD_DOCLING_URL to a docling-serve ` +
+          `instance for scans and complex tables. Text, Markdown, HTML, CSV and JSON ` +
+          `convert with no sidecar at all.`,
+      );
+    }
     warnings.push({
       code: "engine-error",
       message: `${engineId} unavailable (${errorMessage(err)}) — fell back to the text path`,
@@ -101,8 +125,24 @@ export async function convertDocument(
   if (sniff.kind !== "prompt" && sniff.kind !== "email" && engineId !== "prompt-optimizer") {
     const stripped = stripBoilerplate(doc, counter);
     if (stripped.removedSections > 0) {
+      const beforeTokens = doc.sections.reduce((n, s) => n + s.tokens, 0);
       doc = stripped.doc;
       markdown = renderMarkdown(doc);
+      // Deduplication can collapse a great deal of content — repeated
+      // paragraphs go down to one copy — and unlike compression this path
+      // stores no original to recover them from. A large silent drop would
+      // make the savings figure look impressive for the wrong reason, so
+      // disclose it whenever it is material.
+      const removedShare = beforeTokens > 0 ? stripped.removedTokens / beforeTokens : 0;
+      if (removedShare >= 0.25) {
+        warnings.push({
+          code: "content-removed",
+          message:
+            `boilerplate and duplicate removal dropped ${stripped.removedSections} sections ` +
+            `(${stripped.removedTokens} tokens, ${Math.round(removedShare * 100)}% of the parsed document) — ` +
+            `mostly repeated or navigational content; convert with the original kept if you need it back`,
+        });
+      }
     }
   }
   const docWithWarnings: MarkdownDoc = {

@@ -41,7 +41,8 @@ export interface ConversionWarning {
     | "budget-exceeded"
     | "engine-fallback"
     | "engine-error"
-    | "layout-skipped";
+    | "layout-skipped"
+    | "content-removed";
   readonly message: string;
   readonly sectionId?: string;
 }
