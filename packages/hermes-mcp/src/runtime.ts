@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
@@ -75,6 +75,28 @@ function groupDigits(n: number): string {
 }
 
 /**
+ * Optional compiled system prompt for the LLM optimizer.
+ *
+ * P2MD_OPTIMIZER_SYSTEM_PROMPT_FILE points at instruction text produced by the
+ * prompt-optimization harness (eval/convert_eval.py --optimize), which scores
+ * candidates against the same metric the test suite enforces. A missing or
+ * unreadable file falls back to the built-in rules with a stderr note rather
+ * than failing startup — a worse prompt is recoverable, a dead runtime is not.
+ */
+function buildOptimizerOptions(env: Env): { systemRules?: string } {
+  const file = env["P2MD_OPTIMIZER_SYSTEM_PROMPT_FILE"];
+  if (file === undefined || file === "") return {};
+  try {
+    return { systemRules: readFileSync(file, "utf8") };
+  } catch (err) {
+    console.error(
+      `[prompt2md] P2MD_OPTIMIZER_SYSTEM_PROMPT_FILE unreadable (${err instanceof Error ? err.message : String(err)}) — using built-in rules`,
+    );
+    return {};
+  }
+}
+
+/**
  * Wrap the LLM optimizer so text input NEVER hard-fails.
  *
  * Real providers return empty content (filters, refusals), truncate at the
@@ -121,9 +143,6 @@ export function createDeterministicTextEngine(): Engine {
           : input.kind === "buffer"
             ? Buffer.from(input.data).toString("utf8")
             : await readFile(input.path, "utf8");
-      // Rambling chat-box prompts are a single free-text blob, not a
-      // structured document — sentence-level filler/dedup cleanup applies
-      // before markdown parsing, which otherwise has nothing to strip.
       // Rambling chat-box prompts are a single free-text blob: strip the
       // filler, then reorganise into Goal / Requirements / Constraints using
       // the author's own words. Without this the zero-config path returns a
@@ -219,7 +238,7 @@ export function createRuntimeFromEnv(
   const engines = {
     "prompt-optimizer":
       gateway !== undefined
-        ? withDeterministicFallback(createPromptOptimizerEngine(gateway))
+        ? withDeterministicFallback(createPromptOptimizerEngine(gateway, buildOptimizerOptions(env)))
         : createDeterministicTextEngine(),
     markitdown,
     docling:

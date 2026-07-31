@@ -47,3 +47,6 @@ data/local/
 # Binary fixtures are generated on demand (fixtures/scripts/make_binary_fixtures.py).
 # The repo stays text-only.
 fixtures/_generated/
+
+# DSPy optimization artifacts are machine-generated per run.
+eval/artifacts/

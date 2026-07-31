@@ -114,3 +114,32 @@ describe("prompt-optimizer refuses degenerate LLM output", () => {
     expect(result.markdown).toBe("# Task\n\nDo the thing.");
   });
 });
+
+describe("compiled system-prompt override (the eval-harness handoff)", () => {
+  it("uses provided systemRules as the base, with addenda still appended", async () => {
+    const { gateway, requests } = capturingGateway();
+    const engine = createPromptOptimizerEngine(gateway, {
+      systemRules: "OPTIMIZED RULES v2: preserve everything, structure aggressively.",
+    });
+
+    await engine.convert(
+      { kind: "text", text: "please implement a python function that parses logs" },
+      sniffText("please implement a python function that parses logs"),
+      {},
+    );
+
+    const system = systemPrompt(requests[0]);
+    expect(system).toContain("OPTIMIZED RULES v2");
+    // The coding addendum still applies on top of the override.
+    expect(system).toContain("## Approach");
+    // The built-in rules were replaced, not concatenated.
+    expect(system).not.toContain("prompt2md's optimizer");
+  });
+
+  it("falls back to the built-in rules when the override is blank", async () => {
+    const { gateway, requests } = capturingGateway();
+    const engine = createPromptOptimizerEngine(gateway, { systemRules: "   " });
+    await engine.convert({ kind: "text", text: "hello there" }, sniffText("hello there"), {});
+    expect(systemPrompt(requests[0])).toContain("prompt2md's optimizer");
+  });
+});
