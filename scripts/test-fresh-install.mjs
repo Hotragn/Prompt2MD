@@ -16,7 +16,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { homedir, tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, parse, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -75,7 +75,29 @@ const before = tryFingerprint();
 
 // --- sandbox ----------------------------------------------------------
 
-const sandbox = mkdtempSync(join(tmpdir(), "p2md-fresh-"));
+/**
+ * Windows still enforces a 260-character MAX_PATH for many APIs, and a pnpm
+ * virtual store adds deeply nested directories with long peer-hashed names. A
+ * sandbox under an already-long TMPDIR pushed `vitepress/bin/vitepress.js`
+ * past the limit and the docs build failed with ERR_REQUIRE_CYCLE_MODULE —
+ * a harness artifact that looked exactly like a product bug. Prefer the
+ * shortest writable base so this test measures the product.
+ */
+function shortestWritableBase() {
+  if (process.platform !== "win32") return tmpdir();
+  for (const candidate of [parse(process.cwd()).root, tmpdir()]) {
+    try {
+      const probe = mkdtempSync(join(candidate, "p2md-probe-"));
+      rmSync(probe, { recursive: true, force: true });
+      return candidate;
+    } catch {
+      // not writable — try the next
+    }
+  }
+  return tmpdir();
+}
+
+const sandbox = mkdtempSync(join(shortestWritableBase(), "p2md-fresh-"));
 const clone = join(sandbox, "repo");
 const fakeHome = join(sandbox, "home");
 const store = join(sandbox, "store");
