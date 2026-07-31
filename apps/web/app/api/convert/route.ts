@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 import type { Fidelity, SourceInput } from "@prompt2md/core";
 import type { CompressResult } from "@prompt2md/hermes-mcp";
-import { getRuntime } from "../../../lib/runtime";
+import {
+  MAX_UPLOAD_BYTES,
+  checkText,
+  errorResponse,
+  readJsonBody,
+  withDeadline,
+} from "../../../lib/guard";
+import { getRuntime, storeIsEphemeral } from "../../../lib/runtime";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,16 +25,15 @@ interface ConvertParams {
 
 const FIDELITIES = new Set(["auto", "fast", "high"]);
 const PROVIDERS = new Set(["anthropic", "openai", "gemini", "kimi"]);
-const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 
-async function parseRequest(req: Request): Promise<ConvertParams | { error: string }> {
+async function parseRequest(req: Request): Promise<ConvertParams | { error: string; status: number }> {
   const contentType = req.headers.get("content-type") ?? "";
 
   if (contentType.includes("multipart/form-data")) {
     const form = await req.formData();
     const file = form.get("file");
-    if (!(file instanceof File)) return { error: "multipart requests need a `file` field" };
-    if (file.size > MAX_UPLOAD_BYTES) return { error: `file exceeds ${MAX_UPLOAD_BYTES / 1024 / 1024}MB upload limit` };
+    if (!(file instanceof File)) return { error: "multipart requests need a `file` field", status: 400 };
+    if (file.size > MAX_UPLOAD_BYTES) return { error: `file exceeds ${MAX_UPLOAD_BYTES / 1024 / 1024}MB upload limit`, status: 413 };
     const budgetRaw = form.get("tokenBudget");
     const fidelityRaw = String(form.get("fidelity") ?? "");
     const providerRaw = String(form.get("provider") ?? "");
@@ -40,32 +46,33 @@ async function parseRequest(req: Request): Promise<ConvertParams | { error: stri
     };
   }
 
-  let body: { text?: string; tokenBudget?: number; fidelity?: Fidelity; provider?: Provider };
-  try {
-    body = (await req.json()) as typeof body;
-  } catch {
-    return { error: "invalid JSON body" };
-  }
-  if (body.text === undefined || body.text.trim() === "") {
-    return { error: "text is required" };
-  }
+  type Body = { text?: string; tokenBudget?: number; fidelity?: Fidelity; provider?: Provider };
+  const parsed = await readJsonBody<Body>(req);
+  if ("error" in parsed) return { error: parsed.error, status: parsed.status };
+
+  const text = checkText(parsed.body.text);
+  if ("error" in text) return { error: text.error, status: text.status };
+
   return {
-    input: { kind: "text", text: body.text },
-    ...(body.tokenBudget !== undefined ? { tokenBudget: body.tokenBudget } : {}),
-    ...(body.fidelity !== undefined ? { fidelity: body.fidelity } : {}),
-    ...(body.provider !== undefined ? { provider: body.provider } : {}),
+    input: { kind: "text", text: text.text },
+    ...(parsed.body.tokenBudget !== undefined ? { tokenBudget: parsed.body.tokenBudget } : {}),
+    ...(parsed.body.fidelity !== undefined ? { fidelity: parsed.body.fidelity } : {}),
+    ...(parsed.body.provider !== undefined ? { provider: parsed.body.provider } : {}),
   };
 }
 
 export async function POST(req: Request): Promise<NextResponse> {
   const params = await parseRequest(req);
-  if ("error" in params) return NextResponse.json({ error: params.error }, { status: 400 });
+  if ("error" in params) return NextResponse.json({ error: params.error }, { status: params.status });
 
   try {
-    const outcome = await getRuntime().convert(params.input, {
-      fidelity: params.fidelity ?? "auto",
-      ...(params.tokenBudget !== undefined ? { tokenBudget: params.tokenBudget } : {}),
-    });
+    const outcome = await withDeadline(
+      getRuntime().convert(params.input, {
+        fidelity: params.fidelity ?? "auto",
+        ...(params.tokenBudget !== undefined ? { tokenBudget: params.tokenBudget } : {}),
+      }),
+      "conversion",
+    );
 
     let markdown = outcome.markdown;
     let compressed: CompressResult | undefined;
@@ -88,12 +95,15 @@ export async function POST(req: Request): Promise<NextResponse> {
       report: outcome.report,
       decision: outcome.decision,
       warnings: [...outcome.doc.warnings, ...(compressed?.doc.warnings ?? [])],
-      ...(compressed !== undefined ? { savings: compressed.savings, sourceId: compressed.sourceId } : {}),
+      ...(compressed !== undefined
+        ? {
+            savings: compressed.savings,
+            sourceId: compressed.sourceId,
+            ephemeralStore: storeIsEphemeral(),
+          }
+        : {}),
     });
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "conversion failed" },
-      { status: 500 },
-    );
+    return errorResponse(err, "conversion failed");
   }
 }

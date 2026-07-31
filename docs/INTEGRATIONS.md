@@ -10,6 +10,49 @@ runtime and one set of env vars.
 pnpm install && pnpm build && pnpm setup
 ```
 
+## Running the studio as a public service
+
+The CLI and MCP server run on your machine with your own files and have no
+limits. The **web studio is different**: if you deploy it where strangers can
+reach it, the input is adversarial by default. These guards are on, and every
+one is tunable by environment variable.
+
+| Setting | Default | What it protects |
+|---|---|---|
+| `P2MD_MAX_INPUT_CHARS` | 1,000,000 (~250k tokens) | Pasted text; returns **413** with a message pointing at the CLI |
+| `P2MD_MAX_UPLOAD_BYTES` | 25 MB | Uploads are read into memory before conversion |
+| `P2MD_REQUEST_TIMEOUT_MS` | 45,000 | Fails with an explanation before the platform kills the function and returns an opaque 504 |
+| `P2MD_STORE_DIR` | `~/.prompt2md/originals` | Where originals are kept — see below |
+
+Error messages returned over HTTP are stripped of absolute paths and host/port
+details; the full error, including those, goes to the server log.
+
+### Retrieval durability
+
+`retrieve_original` is only as durable as the store behind it.
+
+- **On your machine**, originals live in `~/.prompt2md/originals` and persist.
+- **On a serverless platform** (Vercel, Lambda), there is no writable
+  persistent disk, so the store falls back to the instance's temp directory.
+  Originals survive the instance and no longer. A `sourceId` handed out now may
+  legitimately 404 after a cold start.
+
+The API reports this as `ephemeralStore: true` alongside any `sourceId`, the
+studio says so in plain words when it shows you one, and the 404 explains it
+rather than implying data loss. **If you need retrieval you can rely on, run it
+locally or set `P2MD_STORE_DIR` to durable storage.** The losslessness
+guarantee is a property of the store, not a promise the code can keep on its
+own.
+
+### Not included
+
+There is no rate limiting or authentication. A public deployment should sit
+behind whatever your platform provides — Vercel's firewall, a reverse proxy, or
+an API gateway. Adding a per-instance limiter would give the appearance of
+protection without the substance, since serverless instances do not share state.
+
+---
+
 `pnpm setup` detects every supported tool on the machine — **Claude Code**
 (MCP + `/prompt2md` skill), **Claude Desktop**, **Cursor**, **Windsurf**,
 **Gemini CLI**, **Codex CLI** — and registers the MCP server in each, backing

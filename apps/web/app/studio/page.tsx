@@ -37,6 +37,7 @@ interface ApiResult {
   report?: Report;
   savings?: Savings;
   sourceId?: string;
+  ephemeralStore?: boolean;
   warnings?: Warning[];
   error?: string;
 }
@@ -449,7 +450,17 @@ export default function Studio() {
                 ))}
 
                 {result.sourceId !== undefined && (
-                  <p className="hint">original stored — sourceId {result.sourceId}</p>
+                  <p className="hint">
+                    original stored — sourceId {result.sourceId}
+                    {result.ephemeralStore === true && (
+                      <>
+                        {" · "}
+                        <strong>this deployment stores originals temporarily</strong>, so retrieval
+                        works for now but not after the server restarts. Run it locally for
+                        retrieval you can rely on.
+                      </>
+                    )}
+                  </p>
                 )}
 
                 {view === "raw" ? (
