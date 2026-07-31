@@ -19,10 +19,42 @@ export class GatewayHttpError extends Error {
   }
 }
 
+/** A text part, as emitted by servers that return content as an array. */
+interface ContentPart {
+  readonly type?: string;
+  readonly text?: string;
+}
+
 interface OpenAiChatResponse {
-  readonly choices?: readonly { readonly message?: { readonly content?: string } }[];
+  readonly choices?: readonly {
+    readonly message?: { readonly content?: string | readonly ContentPart[] | null };
+    readonly finish_reason?: string | null;
+  }[];
   readonly model?: string;
   readonly usage?: { readonly prompt_tokens?: number; readonly completion_tokens?: number };
+}
+
+/**
+ * Providers do not agree on the shape of `content`, even behind an
+ * "OpenAI-compatible" endpoint:
+ *
+ *   - a plain string (OpenAI, and LiteLLM's usual normalization)
+ *   - null (content filters, and tool-call-only responses)
+ *   - an ARRAY of typed parts (vLLM in some modes, and proxies leaking the
+ *     Anthropic-native shape) — treating that as a string crashed the
+ *     prompt optimizer at `response.text.trim()`
+ *
+ * Normalize all of them to a string here so no caller ever sees the variance.
+ */
+function normalizeContent(content: string | readonly ContentPart[] | null | undefined): string {
+  if (typeof content === "string") return content;
+  if (Array.isArray(content)) {
+    return content
+      .filter((part): part is ContentPart => typeof part === "object" && part !== null)
+      .map((part) => (typeof part.text === "string" ? part.text : ""))
+      .join("");
+  }
+  return "";
 }
 
 /**
@@ -67,7 +99,13 @@ export function createLiteLlmGateway(config: GatewayConfig): LlmGateway {
         ...(cost !== undefined ? { costUsd: cost } : {}),
       };
       entries.push({ ...usage, model, at: new Date().toISOString() });
-      return { text: body.choices?.[0]?.message?.content ?? "", model: body.model ?? model, usage };
+      const choice = body.choices?.[0];
+      return {
+        text: normalizeContent(choice?.message?.content),
+        model: body.model ?? model,
+        usage,
+        ...(typeof choice?.finish_reason === "string" ? { finishReason: choice.finish_reason } : {}),
+      };
     } finally {
       clearTimeout(timer);
     }

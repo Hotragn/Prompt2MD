@@ -24,6 +24,12 @@ export interface CompletionResponse {
   readonly text: string;
   readonly model: string;
   readonly usage: CompletionUsage;
+  /**
+   * Why generation stopped, normalized from the provider ("stop", "length",
+   * "content_filter", …). "length" means the text is TRUNCATED mid-thought —
+   * callers converting documents must not present it as a complete result.
+   */
+  readonly finishReason?: string;
 }
 
 export interface CostLedgerEntry extends CompletionUsage {

@@ -2,8 +2,8 @@ import { mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createDeterministicTextEngine } from "../src/runtime.js";
-import type { SniffReport } from "@prompt2md/core";
+import { createDeterministicTextEngine, withDeterministicFallback } from "../src/runtime.js";
+import type { Engine, SniffReport } from "@prompt2md/core";
 
 const TEXT_SNIFF: SniffReport = { kind: "prompt", mime: "text/plain", bytes: 0 };
 
@@ -80,5 +80,47 @@ describe("deterministic cleanup discloses material content removal", () => {
     const groups = disclosure!.message.match(/\d{1,3}(,\d{3})+/g) ?? [];
     expect(groups.length).toBeGreaterThan(0);
     for (const g of groups) expect(g).toMatch(/^\d{1,3}(,\d{3})+$/);
+  });
+});
+
+describe("LLM optimizer falls back to deterministic output, never to nothing", () => {
+  const failing: Engine = {
+    id: "prompt-optimizer",
+    convert: () => Promise.reject(new Error("stub-model returned empty content (finish_reason: content_filter)")),
+  };
+  const succeeding: Engine = {
+    id: "prompt-optimizer",
+    convert: () => Promise.resolve({ markdown: "# From The Model", warnings: [] }),
+  };
+
+  it("keeps the user's content when the LLM path fails", async () => {
+    // Content filters, truncation, rate limits past the retry budget, and
+    // outages all land here. The floor is the deterministic path, which
+    // always preserves content - a hard failure on text input is never
+    // acceptable.
+    const engine = withDeterministicFallback(failing);
+    const result = await engine.convert(
+      { kind: "text", text: "i need a script that merges csv files. it should skip empty files. use pandas. output parquet." },
+      TEXT_SNIFF,
+      {},
+    );
+
+    expect(result.markdown.toLowerCase()).toContain("csv");
+    expect(result.markdown.toLowerCase()).toContain("parquet");
+
+    const warning = result.warnings.find((w) => w.code === "engine-error");
+    expect(warning).toBeDefined();
+    expect(warning!.message).toContain("content_filter");
+    expect(warning!.message).toContain("your content is intact");
+    // The deterministic engine's own "no gateway configured" notice would be
+    // false here - a gateway exists, it just failed - and must not appear.
+    expect(result.warnings.some((w) => w.code === "engine-fallback")).toBe(false);
+  });
+
+  it("passes successful LLM output through without extra warnings", async () => {
+    const engine = withDeterministicFallback(succeeding);
+    const result = await engine.convert({ kind: "text", text: "anything" }, TEXT_SNIFF, {});
+    expect(result.markdown).toBe("# From The Model");
+    expect(result.warnings).toHaveLength(0);
   });
 });

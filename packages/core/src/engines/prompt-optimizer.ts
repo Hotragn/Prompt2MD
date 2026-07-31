@@ -57,7 +57,33 @@ export function createPromptOptimizerEngine(gateway: LlmGateway): Engine {
         ...(options.model !== undefined ? { model: options.model } : {}),
         ...(options.tokenBudget !== undefined ? { maxTokens: Math.ceil(options.tokenBudget * 1.2) } : {}),
       });
-      return { markdown: response.text.trim(), warnings: [] };
+
+      const markdown = response.text.trim();
+
+      // Real providers return empty content — content filters, refusals, and
+      // tool-call-only responses all do it. Handing back "" as the converted
+      // document would silently erase the user's content, which is the one
+      // thing this project promises never to do. Throw instead: the runtime
+      // falls back to the deterministic path, which always preserves content.
+      if (markdown === "") {
+        throw new Error(
+          `${response.model} returned empty content` +
+            (response.finishReason !== undefined ? ` (finish_reason: ${response.finishReason})` : ""),
+        );
+      }
+
+      // "length" means generation was cut off mid-document. A truncated
+      // conversion is corrupt — the tail of the user's content is gone with
+      // no marker — and must not be presented as a complete result.
+      if (response.finishReason === "length") {
+        throw new Error(
+          `${response.model} truncated the output (finish_reason: length) — the converted ` +
+            `document would be missing its tail. Raise the token budget or let the ` +
+            `deterministic path handle it.`,
+        );
+      }
+
+      return { markdown, warnings: [] };
     },
   };
 }
