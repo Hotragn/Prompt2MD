@@ -11,7 +11,7 @@
   <a href="https://github.com/Hotragn/Prompt2MD/actions/workflows/ci.yml"><img src="https://github.com/Hotragn/Prompt2MD/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License: Apache-2.0"></a>
   <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg" alt="Node >= 20">
-  <img src="https://img.shields.io/badge/tests-152%20unit%20%2B%2013%20e2e-success.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-159%20unit%20%2B%2013%20e2e-success.svg" alt="Tests">
   <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-server%20%2B%20skill-7C5CFF.svg" alt="MCP server and skill"></a>
 </p>
 
@@ -42,8 +42,8 @@ ratio, per-section costs, and the effective cost of every repeat call.
 
 ```console
 $ prompt2md compress ARCHITECTURE.md --token-budget 500
-compressed 1856→1540 tokens (83%), repeat-call cost 170 effective tokens
-(90.8% cheaper than raw), sourceId=a473fa37ccf5b4b5
+compressed 1856→1504 tokens (81%), repeat-call cost 167 effective tokens
+(91% cheaper than raw), sourceId=a473fa37ccf5b4b5
 ```
 
 That run is reproducible from this repository — every number in this README
@@ -185,7 +185,7 @@ sales funnel — is in [docs/research/UI-LANDSCAPE.md](docs/research/UI-LANDSCAP
 
 ```bash
 pnpm build         # core → hermes-mcp → cli → web + docs
-pnpm test          # 152 unit/integration tests
+pnpm test          # 159 unit/integration tests
 pnpm test:e2e      # 13 Selenium scenarios (landing + studio)
 pnpm test:install  # installer against a sandboxed HOME (your configs untouched)
 pnpm test:fresh    # full new-user simulation in a throwaway clone
