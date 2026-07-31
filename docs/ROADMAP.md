@@ -91,27 +91,41 @@ fails the build if any stated number drifts.
 
 ## Known gaps, ranked by how much they matter
 
-1. **The high-fidelity path has never run against a real `docling-serve`.**
-   Escalation is unit-tested with stubs. Scans and complex tables are the
-   headline capability we cannot currently demonstrate end to end.
-   *Next: docker-compose a docling-serve into a CI job with one scanned
-   fixture, so escalation is proven rather than asserted.*
-2. **The LLM optimizer has only run against a local stub.** Every real-provider
-   claim is inference from an OpenAI-compatible contract.
-   *Next: one recorded-fixture integration test per provider shape, so a
-   contract change is caught without needing live keys in CI.*
-3. **The hosted studio cannot convert PDFs**, because serverless has no Python.
+**Closed since this list was written:**
+
+- ~~The high-fidelity path has never run against a real `docling-serve`.~~
+  **Closed.** A `docling` CI job runs a real docling-serve container against
+  generated PDFs: OCR on a scanned invoice, and two-level-header table
+  reconstruction on a native PDF. The test skips when no server is reachable
+  and *says so in the report*, so a green local run is never mistaken for
+  coverage of that path.
+- ~~No round-trip quality harness.~~ **Partly closed.** The deterministic half
+  exists and is a permanent gate: every load-bearing fact (figure, identifier,
+  date) must survive verbatim in the output or sit inside a span an anchor
+  resolves. At budget 120, 32 of 38 facts are recoverable only via anchors and
+  none are lost. Building it found a compressor bug that had been silently
+  disabling compression on any document whose bulk is one long paragraph.
+  *Still open: an LLM-judge pass on whether the compressed version answers the
+  same questions — that needs a model and live keys.*
+
+**Open:**
+
+1. **The LLM optimizer has only run against a local stub.** Every
+   real-provider claim is inference from an OpenAI-compatible contract.
+   *Next: one recorded-fixture test per provider shape, so a contract change
+   is caught without live keys in CI.*
+2. **The hosted studio cannot convert PDFs**, because serverless has no Python.
    Now stated up front by `/api/capabilities` rather than discovered from an
    error, but the demo still cannot show the flagship document path.
    *Next: either a small always-on container for the sidecars, or a WASM
    text-layer extractor for the common case.*
-4. **No published packages.** Everything installs by cloning, which is a real
+3. **No published packages.** Everything installs by cloning, which is a real
    adoption tax and blocks the true one-liner (`npx prompt2md`).
    *Next: changesets + npm publish, gated on the repository going public.*
-5. **No round-trip quality harness.** We measure token savings precisely and
-   answer quality not at all.
-   *Next: an LLM-judge eval over the fixture corpus — does the compressed
-   version answer the same questions as the original?*
+4. **`markitdown` alone cannot read PDFs.** The `[pdf]` extra is required, and
+   without it every PDF raises `MissingDependencyException`. Documented and
+   installed in CI; worth a doctor check so a user finds out before their
+   first conversion rather than during it.
 
 ## Sequenced plan
 
