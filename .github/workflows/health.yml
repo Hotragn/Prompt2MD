@@ -1,0 +1,31 @@
+name: Production Health
+
+# A red run here is the alert: GitHub emails the maintainer on scheduled
+# workflow failures, so the live product breaking reaches us before a user
+# files the issue. Probes the deployments the way a user arrives at them —
+# landing page, capabilities, a real conversion round-trip, the input guard,
+# and the docs site.
+
+on:
+  schedule:
+    - cron: "17 */6 * * *" # every 6 hours (odd minute to avoid the cron rush)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # No install: the probe is dependency-free by design, so this job stays
+      # cheap enough to run every 6 hours forever.
+      - name: Probe the live product
+        run: node scripts/health-check.mjs
