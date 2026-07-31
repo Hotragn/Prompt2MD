@@ -42,6 +42,14 @@ interface ApiResult {
   error?: string;
 }
 
+interface Capabilities {
+  llmOptimizer: boolean;
+  documentEngine: boolean;
+  highFidelityEngine: boolean;
+  durableStore: boolean;
+  limits: { maxInputChars: number; maxUploadBytes: number; requestTimeoutMs: number };
+}
+
 interface DigestData {
   date?: string;
   markdown?: string;
@@ -96,6 +104,7 @@ export default function Studio() {
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [copyState, setCopyState] = useState<"idle" | "ok" | "blocked">("idle");
+  const [caps, setCaps] = useState<Capabilities | null>(null);
   const fileInput = useRef<HTMLInputElement | null>(null);
   const recognition = useRef<SpeechRecognitionLike | null>(null);
   const outputRef = useRef<HTMLPreElement | null>(null);
@@ -104,6 +113,21 @@ export default function Studio() {
     const w = window as unknown as { webkitSpeechRecognition?: new () => SpeechRecognitionLike };
     setSpeechIn(typeof w.webkitSpeechRecognition === "function");
     setSpeechOut("speechSynthesis" in window);
+  }, []);
+
+  // What this deployment can actually do. Knowing before you upload beats
+  // finding out from an error afterwards.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/capabilities")
+      .then((r) => r.json() as Promise<Capabilities>)
+      .then((c) => {
+        if (!cancelled) setCaps(c);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   /** The whole point is pasting the result into a chat box — make that one click. */
@@ -184,7 +208,23 @@ export default function Studio() {
       setResult(null);
       return;
     }
-    // Binary formats (PDF, Office, ...) convert server-side through the engines.
+    // Binary formats need a document engine. Say so here rather than letting
+    // the upload travel to a server that will refuse it.
+    if (caps !== null && !caps.documentEngine && !caps.highFidelityEngine) {
+      setResult({
+        error:
+          `${file.name} needs a document engine, and this deployment has none. Text, Markdown, ` +
+          `HTML, CSV and JSON work here. For PDF and Office files, run prompt2md locally — ` +
+          `\`pip install "markitdown[all]"\` then \`prompt2md convert ${file.name}\`.`,
+      });
+      return;
+    }
+    if (file.size > (caps?.limits.maxUploadBytes ?? Number.POSITIVE_INFINITY)) {
+      setResult({
+        error: `${file.name} is larger than the ${Math.floor((caps?.limits.maxUploadBytes ?? 0) / 1024 / 1024)}MB upload limit here. The CLI has no limit.`,
+      });
+      return;
+    }
     await convertBinary(file);
   }
 
@@ -354,10 +394,27 @@ export default function Studio() {
                 onChange={(e) => void readFiles(e.target.files)}
               />
             </div>
+            {caps !== null && (
+              <div className="caps" role="status" aria-label="What this deployment supports">
+                <span className="caps-title">This deployment</span>
+                <span className="cap" data-on={caps.llmOptimizer}>
+                  {caps.llmOptimizer ? "LLM optimizer" : "deterministic only"}
+                </span>
+                <span className="cap" data-on={caps.documentEngine || caps.highFidelityEngine}>
+                  {caps.documentEngine || caps.highFidelityEngine ? "PDF / Office" : "text formats only"}
+                </span>
+                <span className="cap" data-on={caps.durableStore}>
+                  {caps.durableStore ? "durable originals" : "temporary originals"}
+                </span>
+                <span className="cap" data-on={true}>
+                  {Math.floor(caps.limits.maxInputChars / 1000)}k char limit
+                </span>
+              </div>
+            )}
             <p className="hint">
-              Everything runs locally. Compression is lossless — summarized sections carry p2md:src
-              anchors resolvable via retrieve. Text files load into the editor; PDF/Office uploads
-              convert server-side through the engines.
+              Nothing is stored beyond the originals kept for retrieval, and nothing is sent to a
+              model unless a gateway is configured. Compression is lossless — summarized sections
+              carry p2md:src anchors resolvable via retrieve.
             </p>
           </section>
 

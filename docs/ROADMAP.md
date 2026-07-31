@@ -66,6 +66,81 @@ reproducible from the repo (no dark patterns, no scraped/spam outreach; comply
 with API ToS, attribution, GDPR/CCPA for any site analytics — privacy-respecting
 analytics only, e.g. Plausible).
 
+---
+
+# Where this actually stands, and what comes next
+
+Written 2026-07-31 after a reliability and production-readiness pass. This
+section is the honest state of the project, not the aspirational one.
+
+## What works, verified
+
+| Capability | Evidence |
+|---|---|
+| Rambling prompt → structured Markdown, **no API key** | 150 → 127 tokens, Goal/Requirements/Constraints, every requirement preserved |
+| Document conversion (HTML, Office, CSV, text-layer PDF) | Real MarkItDown, golden fixture corpus |
+| Compression to a token budget, losslessly | 29/29 anchors byte-exact under stress |
+| Retrieval across a cold start | Instance A wrote 17 anchors, instance B resolved 17/17 |
+| MCP in six tools | Real stdio, all three tools + the `optimize` prompt |
+| Concurrency | 10 concurrent real conversions, zero cross-talk |
+| Hostile input | 10 adversarial requests, every one the intended status |
+| Cross-platform | CI green, Linux + Windows × Node 20/22 |
+
+152 unit + 13 E2E, plus an 18-case reliability probe and a claims checker that
+fails the build if any stated number drifts.
+
+## Known gaps, ranked by how much they matter
+
+1. **The high-fidelity path has never run against a real `docling-serve`.**
+   Escalation is unit-tested with stubs. Scans and complex tables are the
+   headline capability we cannot currently demonstrate end to end.
+   *Next: docker-compose a docling-serve into a CI job with one scanned
+   fixture, so escalation is proven rather than asserted.*
+2. **The LLM optimizer has only run against a local stub.** Every real-provider
+   claim is inference from an OpenAI-compatible contract.
+   *Next: one recorded-fixture integration test per provider shape, so a
+   contract change is caught without needing live keys in CI.*
+3. **The hosted studio cannot convert PDFs**, because serverless has no Python.
+   Now stated up front by `/api/capabilities` rather than discovered from an
+   error, but the demo still cannot show the flagship document path.
+   *Next: either a small always-on container for the sidecars, or a WASM
+   text-layer extractor for the common case.*
+4. **No published packages.** Everything installs by cloning, which is a real
+   adoption tax and blocks the true one-liner (`npx prompt2md`).
+   *Next: changesets + npm publish, gated on the repository going public.*
+5. **No round-trip quality harness.** We measure token savings precisely and
+   answer quality not at all.
+   *Next: an LLM-judge eval over the fixture corpus — does the compressed
+   version answer the same questions as the original?*
+
+## Sequenced plan
+
+**Now (unblocks everything else)**
+- Flip the repository public. Every remaining growth item depends on it, and
+  the project is in a defensible state: honest numbers, real tests, green CI.
+- Upload the social preview (`apps/web/public/og.png`) — public-repo only.
+- Create a Vercel Blob store so hosted retrieval is durable rather than
+  best-effort.
+
+**Next (credibility)**
+- docling-serve in CI (gap 1) — the biggest gap between claim and proof.
+- Provider contract tests (gap 2).
+- Round-trip quality harness (gap 5), so "lossless" is backed by evidence
+  about *answers*, not only about bytes.
+
+**Then (reach)**
+- npm publish + `npx prompt2md` one-liner.
+- MCP registry and skill directory listings.
+- A reproducible benchmark post: our fixtures against competitors, with the
+  commands to re-run it. This is the strongest possible marketing for a
+  project whose differentiator is auditable numbers.
+
+**Deliberately not doing**
+- Rate limiting inside the app — per-instance limits on serverless are
+  theatre. Use the platform's firewall.
+- Chasing further reduction on the deterministic path at the cost of fidelity.
+  Structure and honesty beat a bigger percentage.
+
 ## Legal & compliance guardrails (cross-cutting)
 - Apache-2.0 for our code; verify license compatibility of every dependency
   (no AGPL in distributed packages; Marker weights excluded due to OpenRail-M).

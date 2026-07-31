@@ -11,7 +11,7 @@
 
 /** Unit + integration tests. Verified by running the suites, not by counting
  *  `it(` calls — the core package generates cases from the fixture corpus. */
-export const UNIT_TESTS = 144;
+export const UNIT_TESTS = 152;
 
 /** Selenium scenarios across the landing page and the studio. */
 export const E2E_TESTS = 13;
@@ -28,7 +28,7 @@ export const SUPPORTED_TOOLS = 6;
  * headline. See docs/BRAND.md for the full table.
  */
 export const SAMPLE_CONVERSION = {
-  label: "rambling chat prompt, no LLM key configured",
+  label: "rambling chat prompt structured into Markdown, no LLM key configured",
   before: 150,
-  after: 120,
+  after: 127,
 } as const;
