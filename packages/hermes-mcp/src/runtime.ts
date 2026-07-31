@@ -74,6 +74,42 @@ function groupDigits(n: number): string {
   return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
+/**
+ * Wrap the LLM optimizer so text input NEVER hard-fails.
+ *
+ * Real providers return empty content (filters, refusals), truncate at the
+ * token limit, rate-limit past the retry budget, or are simply down. The
+ * pipeline deliberately rethrows prompt-optimizer errors — for the text path
+ * there is no engine below it to degrade to — so this wrapper supplies that
+ * missing floor: any LLM failure lands on the deterministic path, which
+ * always preserves content, with a warning saying exactly what happened.
+ */
+export function withDeterministicFallback(llmEngine: Engine): Engine {
+  const deterministic = createDeterministicTextEngine();
+  return {
+    id: "prompt-optimizer",
+    async convert(input, sniff, options) {
+      try {
+        return await llmEngine.convert(input, sniff, options);
+      } catch (err) {
+        const result = await deterministic.convert(input, sniff, options);
+        return {
+          ...result,
+          warnings: [
+            {
+              code: "engine-error",
+              message: `LLM optimizer failed (${err instanceof Error ? err.message.slice(0, 160) : String(err)}) — deterministic cleanup used instead; your content is intact`,
+            },
+            // Drop the deterministic engine's own "no gateway configured"
+            // notice: a gateway IS configured, it just failed this call.
+            ...result.warnings.filter((w) => w.code !== "engine-fallback"),
+          ],
+        };
+      }
+    },
+  };
+}
+
 /** No-LLM text path: structure + deterministic boilerplate strip only. */
 export function createDeterministicTextEngine(): Engine {
   return {
@@ -182,7 +218,9 @@ export function createRuntimeFromEnv(
   const markitdown = createMarkitdownEngine(pythonBin !== undefined ? { pythonBin } : {});
   const engines = {
     "prompt-optimizer":
-      gateway !== undefined ? createPromptOptimizerEngine(gateway) : createDeterministicTextEngine(),
+      gateway !== undefined
+        ? withDeterministicFallback(createPromptOptimizerEngine(gateway))
+        : createDeterministicTextEngine(),
     markitdown,
     docling:
       doclingUrl !== undefined && doclingUrl !== ""

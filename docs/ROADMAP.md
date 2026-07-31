@@ -108,21 +108,29 @@ fails the build if any stated number drifts.
   *Still open: an LLM-judge pass on whether the compressed version answers the
   same questions — that needs a model and live keys.*
 
+- ~~The LLM optimizer has only run against a local stub.~~ **Closed as far as
+  it can be without live keys.** Provider contract tests pin the gateway
+  against recorded response shapes — OpenAI, Anthropic-via-LiteLLM cost
+  headers, vLLM parts-array content, null-content filters, `length`
+  truncation, missing usage, error envelopes, 429 retry. Building them found
+  three real defects: a parts-array `content` crashed the optimizer, empty
+  content silently erased the document, and truncated output was returned as
+  complete. All three now fall back to the deterministic path with the user's
+  content intact, verified end-to-end over real HTTP.
+  *Still open: a smoke run against one live provider before big releases —
+  needs a key, deliberately not in CI.*
+
 **Open:**
 
-1. **The LLM optimizer has only run against a local stub.** Every
-   real-provider claim is inference from an OpenAI-compatible contract.
-   *Next: one recorded-fixture test per provider shape, so a contract change
-   is caught without live keys in CI.*
-2. **The hosted studio cannot convert PDFs**, because serverless has no Python.
+1. **The hosted studio cannot convert PDFs**, because serverless has no Python.
    Now stated up front by `/api/capabilities` rather than discovered from an
    error, but the demo still cannot show the flagship document path.
    *Next: either a small always-on container for the sidecars, or a WASM
    text-layer extractor for the common case.*
-3. **No published packages.** Everything installs by cloning, which is a real
+2. **No published packages.** Everything installs by cloning, which is a real
    adoption tax and blocks the true one-liner (`npx prompt2md`).
    *Next: changesets + npm publish, gated on the repository going public.*
-4. **`markitdown` alone cannot read PDFs.** The `[pdf]` extra is required, and
+3. **`markitdown` alone cannot read PDFs.** The `[pdf]` extra is required, and
    without it every PDF raises `MissingDependencyException`. Documented and
    installed in CI; worth a doctor check so a user finds out before their
    first conversion rather than during it.

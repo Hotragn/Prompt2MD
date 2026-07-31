@@ -71,3 +71,46 @@ describe("prompt-optimizer system-prompt specialization", () => {
     expect(requests[0]?.temperature).toBe(0);
   });
 });
+
+describe("prompt-optimizer refuses degenerate LLM output", () => {
+  const stubGateway = (text: string, finishReason?: string): LlmGateway => ({
+    complete: () =>
+      Promise.resolve({
+        text,
+        model: "stub-model",
+        usage: { promptTokens: 10, completionTokens: 0 },
+        ...(finishReason !== undefined ? { finishReason } : {}),
+      }),
+    ledger: () => ({ entries: [], totalPromptTokens: 0, totalCompletionTokens: 0, totalCostUsd: 0 }),
+  });
+
+  const input = { kind: "text" as const, text: "please convert this rambling request into markdown" };
+
+  it("throws on empty content instead of erasing the user's document", async () => {
+    // Content filters, refusals, and tool-call-only responses all return
+    // empty content in the wild. "" as the converted document would silently
+    // lose everything the user pasted.
+    const engine = createPromptOptimizerEngine(stubGateway("", "content_filter"));
+    await expect(engine.convert(input, await sniffText(input.text), {})).rejects.toThrow(
+      /empty content.*content_filter/s,
+    );
+  });
+
+  it("throws on whitespace-only content the same way", async () => {
+    const engine = createPromptOptimizerEngine(stubGateway("   \n\n  "));
+    await expect(engine.convert(input, await sniffText(input.text), {})).rejects.toThrow(/empty content/);
+  });
+
+  it("throws on truncation instead of returning half a document", async () => {
+    const engine = createPromptOptimizerEngine(stubGateway("# Doc\n\nfirst half of the conv", "length"));
+    await expect(engine.convert(input, await sniffText(input.text), {})).rejects.toThrow(
+      /truncated.*finish_reason: length/s,
+    );
+  });
+
+  it("passes complete output through untouched", async () => {
+    const engine = createPromptOptimizerEngine(stubGateway("# Task\n\nDo the thing.", "stop"));
+    const result = await engine.convert(input, await sniffText(input.text), {});
+    expect(result.markdown).toBe("# Task\n\nDo the thing.");
+  });
+});
