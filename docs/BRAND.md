@@ -169,13 +169,13 @@ Motion exists to explain change, never to decorate.
 
 ## 7. What the research changed
 
-Findings from current YC/a16z-backed developer-tool sites, and what we did:
+Findings from a survey of current leading developer-tool sites, and what we did:
 
 | Finding | Our response |
 |---|---|
 | Dark hero is a saturated default, not a differentiator | Kept dark (developers do expect it) but moved to **warm ink + paper grain**; differentiation via substrate |
 | Differentiate on the one claim rivals can't make | Hero states losslessness + auditable numbers, not "fast conversion" |
-| Warm colour in a cold category (cf. Supabase green) | Warm ink substrate rather than a warm accent, avoiding semantic collision |
+| Warm colour in a cold category | Warm ink substrate rather than a warm accent, avoiding semantic collision |
 | Default sans reads "competent"; distinctive type reads intentional | Serif display, used sparingly |
 | Show the product, don't describe it | The studio *is* the landing page — no marketing wrapper |
 | Specific quantified claims beat aspirational copy | Every figure on screen comes from a real run |

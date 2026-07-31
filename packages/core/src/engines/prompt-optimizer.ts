@@ -32,11 +32,25 @@ The input is a software/coding request. Additionally:
 const CODING_HINT =
   /\b(code|coding|script|function|class|method|bug|error|exception|stack ?trace|traceback|implement|refactor|compile|debug|unit test|python|typescript|javascript|java|rust|golang|c\+\+|sql|regex|api|endpoint|cli|repo)\b/i;
 
+export interface PromptOptimizerOptions {
+  /**
+   * Replace the base system rules with compiled/optimized instruction text —
+   * the handoff point for prompt-optimization tooling (see eval/), which
+   * scores candidate prompts against the same metric the test suite enforces
+   * and exports the winner. Audience addenda (email, coding) still append.
+   */
+  readonly systemRules?: string;
+}
+
 /**
  * Text path: messy prompts and email threads never touch a document engine —
  * they go through the LLM gateway with deterministic settings (temperature 0).
  */
-export function createPromptOptimizerEngine(gateway: LlmGateway): Engine {
+export function createPromptOptimizerEngine(
+  gateway: LlmGateway,
+  engineOptions: PromptOptimizerOptions = {},
+): Engine {
+  const baseRules = engineOptions.systemRules?.trim() || BASE_RULES;
   return {
     id: "prompt-optimizer",
 
@@ -44,10 +58,10 @@ export function createPromptOptimizerEngine(gateway: LlmGateway): Engine {
       const text = await materializeText(input);
       const system =
         sniff.kind === "email"
-          ? BASE_RULES + EMAIL_ADDENDUM
+          ? baseRules + EMAIL_ADDENDUM
           : sniff.kind === "prompt" && CODING_HINT.test(text)
-            ? BASE_RULES + CODING_ADDENDUM
-            : BASE_RULES;
+            ? baseRules + CODING_ADDENDUM
+            : baseRules;
       const response = await gateway.complete({
         messages: [
           { role: "system", content: system },
