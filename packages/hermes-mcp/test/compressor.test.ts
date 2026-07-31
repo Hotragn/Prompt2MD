@@ -90,3 +90,51 @@ describe("4-phase compression pipeline", () => {
     }
   });
 });
+
+describe("head protection must not swallow the document", () => {
+  it("compresses a document whose bulk is one long paragraph", async () => {
+    // Regression: the head-protection loop used to include the section that
+    // OVERFLOWED the head budget. One large paragraph straddling that boundary
+    // was therefore protected in full, leaving no summarization candidates —
+    // compression returned the input unchanged, over budget, having done
+    // nothing. Pasted text without blank lines looks exactly like this, so it
+    // was the common case, not an edge case.
+    const oneBigBlock = [
+      "# Incident report",
+      "",
+      "Opened after latency crossed the alert threshold.",
+      "",
+      Array.from(
+        { length: 16 },
+        (_, i) =>
+          `Update ${i}. Engineers examined subsystem ${i}. ` +
+          `${"Narrative detail describing dashboards and dead ends. ".repeat(3)}Ticket REF-${5000 + i}.`,
+      ).join("\n"),
+      "",
+      "Resolved by reverting a stale feature flag.",
+    ].join("\n");
+
+    const store = createFileStore(await mkdtemp(join(tmpdir(), "p2md-headfix-")));
+    const result = await compressContext(oneBigBlock, store, { tokenBudget: 120 });
+
+    expect(result.savings.compressedTokens).toBeLessThan(result.savings.rawTokens / 2);
+    expect(result.markdown).toMatch(/p2md:src=[0-9a-f]{16}#\d+-\d+/);
+    expect(result.doc.warnings.some((w) => w.code === "budget-exceeded")).toBe(false);
+  });
+
+  it("still keeps a genuinely small head verbatim", async () => {
+    const doc = [
+      "# Title",
+      "",
+      "Short opening line that fits the head budget.",
+      "",
+      ...Array.from({ length: 10 }, (_, i) => `Body paragraph ${i}. ${"filler ".repeat(30)}End-${i}.`),
+    ].join("\n\n");
+
+    const store = createFileStore(await mkdtemp(join(tmpdir(), "p2md-headfix-")));
+    const result = await compressContext(doc, store, { tokenBudget: 400 });
+
+    // The opening stays intact — protection still works where it should.
+    expect(result.markdown).toContain("Short opening line that fits the head budget.");
+  });
+});

@@ -80,6 +80,68 @@ jobs:
       - name: CLI smoke test (built binary, zero sidecars)
         run: node packages/cli/dist/index.js convert --text "smoke test input for ci" --json
 
+  # The high-fidelity path against a REAL docling-serve. Everything else about
+  # docling is stubbed, which proves the routing and nothing about the engine.
+  # Scans and complex tables are the headline capability, so it gets one job
+  # that runs the actual thing.
+  docling:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      # The repo stays text-only; real PDFs are generated on demand.
+      - name: Generate binary fixtures
+        run: |
+          pip install reportlab pillow
+          python fixtures/scripts/make_binary_fixtures.py
+
+      # markitdown[pdf] is required for the fast path to read PDFs at all —
+      # without it PdfConverter raises MissingDependencyException.
+      - name: Install the fast-path sidecar
+        run: pip install "markitdown[pdf]"
+
+      - name: Start docling-serve
+        run: |
+          docker run -d --name docling -p 5001:5001 \
+            quay.io/docling-project/docling-serve
+          echo "waiting for docling-serve to accept requests…"
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:5001/health > /dev/null 2>&1; then
+              echo "ready after ${i}0s"; exit 0
+            fi
+            sleep 10
+          done
+          echo "docling-serve did not become ready"; docker logs docling | tail -40; exit 1
+
+      - name: High-fidelity integration test
+        env:
+          P2MD_DOCLING_URL: http://localhost:5001
+        run: pnpm --filter @prompt2md/core test -- docling
+
+      - name: docling-serve logs
+        if: always()
+        run: docker logs docling | tail -60
+
   e2e:
     runs-on: ubuntu-latest
     steps:

@@ -138,13 +138,18 @@ async function summarizeMiddle(doc: MarkdownDoc, opts: MiddleOptions): Promise<M
   const sections = [...doc.sections];
 
   // Protect the head and tail: models attend to them best, so they stay verbatim.
+  //
+  // A section only joins the protected head if it FITS inside the head budget.
+  // Including the one that overflows it — as this loop used to — means a single
+  // large paragraph straddling the boundary gets protected in full, and on a
+  // document whose bulk is one long block that leaves no candidates at all:
+  // compression then returns the input unchanged, over budget, having done
+  // nothing. The tail loop below already had this right.
   let headEnd = 0;
   for (let cum = 0; headEnd < sections.length; headEnd++) {
-    cum += sections[headEnd]!.tokens;
-    if (cum >= opts.headTokens) {
-      headEnd++;
-      break;
-    }
+    const next = sections[headEnd]!.tokens;
+    if (cum + next > opts.headTokens) break;
+    cum += next;
   }
   let tailStart = sections.length;
   for (let cum = 0; tailStart > headEnd; ) {

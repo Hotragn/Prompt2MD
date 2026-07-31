@@ -43,3 +43,7 @@ Thumbs.db
 # Local data workspace (real-data test runs, downloads, generated digests)
 data/local/
 **/data/digests/
+
+# Binary fixtures are generated on demand (fixtures/scripts/make_binary_fixtures.py).
+# The repo stays text-only.
+fixtures/_generated/
