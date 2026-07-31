@@ -12,6 +12,7 @@ import {
   parseMarkdown,
   renderMarkdown,
   stripPromptFiller,
+  structurePrompt,
   type ConversionOutcome,
   type ConversionWarning,
   type ConvertOptions,
@@ -87,7 +88,15 @@ export function createDeterministicTextEngine(): Engine {
       // Rambling chat-box prompts are a single free-text blob, not a
       // structured document — sentence-level filler/dedup cleanup applies
       // before markdown parsing, which otherwise has nothing to strip.
-      const text = sniff.kind === "prompt" ? stripPromptFiller(raw, approxCounter).text : raw;
+      // Rambling chat-box prompts are a single free-text blob: strip the
+      // filler, then reorganise into Goal / Requirements / Constraints using
+      // the author's own words. Without this the zero-config path returns a
+      // shorter wall of prose rather than Markdown, which is what every hosted
+      // user gets, since the hosted deployment has no LLM gateway.
+      const text =
+        sniff.kind === "prompt"
+          ? structurePrompt(stripPromptFiller(raw, approxCounter).text, approxCounter).markdown
+          : raw;
       const stripped = stripBoilerplate(parseMarkdown(text, approxCounter), approxCounter);
       const markdown = renderMarkdown(stripped.doc);
 
