@@ -405,6 +405,24 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
         py.status === 0 ? `${pythonBin}: markitdown ${py.stdout.trim()}` : `not usable via '${pythonBin}' — pip install "markitdown[all]"`,
       );
 
+      // markitdown installs without PDF support, and the failure only appears
+      // on a user's first PDF as a MissingDependencyException. Report it here
+      // instead, where it is cheap to fix.
+      if (py.status === 0) {
+        const pdf = spawnSync(
+          pythonBin,
+          ["-c", "import importlib.util,sys; sys.exit(0 if importlib.util.find_spec('pdfminer') else 1)"],
+          { encoding: "utf8", timeout: 15_000 },
+        );
+        check(
+          pdf.status === 0,
+          "markitdown PDF support",
+          pdf.status === 0
+            ? "pdfminer present — PDFs will convert"
+            : `missing — PDFs will fail until you run: pip install "markitdown[pdf]"`,
+        );
+      }
+
       const doclingUrl = env["P2MD_DOCLING_URL"];
       if (doclingUrl === undefined || doclingUrl === "") {
         check(false, "docling (high fidelity)", "P2MD_DOCLING_URL not set — scans/complex tables unavailable");
