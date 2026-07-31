@@ -14,6 +14,8 @@
     "test:install": "node scripts/test-install.mjs",
     "test:fresh": "node scripts/test-fresh-install.mjs",
     "check:claims": "node scripts/check-claims.mjs",
+    "check:health": "node scripts/health-check.mjs",
+    "release:gate": "node scripts/release-gate.mjs",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",

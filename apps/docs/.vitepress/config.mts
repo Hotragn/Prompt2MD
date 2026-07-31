@@ -52,6 +52,7 @@ export default defineConfig({
         text: "Project",
         items: [
           { text: "Roadmap", link: "/ROADMAP" },
+          { text: "Startup playbook", link: "/STARTUP" },
           { text: "Daily Digest archive", link: "/digests/" },
           { text: "Digest sources & vetting", link: "/DIGEST-SOURCES" },
         ],
