@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { convertDocument } from "../src/pipeline.js";
 import { approxCounter } from "../src/tokens/counter.js";
 import type { Engine } from "../src/types/engine.js";
-import { FIXTURES_DIR, syntheticTextPdf } from "./helpers.js";
+import { FIXTURES_DIR, syntheticScannedPdf, syntheticTextPdf } from "./helpers.js";
 
 const textEngine: Engine = {
   id: "prompt-optimizer",
@@ -131,5 +131,59 @@ describe("pipeline resilience (missing sidecars must not break textual input)", 
         },
       ),
     ).rejects.toThrow(/not configured/);
+  });
+});
+
+describe("failures a user actually hits (found by scripts/probe-reliability.mjs)", () => {
+  it("explains what to install when binary input has no document engine", async () => {
+    // Refusing is correct — decoding a PDF as UTF-8 would produce confident
+    // nonsense — but the raw "spawn python ENOENT" told the user nothing, and
+    // this is the first thing anyone hits on a deployment without sidecars.
+    const scanned = syntheticScannedPdf();
+
+    await expect(
+      convertDocument(
+        { kind: "buffer", data: scanned, filename: "scan.pdf" },
+        {
+          engines: {
+            "prompt-optimizer": textEngine,
+            markitdown: failing("markitdown", "markitdown worker failed to start (spawn python ENOENT)"),
+            docling: failing("docling", "not configured"),
+          },
+        },
+      ),
+    ).rejects.toThrow(/needs a document engine/i);
+
+    const error = await convertDocument(
+      { kind: "buffer", data: scanned, filename: "scan.pdf" },
+      {
+        engines: {
+          "prompt-optimizer": textEngine,
+          markitdown: failing("markitdown", "markitdown worker failed to start (spawn python ENOENT)"),
+          // A scanned PDF routes to docling for OCR, so this is the engine
+          // whose failure the user is actually told about.
+          docling: failing("docling", "ECONNREFUSED 127.0.0.1:5001"),
+        },
+      },
+    ).catch((e: unknown) => (e instanceof Error ? e.message : String(e)));
+
+    // Actionable: names the remedy, and keeps the underlying cause for debugging.
+    expect(error).toMatch(/markitdown\[all\]|P2MD_DOCLING_URL/);
+    expect(error).toContain("ECONNREFUSED 127.0.0.1:5001");
+  });
+
+  it("reports a mistyped path as a missing file, not a raw ENOENT", async () => {
+    await expect(
+      convertDocument(
+        { kind: "file", path: join(FIXTURES_DIR, "no-such-file-here.txt") },
+        {
+          engines: {
+            "prompt-optimizer": textEngine,
+            markitdown: echoing("markitdown", "x"),
+            docling: echoing("docling", "x"),
+          },
+        },
+      ),
+    ).rejects.toThrow(/file not found/i);
   });
 });
