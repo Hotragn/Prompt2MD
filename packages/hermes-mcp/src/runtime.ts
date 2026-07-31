@@ -150,11 +150,24 @@ function resolveDefaultStoreDir(): string {
   return join(base, ".prompt2md", "originals");
 }
 
-export function createRuntimeFromEnv(env: Env = process.env): HermesRuntime {
+export interface RuntimeOverrides {
+  /**
+   * Replace the originals store. Hosts without a persistent disk (serverless)
+   * need a durable backend for `retrieve_original` to mean anything past a
+   * cold start; injecting it here keeps this package free of any specific
+   * vendor's SDK.
+   */
+  readonly store?: OriginalStore;
+}
+
+export function createRuntimeFromEnv(
+  env: Env = process.env,
+  overrides: RuntimeOverrides = {},
+): HermesRuntime {
   const gateway = buildGateway(env);
   const doclingUrl = env["P2MD_DOCLING_URL"];
   const pythonBin = env["P2MD_PYTHON_BIN"];
-  const store = createFileStore(env["P2MD_STORE_DIR"] ?? resolveDefaultStoreDir());
+  const store = overrides.store ?? createFileStore(env["P2MD_STORE_DIR"] ?? resolveDefaultStoreDir());
   const summarizer = gateway !== undefined ? createLlmSummarizer(gateway) : undefined;
 
   const markitdown = createMarkitdownEngine(pythonBin !== undefined ? { pythonBin } : {});

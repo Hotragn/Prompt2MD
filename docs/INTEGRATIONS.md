@@ -29,20 +29,39 @@ details; the full error, including those, goes to the server log.
 
 ### Retrieval durability
 
-`retrieve_original` is only as durable as the store behind it.
+`retrieve_original` is only as durable as the store behind it. There are three
+configurations, and the product tells you which one you are in.
 
-- **On your machine**, originals live in `~/.prompt2md/originals` and persist.
-- **On a serverless platform** (Vercel, Lambda), there is no writable
-  persistent disk, so the store falls back to the instance's temp directory.
-  Originals survive the instance and no longer. A `sourceId` handed out now may
-  legitimately 404 after a cold start.
+| Where | Store | Survives a restart? |
+|---|---|---|
+| Your machine | `~/.prompt2md/originals` (or `P2MD_STORE_DIR`) | Yes |
+| Serverless, no blob store | instance temp directory | **No** |
+| Serverless + `BLOB_READ_WRITE_TOKEN` | Vercel Blob, private access | Yes |
 
-The API reports this as `ephemeralStore: true` alongside any `sourceId`, the
-studio says so in plain words when it shows you one, and the 404 explains it
-rather than implying data loss. **If you need retrieval you can rely on, run it
-locally or set `P2MD_STORE_DIR` to durable storage.** The losslessness
-guarantee is a property of the store, not a promise the code can keep on its
-own.
+Without a durable store on serverless, a `sourceId` handed out now can
+legitimately 404 after a cold start. The API reports `ephemeralStore: true`
+alongside any `sourceId`, the studio says so in plain words, and the 404
+explains it rather than implying data loss.
+
+**To make retrieval durable on Vercel:** create a Blob store in the project
+(Storage → Create → Blob). Vercel injects `BLOB_READ_WRITE_TOKEN`
+automatically; prompt2md detects it and switches over. Nothing else to
+configure, and `ephemeralStore` becomes `false`.
+
+Two deliberate choices worth knowing:
+
+- **Blob, not KV.** Originals are whole documents — uploads up to 25 MB — which
+  is far past what Redis-backed KV is sized or priced for. Object storage is
+  also the natural fit for immutable, content-addressed reads.
+- **`access: "private"`.** Originals are reachable only with the store token,
+  never from a public URL. These are documents people pasted or uploaded;
+  storage that anyone with a link could read would be a *worse* privacy
+  position than the ephemeral store it replaces.
+
+Self-hosting elsewhere? `createRuntimeFromEnv(env, { store })` accepts any
+implementation of the `OriginalStore` interface (`put` / `get` / `getSpan`), so
+S3, R2, or a database is a small adapter — see `apps/web/lib/blob-store.ts` as
+the worked example.
 
 ### Not included
 
