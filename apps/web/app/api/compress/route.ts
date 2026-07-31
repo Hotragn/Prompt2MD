@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { getRuntime } from "../../../lib/runtime";
+import { checkText, errorResponse, readJsonBody, withDeadline } from "../../../lib/guard";
+import { getRuntime, storeIsEphemeral } from "../../../lib/runtime";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
 
 interface CompressBody {
   readonly text?: string;
@@ -12,34 +12,33 @@ interface CompressBody {
 }
 
 export async function POST(req: Request): Promise<NextResponse> {
-  let body: CompressBody;
-  try {
-    body = (await req.json()) as CompressBody;
-  } catch {
-    return NextResponse.json({ error: "invalid JSON body" }, { status: 400 });
-  }
-  if (body.text === undefined || body.text.trim() === "") {
-    return NextResponse.json({ error: "text is required" }, { status: 400 });
-  }
-  if (body.tokenBudget === undefined || body.tokenBudget <= 0) {
+  const parsed = await readJsonBody<CompressBody>(req);
+  if ("error" in parsed) return NextResponse.json({ error: parsed.error }, { status: parsed.status });
+
+  const text = checkText(parsed.body.text);
+  if ("error" in text) return NextResponse.json({ error: text.error }, { status: text.status });
+
+  const budget = parsed.body.tokenBudget;
+  if (typeof budget !== "number" || !Number.isFinite(budget) || budget <= 0) {
     return NextResponse.json({ error: "tokenBudget must be a positive integer" }, { status: 400 });
   }
 
   try {
-    const result = await getRuntime().compress(body.text, {
-      tokenBudget: Math.floor(body.tokenBudget),
-      ...(body.provider !== undefined ? { provider: body.provider } : {}),
-    });
+    const result = await withDeadline(
+      getRuntime().compress(text.text, {
+        tokenBudget: Math.floor(budget),
+        ...(parsed.body.provider !== undefined ? { provider: parsed.body.provider } : {}),
+      }),
+      "compression",
+    );
     return NextResponse.json({
       markdown: result.markdown,
       savings: result.savings,
       sourceId: result.sourceId,
+      ephemeralStore: storeIsEphemeral(),
       warnings: result.doc.warnings,
     });
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "compression failed" },
-      { status: 500 },
-    );
+    return errorResponse(err, "compression failed");
   }
 }

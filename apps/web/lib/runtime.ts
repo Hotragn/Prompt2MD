@@ -17,3 +17,18 @@ export function getRuntime(): HermesRuntime {
   cached ??= createRuntimeFromEnv();
   return cached;
 }
+
+/**
+ * True when originals are kept in per-instance temporary storage rather than
+ * anywhere durable.
+ *
+ * Losslessness is the product's central promise, and on a serverless
+ * deployment it is materially weaker: the store lives in the instance's temp
+ * directory, so a valid sourceId stops resolving once that instance recycles.
+ * Callers surface this so a user is never told "nothing is lost" by a
+ * deployment that cannot keep that promise past a cold start.
+ */
+export function storeIsEphemeral(): boolean {
+  if (process.env["P2MD_STORE_DIR"] !== undefined) return false;
+  return process.env["VERCEL"] !== undefined || process.env["P2MD_ON_SERVERLESS"] !== undefined;
+}
