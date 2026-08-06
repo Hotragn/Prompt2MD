@@ -4,36 +4,36 @@
    Story: The Fold. Folding makes something smaller without removing anything
    from it; unfold and you have the original exactly. Competitors cut. We fold.
 
-   Differentiation is in the SUBSTRATE, not the accent: developer tooling has
-   converged on cool near-black, so we use warm ink + paper grain (on-story,
-   and rare in this category) while keeping the violet→cyan brand gradient,
-   which carries recognition equity and would collide with warning colours if
-   it were warm.
+   The substrate is PAPER: a warm off-white page with ink text and hairline
+   borders. Folding happens on paper, and paper is light — the story and the
+   surface are the same thing. One accent (violet), used sparingly for
+   identity and primary action; the old violet→cyan gradient is retired.
    ========================================================================== */
 
 :root {
-  /* --- substrate: warm ink, never pure black ---------------------------- */
-  --surface-0: #0b0a0c;
-  --surface-1: #131217;
-  --surface-2: #1a1820;
-  --surface-3: #221f2a;
-  --border: #272430;
-  --border-lit: #38334a;
+  /* --- substrate: warm paper, never clinical white ----------------------- */
+  --surface-0: #faf9f6;
+  --surface-1: #ffffff;
+  --surface-2: #f4f2ed;
+  --surface-3: #ece9e2;
+  --border: #e7e4dc;
+  --border-lit: #cfcac0;
 
-  /* --- ink: warm off-white, not clinical blue-white --------------------- */
-  --text: #f2efea;
-  --text-muted: #9c96a8;
-  --text-faint: #6e6879;
+  /* --- ink: warm near-black, never pure black ---------------------------- */
+  --text: #17151a;
+  --text-muted: #5f5b66;
+  --text-faint: #8b8794;
 
-  /* --- brand: identity only, never status ------------------------------- */
-  --brand: #7c5cff;
-  --brand-2: #22d3ee;
-  --brand-grad: linear-gradient(100deg, var(--brand), var(--brand-2));
+  /* --- brand: one accent, identity only, never status -------------------- */
+  --brand: #5b3df5;
+  --brand-2: #5b3df5;
+  /* Kept as a name for compatibility; it is now the solid accent. */
+  --brand-grad: linear-gradient(100deg, var(--brand), var(--brand));
 
   /* --- semantic: status only, never decoration -------------------------- */
-  --ok: #4ade80;
-  --warn: #fbbf24;
-  --err: #fb7185;
+  --ok: #15803d;
+  --warn: #b45309;
+  --err: #dc2626;
 
   /* --- type ------------------------------------------------------------- */
   --font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
@@ -48,7 +48,7 @@
   --r-lg: 16px;
   --r-full: 999px;
   --radius: var(--r-md);
-  --shadow-lift: 0 8px 28px -12px rgb(0 0 0 / 0.65);
+  --shadow-lift: 0 10px 30px -16px rgb(23 21 26 / 0.16);
 
   /* --- motion: explains change, never decorates ------------------------- */
   --t-fast: 120ms;
@@ -100,27 +100,16 @@ body {
 }
 
 /* Paper grain — the fold story made tactile. Fixed so it reads as the
-   substrate the interface sits on rather than as texture on the content. */
+   substrate the interface sits on rather than as texture on the content.
+   On light paper it must stay whisper-quiet or it reads as dirt. */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.035;
+  opacity: 0.02;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* A single warm bloom behind the masthead, so the page has a light source. */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(45% 30% at 50% -8%, rgb(124 92 255 / 0.13), transparent 70%),
-    radial-gradient(38% 30% at 88% 108%, rgb(34 211 238 / 0.05), transparent 70%);
 }
 
 .shell {
@@ -224,19 +213,14 @@ body::after {
   transform: scale(0.97);
 }
 
-.tab[data-active="true"] {
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.18),
-    0 2px 10px -2px rgb(124 92 255 / 0.45);
-}
-
 .tab:hover {
   color: var(--text);
 }
 
+/* Active tab is an ink pill — the quiet segmented-control read. */
 .tab[data-active="true"] {
-  background: var(--brand-grad);
-  color: #fff;
+  background: var(--text);
+  color: var(--surface-1);
 }
 
 /* --- layout ------------------------------------------------------------- */
@@ -361,30 +345,23 @@ textarea.input[data-dragging="true"] {
 
 /* --- actions ------------------------------------------------------------ */
 
+/* Primary action is an ink pill: high contrast, zero decoration. */
 .btn {
   border: 0;
-  border-radius: var(--r-md);
+  border-radius: var(--r-full);
   padding: 10px 22px;
   font: inherit;
-  font-weight: 700;
+  font-weight: 650;
   cursor: pointer;
-  color: #fff;
-  background: var(--brand-grad);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22);
+  color: var(--surface-1);
+  background: var(--text);
   transition:
     transform var(--t-fast) var(--ease),
-    filter var(--t-fast) var(--ease),
-    box-shadow var(--t-fast) var(--ease);
+    background var(--t-fast) var(--ease);
 }
 
 .btn:hover:not(:disabled):not(.ghost) {
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.22),
-    0 8px 24px -8px rgb(124 92 255 / 0.5);
-}
-
-.btn:hover:not(:disabled) {
-  filter: brightness(1.08);
+  background: #2b2830;
 }
 
 .btn:active:not(:disabled) {
@@ -397,9 +374,9 @@ textarea.input[data-dragging="true"] {
 }
 
 .btn.ghost {
-  background: var(--surface-2);
+  background: var(--surface-1);
   color: var(--text-muted);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-lit);
   font-weight: 600;
   padding: 8px 14px;
 }
@@ -442,9 +419,9 @@ textarea.input[data-dragging="true"] {
 }
 
 .chip[data-active="true"] {
-  color: #fff;
-  border-color: var(--brand);
-  background: color-mix(in srgb, var(--brand) 20%, transparent);
+  color: var(--brand);
+  border-color: color-mix(in srgb, var(--brand) 45%, var(--border));
+  background: color-mix(in srgb, var(--brand) 8%, transparent);
 }
 
 .chip[data-done="true"] {
@@ -655,7 +632,7 @@ textarea.input[data-dragging="true"] {
 .warning {
   border-left: 3px solid var(--warn);
   background: color-mix(in srgb, var(--warn) 8%, transparent);
-  color: #fde68a;
+  color: #92400e;
   border-radius: 0 var(--r-sm) var(--r-sm) 0;
   padding: 8px 12px;
   font-size: 13px;
@@ -664,7 +641,7 @@ textarea.input[data-dragging="true"] {
 .error {
   border-left: 3px solid var(--err);
   background: color-mix(in srgb, var(--err) 9%, transparent);
-  color: #fecaca;
+  color: #b91c1c;
   border-radius: 0 var(--r-sm) var(--r-sm) 0;
   padding: 8px 12px;
   font-size: 13px;

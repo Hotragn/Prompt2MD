@@ -75,12 +75,13 @@ into a crane and every square millimetre of the paper is still there; unfold
 it and you have the original sheet, exactly. That is the product's guarantee
 drawn as an object, and it is a symbol no letterform can be mistaken for.
 
-Construction: five flat facets, alternating lit (white) and shaded (lavender)
-like any fold, with one dominant wing, a steep neck, a low tail, and a single
-ink accent at the beak. The beak kink is what makes the silhouette a crane at
-a glance; the dominant wing is what keeps it from reading as a crown at
-16 px. No gradients inside the figure, no outline, no ornament: the fold is
-the whole idea, and the magic stays in the tagline.
+Construction: a flat violet badge, paper-white facets, and crease lines that
+are simply the badge showing through the gaps between facets — the fold drawn
+in two colours. One dominant wing, a steep neck, a low tail, and a single ink
+accent at the beak. The beak kink is what makes the silhouette a crane at a
+glance; the dominant wing is what keeps it from reading as a crown at 16 px.
+No gradients anywhere, no outline, no ornament: the fold is the whole idea,
+and the magic stays in the tagline.
 
 - `apps/web/public/brand-icon.svg` — badge mark, square, for favicons, avatars, tool listings
 - `apps/web/public/logo.svg` — horizontal lockup (mark + wordmark + tagline)
@@ -94,46 +95,46 @@ the whole idea, and the magic stays in the tagline.
 
 ## 3. Palette
 
-Dev tooling has converged on cool near-black (`#0B0E14`-ish slate) with a
-violet/cyan gradient. It signals "technical" but no longer distinguishes
-anything. Our differentiation is **substrate, not accent**: a warm ink
-background with paper grain, which is on-story (paper, folding) and rare in
-this category — while the cool brand gradient is retained, because it carries
-real recognition equity and because warm accents would collide with the
-semantic warning colour.
+Dev tooling has converged on cool near-black with a violet/cyan gradient. It
+signals "technical" but no longer distinguishes anything. Our substrate is
+**paper**: a warm off-white page with ink text, hairline borders, and one
+violet accent used sparingly. Folding happens on paper, and paper is light —
+the story and the surface are the same thing. The gradient is retired; the
+minimal system is ink pills for primary actions and a single accent for
+identity.
 
 ```
-Substrate (warm ink — the differentiator)
-  --surface-0  #0B0A0C   page
-  --surface-1  #131217   panels
-  --surface-2  #1A1820   inset fields, outputs
-  --surface-3  #221F2A   raised / hover
-  --border     #272430   hairlines
-  --border-lit #38334A   focus, active edges
+Substrate (warm paper — the differentiator)
+  --surface-0  #FAF9F6   page
+  --surface-1  #FFFFFF   panels
+  --surface-2  #F4F2ED   inset fields, outputs
+  --surface-3  #ECE9E2   raised / hover
+  --border     #E7E4DC   hairlines
+  --border-lit #CFCAC0   focus, active edges
 
-Ink (warm off-white, not clinical blue-white)
-  --text       #F2EFEA
-  --text-muted #9C96A8
-  --text-faint #6E6879
+Ink (warm near-black, never pure black)
+  --text       #17151A
+  --text-muted #5F5B66
+  --text-faint #8B8794
 
-Brand (retained equity — identity, never status)
-  --brand      #7C5CFF   violet
-  --brand-2    #22D3EE   cyan
-  --brand-grad linear-gradient(100deg, violet → cyan)
+Brand (one accent — identity, never status)
+  --brand      #5B3DF5   violet (the only accent; --brand-2 aliases it)
 
 Semantic (status only — never decoration)
-  --ok         #4ADE80   savings, success, "within budget"
-  --warn       #FBBF24   degraded path, budget exceeded
-  --err        #FB7185   failure
+  --ok         #15803D   savings, success, "within budget"
+  --warn       #B45309   degraded path, budget exceeded
+  --err        #DC2626   failure
 ```
 
 **Rules**
-- Brand gradient marks *identity* (wordmark, primary action, output bar). It
-  never encodes status.
+- One accent per page, locked. The violet marks *identity* (wordmark accent,
+  active states, the emphasized phrase); it never encodes status.
+- Primary actions are ink pills (`--text` on `--surface-1`), not accent
+  buttons — high contrast, zero decoration.
 - `--ok` green is reserved for **measured savings**. It is the payoff colour;
   spending it elsewhere devalues it.
-- Warm ink is never pure black — `#0B0A0C` keeps a red bias so the grain reads
-  as paper rather than noise.
+- Ink is never pure black and paper is never pure white — both keep a warm
+  bias so the grain reads as paper rather than noise.
 
 ## 4. Type
 
@@ -179,7 +180,7 @@ Findings from a survey of current leading developer-tool sites, and what we did:
 
 | Finding | Our response |
 |---|---|
-| Dark hero is a saturated default, not a differentiator | Kept dark (developers do expect it) but moved to **warm ink + paper grain**; differentiation via substrate |
+| Dark hero is a saturated default, not a differentiator | Went the other way entirely: **warm paper + ink**, hairline borders, one accent — the light minimalist system the strongest current devtool sites use |
 | Differentiate on the one claim rivals can't make | Hero states losslessness + auditable numbers, not "fast conversion" |
 | Warm colour in a cold category | Warm ink substrate rather than a warm accent, avoiding semantic collision |
 | Default sans reads "competent"; distinctive type reads intentional | Serif display, used sparingly |

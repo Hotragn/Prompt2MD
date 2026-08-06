@@ -1,12 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="prompt2md icon">
-  <defs>
-    <linearGradient id="p2md-g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#7C5CFF"/>
-      <stop offset="1" stop-color="#22D3EE"/>
-    </linearGradient>
-  </defs>
-  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#p2md-g)"/>
-  <path d="M17 46 V24 L32 39 L47 24 V46" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M50 8 Q51.4 12.6 56 14 Q51.4 15.4 50 20 Q48.6 15.4 44 14 Q48.6 12.6 50 8 Z" fill="#FFF3C4"/>
-  <path d="M13 49 Q13.8 51.7 16.5 52.5 Q13.8 53.3 13 56 Q12.2 53.3 9.5 52.5 Q12.2 51.7 13 49 Z" fill="#FFF3C4" opacity="0.92"/>
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="#5B3DF5"/>
+  <!-- Origami crane, flat: paper-white facets, crease lines are the badge
+       showing through. One dominant wing, steep neck with the beak kink,
+       low tail. The beak is the single ink accent. -->
+  <g stroke="#5B3DF5" stroke-width="1.2" stroke-linejoin="round">
+    <polygon points="20,44 26,36 40,36 46,44 33,50" fill="#FFFFFF"/>
+    <polygon points="26,36 40,36 35,14" fill="#FFFFFF"/>
+    <polygon points="20,44 26,36 16,19" fill="#FFFFFF"/>
+    <polygon points="46,44 40,36 56,32" fill="#FFFFFF"/>
+  </g>
+  <polygon points="16,19 9,23 17,24" fill="#17151A"/>
 </svg>

@@ -622,7 +622,7 @@ textarea.pane-body:focus {
 .tile:hover {
   border-color: var(--border-lit);
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px -16px rgb(124 92 255 / 0.25);
+  box-shadow: 0 12px 32px -18px rgb(23 21 26 / 0.18);
 }
 
 .tile.wide {
@@ -693,7 +693,7 @@ textarea.pane-body:focus {
 .win:hover {
   border-color: var(--border-lit);
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px -16px rgb(34 211 238 / 0.18);
+  box-shadow: 0 12px 32px -18px rgb(23 21 26 / 0.14);
 }
 
 .win-bar {
@@ -752,7 +752,7 @@ textarea.pane-body:focus {
 .cta-band {
   border-top: 1px solid var(--border);
   background:
-    radial-gradient(60% 130% at 50% 0%, color-mix(in srgb, var(--brand) 13%, transparent), transparent 70%),
+    radial-gradient(60% 130% at 50% 0%, color-mix(in srgb, var(--brand) 6%, transparent), transparent 70%),
     var(--surface-0);
   text-align: center;
 }
