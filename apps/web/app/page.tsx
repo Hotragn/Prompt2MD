@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Chapter } from "../components/Chapter";
 import { Count } from "../components/Count";
+import { FoldProgress } from "../components/FoldProgress";
 import { FoldStory } from "../components/FoldStory";
 import { LiveFold } from "../components/LiveFold";
 import { Reveal } from "../components/Reveal";
@@ -52,6 +53,8 @@ const PIPELINE = [
 export default function Home() {
   return (
     <>
+      <FoldProgress />
+
       {/* ---------------------------------------------------------------- hero */}
       <section className="hero">
         <div className="container">
@@ -145,7 +148,7 @@ export default function Home() {
           </Reveal>
 
           <div className="compare">
-            <Reveal className="compare-col" delay={60}>
+            <Reveal className="compare-col paper" delay={60}>
               <h3 className="compare-h cut">Cutting</h3>
               <ul>
                 <li>Truncates to fit a window</li>
@@ -155,7 +158,7 @@ export default function Home() {
                 <li>The detail is gone for good</li>
               </ul>
             </Reveal>
-            <Reveal className="compare-col fold" delay={120}>
+            <Reveal className="compare-col fold paper" delay={120}>
               <h3 className="compare-h">Folding</h3>
               <ul>
                 <li>Structures, dedupes, then summarizes only what is safe</li>
@@ -203,7 +206,7 @@ export default function Home() {
           </Reveal>
 
           <div className="bento">
-            <Reveal className="tile wide" delay={40}>
+            <Reveal className="tile wide paper" delay={40}>
               <h3>Token cost is an output, not a footnote</h3>
               <p>
                 Every conversion returns a report: tokens in, tokens out, compression ratio,
@@ -211,28 +214,28 @@ export default function Home() {
                 provider&rsquo;s cache pricing. Set a budget and it is enforced, not suggested.
               </p>
             </Reveal>
-            <Reveal className="tile" delay={80}>
+            <Reveal className="tile paper" delay={80}>
               <h3>Lossless by construction</h3>
               <p>
                 Originals are stored content-addressed before anything is transformed. Summarized
                 sections carry <code>p2md:src</code> anchors that resolve to exact bytes.
               </p>
             </Reveal>
-            <Reveal className="tile" delay={120}>
+            <Reveal className="tile paper" delay={120}>
               <h3>Dual-engine routing</h3>
               <p>
                 ~0.6 s fast path for most inputs; TableFormer and OCR only when the content proves it
                 needs them.
               </p>
             </Reveal>
-            <Reveal className="tile" delay={160}>
+            <Reveal className="tile paper" delay={160}>
               <h3>Cache-aware layout</h3>
               <p>
                 Sections are ordered so prompt caches hit. Repeat calls can cost a fraction of the
                 first one.
               </p>
             </Reveal>
-            <Reveal className="tile wide" delay={200}>
+            <Reveal className="tile wide paper" delay={200}>
               <h3>Works with nothing installed</h3>
               <p>
                 No API key, no sidecar, no account. With zero configuration you get deterministic
@@ -258,7 +261,7 @@ export default function Home() {
           <div className="surfaces">
             {SURFACES.map((s, i) => (
               <Reveal key={s.id} delay={i * 80} className="surface">
-                <div className="win">
+                <div className="win paper">
                   <div className="win-bar">
                     <span className="win-name">{s.name}</span>
                   </div>
@@ -283,7 +286,7 @@ export default function Home() {
           </Reveal>
 
           <Reveal delay={80}>
-            <div className="win install-win">
+            <div className="win install-win paper">
               <div className="win-bar">
                 <span className="win-name">setup</span>
               </div>
