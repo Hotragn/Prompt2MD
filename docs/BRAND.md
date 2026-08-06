@@ -72,9 +72,13 @@ attached.
 
 The icon is an **accordion fold seen edge-on**. Its silhouette reads as **M**
 (markdown); its geometry is the fold that makes text smaller without losing
-any of it. Alternating facets catch light on the front planes and fall into
-shadow on the back, which is what makes it read as folded rather than as a
-zigzag.
+any of it. The strip is drawn in two passes: the shadowed back planes first in
+solid lavender, then the lit front planes in white, whose rounded ends overlap
+each crease the way the front of a real fold covers the back. That overlap is
+what makes it read as one folded strip rather than a zigzag, and the solid
+two-tone is what keeps the letterform legible at 16 px. There is no sparkle
+and no other ornament: the fold is the whole idea, and the magic stays in the
+tagline.
 
 - `apps/web/public/brand-icon.svg` — badge mark, square, for favicons, avatars, tool listings
 - `apps/web/public/logo.svg` — horizontal lockup (mark + wordmark + tagline)
