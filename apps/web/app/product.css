@@ -149,6 +149,35 @@ html.js .reveal[data-shown="false"] {
   -webkit-mask-image: radial-gradient(70% 60% at 50% 22%, #000 20%, transparent 78%);
 }
 
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 24px;
+  align-items: center;
+}
+
+.hero-visual {
+  display: flex;
+  justify-content: center;
+}
+
+.crane-3d {
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 1;
+}
+
+@media (max-width: 900px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .crane-3d {
+    max-width: 220px;
+    margin: 0 auto;
+  }
+}
+
 .eyebrow {
   display: inline-flex;
   align-items: center;

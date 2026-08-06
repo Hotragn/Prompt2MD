@@ -86,6 +86,22 @@ and the magic stays in the tagline.
 - `apps/web/public/brand-icon.svg` — badge mark, square, for favicons, avatars, tool listings
 - `apps/web/public/logo.svg` — horizontal lockup (mark + wordmark + tagline)
 - `apps/web/app/icon.svg` — Next.js favicon route
+- `apps/web/components/Crane3D.tsx` — the mark, made real: the same five
+  facets extruded into thin 3D panels (Three.js, lazily imported so it never
+  lands in the initial bundle), floating beside the hero headline, slowly
+  turning and leaning toward the pointer. Same lit/shaded palette as the
+  flat mark (white/lavender/ink) rather than a lit "paper" material — a
+  single uniform colour under simple lighting reads as grey plastic
+  regardless of light intensity; hand-set per-facet hex does not.
+
+**A cursor of its own.** `components/MdCursor.tsx` replaces the system arrow
+with a small `#` — a markdown heading mark, the smallest unit of branding
+that still says "this is a Markdown tool" wherever the pointer is. It grows
+and inverts over anything clickable, and steps aside for the real text caret
+over inputs and textareas — a studio built on pasting large blocks of text
+cannot lose precise placement to a mascot. Only activates for a fine pointer
+with motion allowed; touch devices and `prefers-reduced-motion` keep the
+native cursor.
 
 **Rules**
 - Minimum size 24 px; below that use the mark with the crease detail removed.
