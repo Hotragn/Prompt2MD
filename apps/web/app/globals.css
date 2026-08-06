@@ -789,6 +789,10 @@ html.md-cursor [contenteditable] {
   z-index: 9999;
   width: 30px;
   height: 30px;
+  /* Without this the tracking div sits directly over whatever it's
+     following and eats the click meant for the element underneath —
+     the actual cause of "clicking buttons doesn't work". */
+  pointer-events: none;
   will-change: transform;
   transition: opacity 0.15s var(--ease);
 }
