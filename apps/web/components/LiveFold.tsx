@@ -155,7 +155,7 @@ function Metric({ label, value, tone }: { label: string; value: string; tone?: "
   );
 }
 
-/** Numbers land rather than blink — the change is the point, so it is shown. */
+/** Numbers land rather than blink: the change is the point, so it is shown. */
 function CountUp({ value, tone }: { value: string; tone?: "ok" }) {
   const [display, setDisplay] = useState(value);
   const previous = useRef(value);

@@ -64,7 +64,7 @@ interface DigestData {
 const SAMPLE_PROMPT = `ok so what i need is basically a python script that takes a folder of csv files and merges them but ONLY the ones that have a "date" column, and also it should skip empty files. oh and the output should be a single parquet file. also please use pandas. actually it also needs to handle dates in different formats, some are MM/DD/YYYY and some are ISO. like i said merge them all into one parquet. also add logging. did i mention to skip empty files? yeah skip those. one more thing - if a file fails to parse dont crash, just log it and continue. use pandas like i said. thanks!!! also python 3.11`;
 
 const SAMPLE_CONTEXT = [
-  "# Incident 4417 — full timeline",
+  "# Incident 4417, full timeline",
   ...Array.from({ length: 14 }, (_, i) =>
     `Update ${i}: engineers investigated subsystem ${i} and recorded observations. ${"Extended narrative describing dashboards, hypotheses, and dead ends in detail. ".repeat(4)}Key finding f-${i}.`,
   ),
@@ -130,14 +130,14 @@ export default function Studio() {
     };
   }, []);
 
-  /** The whole point is pasting the result into a chat box — make that one click. */
+  /** The whole point is pasting the result into a chat box: make that one click. */
   async function copyOutput(markdown: string) {
     try {
       await navigator.clipboard.writeText(markdown);
       setCopyState("ok");
     } catch {
       // Clipboard can be refused (unfocused document, denied permission,
-      // insecure origin). Never claim a copy that did not happen — select the
+      // insecure origin). Never claim a copy that did not happen. Select the
       // text instead so the keyboard fallback is one keystroke away.
       const pre = outputRef.current;
       if (pre !== null) {
@@ -158,7 +158,7 @@ export default function Studio() {
       const res = await fetch(`/api/digest${refresh ? "?refresh=1" : ""}`);
       setDigest((await res.json()) as DigestData);
     } catch {
-      setDigest({ error: "Could not reach the digest API — is the dev server running?" });
+      setDigest({ error: "Could not reach the digest API. Is the dev server running?" });
     } finally {
       setDigestBusy(false);
     }
@@ -214,7 +214,7 @@ export default function Studio() {
       setResult({
         error:
           `${file.name} needs a document engine, and this deployment has none. Text, Markdown, ` +
-          `HTML, CSV and JSON work here. For PDF and Office files, run prompt2md locally — ` +
+          `HTML, CSV and JSON work here. For PDF and Office files, run prompt2md locally: ` +
           `\`pip install "markitdown[all]"\` then \`prompt2md convert ${file.name}\`.`,
       });
       return;
@@ -245,7 +245,7 @@ export default function Studio() {
         data = { error: `server responded ${res.status} without a readable body` };
       }
       setResult(data);
-      setText(`(uploaded ${file.name} — converted server-side)`);
+      setText(`(uploaded ${file.name}, converted server-side)`);
     } catch {
       setResult({ error: "Could not reach the studio API. Is the dev server running?" });
     } finally {
@@ -340,8 +340,8 @@ export default function Studio() {
               }}
               placeholder={
                 tab === "convert"
-                  ? "Paste a messy prompt, email thread, HTML, or CSV — or drop a text file here…"
-                  : "Paste the context block to compress to a token budget — or drop a text file here…"
+                  ? "Paste a messy prompt, email thread, HTML, or CSV, or drop a text file here…"
+                  : "Paste the context block to compress to a token budget, or drop a text file here…"
               }
             />
             <div className="controls">
@@ -407,13 +407,16 @@ export default function Studio() {
                   {caps.durableStore ? "durable originals" : "temporary originals"}
                 </span>
                 <span className="cap" data-on={true}>
-                  {Math.floor(caps.limits.maxInputChars / 1000)}k char limit
+                  {caps.limits.maxInputChars >= 1_000_000
+                    ? `${caps.limits.maxInputChars / 1_000_000}M`
+                    : `${Math.floor(caps.limits.maxInputChars / 1000)}k`}{" "}
+                  char limit
                 </span>
               </div>
             )}
             <p className="hint">
               Nothing is stored beyond the originals kept for retrieval, and nothing is sent to a
-              model unless a gateway is configured. Compression is lossless — summarized sections
+              model unless a gateway is configured. Compression is lossless: summarized sections
               carry p2md:src anchors resolvable via retrieve.
             </p>
           </section>
@@ -429,7 +432,7 @@ export default function Studio() {
                     title="Copy the Markdown, ready to paste into any chat box"
                     onClick={() => void copyOutput(result.markdown ?? "")}
                   >
-                    {copyState === "ok" ? "✓ Copied" : copyState === "blocked" ? "Selected — press Ctrl+C" : "Copy"}
+                    {copyState === "ok" ? "✓ Copied" : copyState === "blocked" ? "Selected. Press Ctrl+C" : "Copy"}
                   </button>
                   <button className="chip" data-active={view === "raw"} onClick={() => setView("raw")}>
                     Raw
@@ -508,7 +511,7 @@ export default function Studio() {
 
                 {result.sourceId !== undefined && (
                   <p className="hint">
-                    original stored — sourceId {result.sourceId}
+                    original stored. sourceId {result.sourceId}
                     {result.ephemeralStore === true && (
                       <>
                         {" · "}
@@ -537,16 +540,16 @@ export default function Studio() {
                 <p className="lead">
                   {tab === "convert"
                     ? "Folding makes text smaller without removing anything from it."
-                    : "Fit an oversized context to a budget — and keep every word you cut."}
+                    : "Fit an oversized context to a budget, and keep every word you cut."}
                 </p>
                 <p className="sub">
                   {tab === "convert"
-                    ? "Paste a rambling prompt and convert it. You get clean Markdown, an honest token count, and a copy button — nothing is summarized away."
+                    ? "Paste a rambling prompt and convert it. You get clean Markdown, an honest token count, and a copy button. Nothing is summarized away."
                     : "Every summarized section carries a p2md:src anchor. Retrieve returns the byte-exact original, so compression is never a one-way door."}
                 </p>
                 <p className="sub">
                   Try <strong>Load sample</strong>, then <strong>{tab === "convert" ? "Convert" : "Compress"}</strong>{" "}
-                  — or press <span className="kbd">Ctrl</span> <span className="kbd">↵</span> in the editor.
+                  or press <span className="kbd">Ctrl</span> <span className="kbd">↵</span> in the editor.
                 </p>
               </div>
             )}
@@ -557,7 +560,7 @@ export default function Studio() {
       {tab === "digest" && (
         <section className="card digest">
           <div className="card-head">
-            <h2>Daily Digest{digest?.date !== undefined ? ` — ${digest.date}` : ""}</h2>
+            <h2>Daily Digest{digest?.date !== undefined ? `: ${digest.date}` : ""}</h2>
             <div className="view-toggle">
               <button className="chip" onClick={() => void loadDigest(true)} disabled={digestBusy}>
                 {digestBusy ? "Refreshing…" : "↻ Refresh"}
@@ -595,7 +598,7 @@ export default function Studio() {
                 </div>
               ))}
               {digest.sourceId !== undefined && (
-                <p className="hint">raw payloads stored losslessly — sourceId {digest.sourceId}</p>
+                <p className="hint">raw payloads stored losslessly. sourceId {digest.sourceId}</p>
               )}
               <div
                 className="output prose digest-body"

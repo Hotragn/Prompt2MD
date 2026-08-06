@@ -76,6 +76,17 @@
   box-sizing: border-box;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Anchor targets (#how, #install, #why) land clear of the sticky masthead. */
+section[id] {
+  scroll-margin-top: 84px;
+}
+
 html,
 body {
   margin: 0;
@@ -104,14 +115,12 @@ body::before {
 body::after {
   content: "";
   position: fixed;
-  top: -220px;
-  left: 50%;
-  width: 900px;
-  height: 460px;
-  transform: translateX(-50%);
+  inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: radial-gradient(50% 50% at 50% 50%, rgb(124 92 255 / 0.13), transparent 70%);
+  background:
+    radial-gradient(45% 30% at 50% -8%, rgb(124 92 255 / 0.13), transparent 70%),
+    radial-gradient(38% 30% at 88% 108%, rgb(34 211 238 / 0.05), transparent 70%);
 }
 
 .shell {
@@ -207,7 +216,18 @@ body::after {
   cursor: pointer;
   transition:
     color var(--t-fast) var(--ease),
-    background var(--t-fast) var(--ease);
+    background var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
+}
+
+.tab:active {
+  transform: scale(0.97);
+}
+
+.tab[data-active="true"] {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    0 2px 10px -2px rgb(124 92 255 / 0.45);
 }
 
 .tab:hover {
@@ -350,9 +370,17 @@ textarea.input[data-dragging="true"] {
   cursor: pointer;
   color: #fff;
   background: var(--brand-grad);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22);
   transition:
     transform var(--t-fast) var(--ease),
-    filter var(--t-fast) var(--ease);
+    filter var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
+}
+
+.btn:hover:not(:disabled):not(.ghost) {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.22),
+    0 8px 24px -8px rgb(124 92 255 / 0.5);
 }
 
 .btn:hover:not(:disabled) {
@@ -728,4 +756,33 @@ textarea.input[data-dragging="true"] {
 
 .cap[data-on="true"]::before {
   background: var(--ok);
+}
+
+/* --- scrollbars: quiet, ink-toned, never the OS-chrome white ------------- */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-lit) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--border-lit);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--text-faint);
+  background-clip: content-box;
+  border: 3px solid transparent;
 }

@@ -4,7 +4,7 @@ import { Reveal } from "../components/Reveal";
 import { SUPPORTED_TOOLS, TOTAL_TESTS } from "../lib/facts";
 
 export const metadata = {
-  title: "prompt2md — token-optimized Markdown, and proof of what it saved",
+  title: "prompt2md: token-optimized Markdown, and proof of what it saved",
 };
 
 const SURFACES = [
@@ -39,7 +39,7 @@ prompt2md retrieve "p2md:src=<id>#<start>-<end>"`,
 ];
 
 const PIPELINE = [
-  { step: "Sniff", detail: "Cheap byte-level probes read the content itself — never the file extension." },
+  { step: "Sniff", detail: "Cheap byte-level probes read the content itself, never the file extension." },
   { step: "Route", detail: "Fast path for text-layer PDFs, HTML, Office, CSV. High-fidelity path for scans and complex tables." },
   { step: "Escalate", detail: "The fast path's output is inspected for damage. Degraded tables or low yield trigger a re-run on the heavy engine." },
   { step: "Optimize", detail: "Boilerplate, navigation chrome, signatures, and duplicated passages come out. Structure stays." },
@@ -53,24 +53,19 @@ export default function Home() {
       <section className="hero">
         <div className="container">
           <Reveal>
-            <p className="eyebrow">
-              <span className="dot" aria-hidden="true" />
-              Apache-2.0 · CLI · MCP server · agent skill
-            </p>
+            <p className="eyebrow">Open source, Apache-2.0</p>
           </Reveal>
 
           <Reveal delay={60}>
             <h1 className="hero-title">
-              Fold any text into <span className="grad">token-optimized Markdown</span>
+              Fold any text into <span className="grad">token&#8209;optimized Markdown</span>
             </h1>
           </Reveal>
 
           <Reveal delay={120}>
             <p className="hero-sub">
-              Folding makes something smaller without removing anything from it. Every other tool
-              cuts — truncates the middle, drops what it guesses you won&rsquo;t miss, and never tells
-              you what it cost. prompt2md folds, reports the real numbers, and hands back the
-              byte-exact original whenever you ask.
+              Other tools cut and hope. prompt2md folds: smaller Markdown, honest token numbers,
+              and the byte-exact original back on demand.
             </p>
           </Reveal>
 
@@ -139,7 +134,7 @@ export default function Home() {
               <h3 className="compare-h">Folding</h3>
               <ul>
                 <li>Structures, dedupes, then summarizes only what is safe</li>
-                <li>Head and tail stay verbatim — models attend to them most</li>
+                <li>Head and tail stay verbatim, because models attend to them most</li>
                 <li>Tables, code, and headings are never summarized</li>
                 <li>Every figure comes from a real run you can repeat</li>
                 <li>
@@ -165,11 +160,8 @@ export default function Home() {
           <ol className="pipeline">
             {PIPELINE.map((p, i) => (
               <Reveal as="li" key={p.step} delay={i * 70} className="pipeline-step">
-                <span className="pipeline-n">{String(i + 1).padStart(2, "0")}</span>
-                <div>
-                  <h3>{p.step}</h3>
-                  <p>{p.detail}</p>
-                </div>
+                <h3>{p.step}</h3>
+                <p>{p.detail}</p>
               </Reveal>
             ))}
           </ol>
@@ -240,9 +232,6 @@ export default function Home() {
               <Reveal key={s.id} delay={i * 80} className="surface">
                 <div className="win">
                   <div className="win-bar">
-                    <span className="win-dot" />
-                    <span className="win-dot" />
-                    <span className="win-dot" />
                     <span className="win-name">{s.name}</span>
                   </div>
                   <pre className="win-body">{s.body}</pre>
@@ -267,9 +256,6 @@ export default function Home() {
           <Reveal delay={80}>
             <div className="win install-win">
               <div className="win-bar">
-                <span className="win-dot" />
-                <span className="win-dot" />
-                <span className="win-dot" />
                 <span className="win-name">setup</span>
               </div>
               <pre className="win-body">{`git clone https://github.com/Hotragn/Prompt2MD.git prompt2md
@@ -294,7 +280,7 @@ pnpm setup`}</pre>
             </ul>
             <p className="section-lead small">
               Model providers are independent of the tool: point <code>P2MD_LITELLM_BASE_URL</code> at
-              any OpenAI-compatible endpoint — Claude, GPT, Gemini, Grok, Kimi, or a local model.
+              any OpenAI-compatible endpoint. Claude, GPT, Gemini, Grok, Kimi, or a local model.
             </p>
           </Reveal>
         </div>
