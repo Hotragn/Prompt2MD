@@ -1,35 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="470" height="118" viewBox="0 0 470 118" role="img" aria-label="prompt2md: A Markdown Magic">
-  <defs>
-    <linearGradient id="p2md-badge" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#8B6BFF"/>
-      <stop offset="0.55" stop-color="#6D5AF5"/>
-      <stop offset="1" stop-color="#22D3EE"/>
-    </linearGradient>
-    <linearGradient id="p2md-word" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#8B6BFF"/>
-      <stop offset="1" stop-color="#22D3EE"/>
-    </linearGradient>
-  </defs>
-
-  <!-- Warm ink backdrop so the lockup reads on light or dark pages. -->
-  <rect x="0" y="0" width="470" height="118" rx="20" fill="#0B0A0C"/>
+  <!-- Paper backdrop so the lockup reads on light or dark pages. -->
+  <rect x="0" y="0" width="470" height="118" rx="20" fill="#FAF9F6"/>
+  <rect x="0.5" y="0.5" width="469" height="117" rx="19.5" fill="none" stroke="#E7E4DC"/>
 
   <g transform="translate(16,19) scale(1.25)">
-  <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#p2md-badge)"/>
-  <rect x="3" y="3" width="58" height="58" rx="14" fill="none" stroke="#FFFFFF" stroke-opacity="0.16"/>
-  <rect x="2" y="2" width="60" height="60" rx="15" fill="none" stroke="#0B0A0C" stroke-opacity="0.18"/>
-  <!-- Origami crane: the fold, made into a figure. One dominant wing, a steep
-       neck with the signature beak kink, a low tail. Facets alternate lit and
-       shaded like any fold; the beak is the single ink accent. -->
-  <polygon points="20,44 26,36 40,36 46,44 33,50" fill="#C7BCF2"/>
-  <polygon points="26,36 40,36 35,14" fill="#FFFFFF"/>
-  <polygon points="20,44 26,36 16,19" fill="#FFFFFF"/>
-  <polygon points="16,19 9,23 17,24" fill="#0B0A0C" fill-opacity="0.85"/>
-  <polygon points="46,44 40,36 56,32" fill="#C7BCF2"/>
+    <rect x="2" y="2" width="60" height="60" rx="15" fill="#5B3DF5"/>
+    <!-- Origami crane, flat: paper-white facets, crease lines are the badge
+         showing through; the beak is the single ink accent. -->
+    <g stroke="#5B3DF5" stroke-width="1.2" stroke-linejoin="round">
+      <polygon points="20,44 26,36 40,36 46,44 33,50" fill="#FFFFFF"/>
+      <polygon points="26,36 40,36 35,14" fill="#FFFFFF"/>
+      <polygon points="20,44 26,36 16,19" fill="#FFFFFF"/>
+      <polygon points="46,44 40,36 56,32" fill="#FFFFFF"/>
+    </g>
+    <polygon points="16,19 9,23 17,24" fill="#17151A"/>
   </g>
 
   <text x="118" y="63" font-family="'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', sans-serif"
-        font-size="44" font-weight="700" letter-spacing="-1.2" fill="#F2EFEA">prompt<tspan fill="url(#p2md-word)">2md</tspan></text>
+        font-size="44" font-weight="700" letter-spacing="-1.2" fill="#17151A">prompt<tspan fill="#5B3DF5">2md</tspan></text>
   <text x="121" y="92" font-family="ui-serif, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif"
-        font-size="15" font-style="italic" letter-spacing="3.4" fill="#9C96A8">A Markdown Magic</text>
+        font-size="15" font-style="italic" letter-spacing="3.4" fill="#5F5B66">A Markdown Magic</text>
 </svg>
