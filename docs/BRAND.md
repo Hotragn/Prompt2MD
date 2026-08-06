@@ -164,6 +164,24 @@ Motion exists to explain change, never to decorate.
 - Everything is wrapped in `prefers-reduced-motion: reduce`, which collapses
   all durations to `0.01ms`. This is not optional.
 
+**Scroll-scrubbed story (GSAP + ScrollTrigger, landing only).** The Fold
+chapter (`components/FoldStory.tsx`) ties its animation to scroll position
+directly, via a CSS-sticky viewport rather than a ScrollTrigger pin — a
+pasted "sheet" fades into the crane facets one at a time as the reader
+scrolls, then the crane fades back into a sheet carrying a
+`retrieve_original: byte-exact` tag. This is the fold/unfold claim shown as
+motion instead of only asserted as a headline. Proof-bar numbers
+(`components/Count.tsx`) count up from 0 on first scroll into view for the
+same reason bars animate on change: a jump from 0 to 149 is *seen*.
+
+Both are progressive enhancements over a valid static state, never the only
+carrier of the claim: the crane's facets and the proof numbers render
+correct and final in the base markup, and JS only scatters/zeroes them at
+mount before animating back — so a blocked script, a slow connection, or
+`prefers-reduced-motion` all land on the same complete page, just without
+motion. Chapter markers (`components/Chapter.tsx`, `[ 01 / 06 ]` style) are
+static text, not gated on JS at all.
+
 ## 6. Layout
 
 - Shell max-width **1240 px**; the studio is a two-column workbench that
