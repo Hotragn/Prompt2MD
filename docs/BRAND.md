@@ -86,13 +86,28 @@ and the magic stays in the tagline.
 - `apps/web/public/brand-icon.svg` — badge mark, square, for favicons, avatars, tool listings
 - `apps/web/public/logo.svg` — horizontal lockup (mark + wordmark + tagline)
 - `apps/web/app/icon.svg` — Next.js favicon route
-- `apps/web/components/Crane3D.tsx` — the mark, made real: the same five
-  facets extruded into thin 3D panels (Three.js, lazily imported so it never
-  lands in the initial bundle), floating beside the hero headline, slowly
-  turning and leaning toward the pointer. Same lit/shaded palette as the
-  flat mark (white/lavender/ink) rather than a lit "paper" material — a
-  single uniform colour under simple lighting reads as grey plastic
-  regardless of light intensity; hand-set per-facet hex does not.
+- `apps/web/components/CraneVideo.tsx` — the mark, made real: the same five
+  facets, modelled and rendered as an actual papercraft object in Blender
+  (`blender/build_crane.py`), turning 360° beside the hero headline. Baked
+  onto the page's own paper colour at render time, so the loop is a plain
+  `<video>` — no WebGL, no runtime 3D dependency, works everywhere a video
+  tag does. An earlier live-WebGL version (Three.js, hand-extruded panels)
+  is what the script's material choices guard against: see the render
+  pipeline's own history below for what went wrong twice before the render
+  looked right.
+- `blender/build_crane.py` — the render pipeline. Two lessons paid for by
+  three failed renders, worth keeping if this is ever touched again:
+  (1) a *uniform* material colour lit by ordinary lights reads as grey
+  plastic regardless of intensity — give every facet its own emission-based
+  hex floor (white / lavender / ink, the flat mark's own scheme) instead of
+  trusting light to create the right colour; (2) a visible backdrop and the
+  *ambient light hitting the object* are the same world-background value in
+  Blender unless separated — colouring the world background to match the
+  page baked the crane out to solid white. Fix: a plain emissive backdrop
+  plane with **Base Color black** (zero diffuse response to the key/fill
+  lights, which were adding on top of its emission and clipping it to
+  white) carries the visible colour; the world stays a low, separate,
+  ordinary ambient light.
 
 **A cursor of its own.** `components/MdCursor.tsx` replaces the system arrow
 with a small `#` — a markdown heading mark, the smallest unit of branding

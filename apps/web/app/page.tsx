@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Chapter } from "../components/Chapter";
 import { Count } from "../components/Count";
-import { Crane3D } from "../components/Crane3D";
+import { CraneVideo } from "../components/CraneVideo";
 import { FoldProgress } from "../components/FoldProgress";
 import { FoldStory } from "../components/FoldStory";
 import { LiveFold } from "../components/LiveFold";
@@ -91,7 +91,7 @@ export default function Home() {
             </div>
 
             <Reveal delay={140} className="hero-visual">
-              <Crane3D />
+              <CraneVideo />
             </Reveal>
           </div>
 
