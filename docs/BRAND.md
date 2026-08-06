@@ -70,15 +70,17 @@ attached.
 
 ## 2. The mark
 
-The icon is an **accordion fold seen edge-on**. Its silhouette reads as **M**
-(markdown); its geometry is the fold that makes text smaller without losing
-any of it. The strip is drawn in two passes: the shadowed back planes first in
-solid lavender, then the lit front planes in white, whose rounded ends overlap
-each crease the way the front of a real fold covers the back. That overlap is
-what makes it read as one folded strip rather than a zigzag, and the solid
-two-tone is what keeps the letterform legible at 16 px. There is no sparkle
-and no other ornament: the fold is the whole idea, and the magic stays in the
-tagline.
+The icon is an **origami crane**: the fold, made into a figure. Fold a sheet
+into a crane and every square millimetre of the paper is still there; unfold
+it and you have the original sheet, exactly. That is the product's guarantee
+drawn as an object, and it is a symbol no letterform can be mistaken for.
+
+Construction: five flat facets, alternating lit (white) and shaded (lavender)
+like any fold, with one dominant wing, a steep neck, a low tail, and a single
+ink accent at the beak. The beak kink is what makes the silhouette a crane at
+a glance; the dominant wing is what keeps it from reading as a crown at
+16 px. No gradients inside the figure, no outline, no ornament: the fold is
+the whole idea, and the magic stays in the tagline.
 
 - `apps/web/public/brand-icon.svg` — badge mark, square, for favicons, avatars, tool listings
 - `apps/web/public/logo.svg` — horizontal lockup (mark + wordmark + tagline)

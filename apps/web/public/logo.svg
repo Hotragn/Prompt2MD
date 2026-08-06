@@ -18,14 +18,14 @@
   <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#p2md-badge)"/>
   <rect x="3" y="3" width="58" height="58" rx="14" fill="none" stroke="#FFFFFF" stroke-opacity="0.16"/>
   <rect x="2" y="2" width="60" height="60" rx="15" fill="none" stroke="#0B0A0C" stroke-opacity="0.18"/>
-
-  <!-- The fold, as one strip. Back planes first in solid lavender so the
-       letterform survives at 16px; front planes second so their rounded ends
-       overlap the creases, the way the front of a fold covers the back. -->
-  <path d="M17 22L32 37M47 22V44" fill="none" stroke="#C7BCF2"
-        stroke-width="8" stroke-linecap="round"/>
-  <path d="M17 44V22M32 37L47 22" fill="none" stroke="#FFFFFF"
-        stroke-width="8" stroke-linecap="round"/>
+  <!-- Origami crane: the fold, made into a figure. One dominant wing, a steep
+       neck with the signature beak kink, a low tail. Facets alternate lit and
+       shaded like any fold; the beak is the single ink accent. -->
+  <polygon points="20,44 26,36 40,36 46,44 33,50" fill="#C7BCF2"/>
+  <polygon points="26,36 40,36 35,14" fill="#FFFFFF"/>
+  <polygon points="20,44 26,36 16,19" fill="#FFFFFF"/>
+  <polygon points="16,19 9,23 17,24" fill="#0B0A0C" fill-opacity="0.85"/>
+  <polygon points="46,44 40,36 56,32" fill="#C7BCF2"/>
   </g>
 
   <text x="118" y="63" font-family="'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', sans-serif"
