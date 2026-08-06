@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { MdCursor } from "../components/MdCursor";
 import "./globals.css";
 import "./product.css";
 
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
+        <MdCursor />
         <a className="skip-link" href="#main">
           Skip to content
         </a>

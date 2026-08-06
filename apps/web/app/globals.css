@@ -763,3 +763,63 @@ textarea.input[data-dragging="true"] {
   background-clip: content-box;
   border: 3px solid transparent;
 }
+
+/* --- custom cursor: a markdown heading mark stands in for the arrow ----- */
+
+html.md-cursor,
+html.md-cursor * {
+  cursor: none;
+}
+
+html.md-cursor input,
+html.md-cursor textarea,
+html.md-cursor select,
+html.md-cursor [contenteditable] {
+  cursor: text;
+}
+
+/* Position (JS-driven translate3d) and scale/colour (CSS, keyed off
+   data-state) live on separate elements — a single element can't take a
+   per-frame JS transform and a CSS hover transform without one clobbering
+   the other every frame. */
+.md-cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  width: 30px;
+  height: 30px;
+  will-change: transform;
+  transition: opacity 0.15s var(--ease);
+}
+
+.md-cursor-dot-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-full);
+  background: var(--surface-1);
+  border: 1px solid var(--border-lit);
+  color: var(--brand);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 4px 14px -6px rgb(23 21 26 / 0.28);
+  transition:
+    transform 0.18s var(--ease),
+    background 0.18s var(--ease),
+    color 0.18s var(--ease);
+}
+
+.md-cursor-dot[data-state="active"] .md-cursor-dot-inner {
+  transform: scale(1.32);
+  background: var(--text);
+  color: var(--surface-1);
+  border-color: var(--text);
+}
+
+.md-cursor-dot[data-state="text"] {
+  opacity: 0 !important;
+}

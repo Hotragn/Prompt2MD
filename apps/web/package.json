@@ -21,13 +21,15 @@
     "marked": "^15.0.4",
     "next": "^15.1.6",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "three": "^0.180.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/selenium-webdriver": "^4.1.27",
+    "@types/three": "^0.180.0",
     "selenium-webdriver": "^4.27.0",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"

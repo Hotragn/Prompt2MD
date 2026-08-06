@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Chapter } from "../components/Chapter";
 import { Count } from "../components/Count";
+import { Crane3D } from "../components/Crane3D";
 import { FoldProgress } from "../components/FoldProgress";
 import { FoldStory } from "../components/FoldStory";
 import { LiveFold } from "../components/LiveFold";
@@ -58,33 +59,41 @@ export default function Home() {
       {/* ---------------------------------------------------------------- hero */}
       <section className="hero">
         <div className="container">
-          <Reveal>
-            <p className="eyebrow">Open source, Apache-2.0</p>
-          </Reveal>
+          <div className="hero-grid">
+            <div className="hero-copy">
+              <Reveal>
+                <p className="eyebrow">Open source, Apache-2.0</p>
+              </Reveal>
 
-          <Reveal delay={60}>
-            <h1 className="hero-title">
-              Fold any text into <span className="grad">token&#8209;optimized Markdown</span>
-            </h1>
-          </Reveal>
+              <Reveal delay={60}>
+                <h1 className="hero-title">
+                  Fold any text into <span className="grad">token&#8209;optimized Markdown</span>
+                </h1>
+              </Reveal>
 
-          <Reveal delay={120}>
-            <p className="hero-sub">
-              Other tools cut and hope. prompt2md folds: smaller Markdown, honest token numbers,
-              and the byte-exact original back on demand.
-            </p>
-          </Reveal>
+              <Reveal delay={120}>
+                <p className="hero-sub">
+                  Other tools cut and hope. prompt2md folds: smaller Markdown, honest token numbers,
+                  and the byte-exact original back on demand.
+                </p>
+              </Reveal>
 
-          <Reveal delay={180}>
-            <div className="hero-cta">
-              <Link className="btn" href="/studio">
-                Open the studio
-              </Link>
-              <a className="btn ghost" href="#install">
-                Install in your tools
-              </a>
+              <Reveal delay={180}>
+                <div className="hero-cta">
+                  <Link className="btn" href="/studio">
+                    Open the studio
+                  </Link>
+                  <a className="btn ghost" href="#install">
+                    Install in your tools
+                  </a>
+                </div>
+              </Reveal>
             </div>
-          </Reveal>
+
+            <Reveal delay={140} className="hero-visual">
+              <Crane3D />
+            </Reveal>
+          </div>
 
           <Reveal delay={240}>
             <LiveFold />
