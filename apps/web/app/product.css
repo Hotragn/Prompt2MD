@@ -163,8 +163,10 @@ html.js .reveal[data-shown="false"] {
 
 .crane-3d {
   width: 100%;
-  max-width: 340px;
+  max-width: 380px;
   aspect-ratio: 1;
+  object-fit: contain;
+  display: block;
 }
 
 @media (max-width: 900px) {
