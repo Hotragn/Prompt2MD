@@ -7,9 +7,14 @@
     </linearGradient>
   </defs>
   <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#p2md-badge)"/>
-  <path d="M18 44V24M32 38L46 24" fill="none" stroke="#FFFFFF" stroke-width="6.5"
-        stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M18 24L32 38M46 24V44" fill="none" stroke="#CFC3F5" stroke-width="6.5"
-        stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M50 9 Q51.3 13.3 55.6 14.6 Q51.3 15.9 50 20.2 Q48.7 15.9 44.4 14.6 Q48.7 13.3 50 9 Z" fill="#FFE9C7"/>
+  <rect x="3" y="3" width="58" height="58" rx="14" fill="none" stroke="#FFFFFF" stroke-opacity="0.16"/>
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="none" stroke="#0B0A0C" stroke-opacity="0.18"/>
+
+  <!-- The fold, as one strip. Back planes first in solid lavender so the
+       letterform survives at 16px; front planes second so their rounded ends
+       overlap the creases, the way the front of a fold covers the back. -->
+  <path d="M17 22L32 37M47 22V44" fill="none" stroke="#C7BCF2"
+        stroke-width="8" stroke-linecap="round"/>
+  <path d="M17 44V22M32 37L47 22" fill="none" stroke="#FFFFFF"
+        stroke-width="8" stroke-linecap="round"/>
 </svg>
