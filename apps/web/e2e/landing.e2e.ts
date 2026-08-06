@@ -21,7 +21,10 @@ describe("prompt2md landing page (Selenium E2E)", () => {
     await driver.wait(async () => (await wrapper.getCssValue("opacity")) === "1", 10_000);
 
     const title = await driver.findElement(By.css(".hero-title"));
-    expect((await title.getText()).toLowerCase()).toContain("token-optimized markdown");
+    // The headline uses a non-breaking hyphen (U+2011) so the compound never
+    // splits across lines; normalize it before asserting on the words.
+    const text = (await title.getText()).toLowerCase().replace(/‑/g, "-");
+    expect(text).toContain("token-optimized markdown");
   });
 
   it("reveals every above-the-fold section without requiring interaction", async () => {
