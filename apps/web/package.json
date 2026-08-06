@@ -17,6 +17,7 @@
     "@prompt2md/hermes-mcp": "workspace:*",
     "@vercel/blob": "^2.6.1",
     "dompurify": "^3.2.3",
+    "gsap": "^3.12.7",
     "marked": "^15.0.4",
     "next": "^15.1.6",
     "react": "^19.0.0",

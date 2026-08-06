@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { Chapter } from "../components/Chapter";
+import { Count } from "../components/Count";
+import { FoldStory } from "../components/FoldStory";
 import { LiveFold } from "../components/LiveFold";
 import { Reveal } from "../components/Reveal";
 import { SUPPORTED_TOOLS, TOTAL_TESTS } from "../lib/facts";
@@ -83,6 +86,12 @@ export default function Home() {
           <Reveal delay={240}>
             <LiveFold />
           </Reveal>
+
+          <Reveal delay={280}>
+            <p className="scroll-cue">
+              <span>↓</span> Watch it fold, chapter one
+            </p>
+          </Reveal>
         </div>
       </section>
 
@@ -90,7 +99,9 @@ export default function Home() {
       <section className="proof">
         <div className="container proof-row">
           <Reveal className="proof-item">
-            <strong>{TOTAL_TESTS}</strong>
+            <strong>
+              <Count value={TOTAL_TESTS} display={String(TOTAL_TESTS)} />
+            </strong>
             <span>tests, green on Linux &amp; Windows</span>
           </Reveal>
           <Reveal className="proof-item" delay={60}>
@@ -98,24 +109,38 @@ export default function Home() {
             <span>telemetry, accounts, or uploads</span>
           </Reveal>
           <Reveal className="proof-item" delay={120}>
-            <strong>{SUPPORTED_TOOLS}</strong>
+            <strong>
+              <Count value={SUPPORTED_TOOLS} display={String(SUPPORTED_TOOLS)} />
+            </strong>
             <span>tools wired by one command</span>
           </Reveal>
           <Reveal className="proof-item" delay={180}>
-            <strong>100%</strong>
+            <strong>
+              <Count value={100} display="100%" />
+            </strong>
             <span>of savings figures reproducible</span>
           </Reveal>
         </div>
       </section>
 
-      {/* --------------------------------------------------------- the argument */}
+      {/* --------------------------------------------------------- the fold story */}
       <section className="section" id="why">
         <div className="container">
           <Reveal>
+            <Chapter n={1} total={6} label="The Fold" />
             <h2 className="section-title">Everything else cuts. This folds.</h2>
             <p className="section-lead">
               The distinction is not stylistic. It is the difference between a transformation you can
               undo and one you cannot.
+            </p>
+          </Reveal>
+
+          <FoldStory />
+
+          <Reveal>
+            <p className="section-lead small" style={{ marginTop: 56 }}>
+              The story is the architecture: the original is stored, content&#8209;addressed, before
+              anything is transformed.
             </p>
           </Reveal>
 
@@ -150,6 +175,7 @@ export default function Home() {
       <section className="section alt" id="how">
         <div className="container">
           <Reveal>
+            <Chapter n={2} total={6} label="The Mechanism" />
             <h2 className="section-title">How a document becomes cheap context</h2>
             <p className="section-lead">
               Five stages. The interesting one is the third: the pipeline checks its own work and
@@ -172,6 +198,7 @@ export default function Home() {
       <section className="section" id="features">
         <div className="container">
           <Reveal>
+            <Chapter n={3} total={6} label="The Proof" />
             <h2 className="section-title">Built for context budgets, not demos</h2>
           </Reveal>
 
@@ -221,6 +248,7 @@ export default function Home() {
       <section className="section alt" id="surfaces">
         <div className="container">
           <Reveal>
+            <Chapter n={4} total={6} label="The Surfaces" />
             <h2 className="section-title">Four surfaces, one pipeline</h2>
             <p className="section-lead">
               The same engine behind a command line, an MCP server, an agent skill, and this studio.
@@ -246,6 +274,7 @@ export default function Home() {
       <section className="section" id="install">
         <div className="container">
           <Reveal>
+            <Chapter n={5} total={6} label="The Access" />
             <h2 className="section-title">One command wires every tool you use</h2>
             <p className="section-lead">
               Detects what is installed, backs up every config before touching it, and is safe to
@@ -290,6 +319,7 @@ pnpm setup`}</pre>
       <section className="section cta-band">
         <div className="container">
           <Reveal>
+            <Chapter n={6} total={6} label="The Invitation" />
             <h2 className="section-title">See it fold something of yours</h2>
             <p className="section-lead">
               Paste a rambling prompt, a contract, or an email thread. You will get clean Markdown, a
