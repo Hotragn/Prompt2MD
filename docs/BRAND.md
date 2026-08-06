@@ -182,6 +182,25 @@ mount before animating back — so a blocked script, a slow connection, or
 motion. Chapter markers (`components/Chapter.tsx`, `[ 01 / 06 ]` style) are
 static text, not gated on JS at all.
 
+**The fold as a UI system, not one illustration.** Two more pieces carry the
+same idea into the interface itself, not into a caption about it:
+
+- `.paper` (`product.css`) is a dog-eared corner — a small folded-paper
+  triangle — applied to every card-like surface (bento tiles, code windows,
+  the cut/fold comparison columns). The whole page reads as sheets of paper
+  you could peel a corner off, not a features grid with a fold graphic
+  bolted onto one section.
+- `components/FoldProgress.tsx` is the scroll position itself drawn as a
+  page corner folding further down the more you've read, labelled with the
+  chapter you're currently in (read from the same `.chapter` markers, so it
+  can't drift out of sync with the content). It is reading progress *and*
+  chapter navigation *and* the fold metaphor, as one fixed corner widget —
+  not three separate UI elements.
+
+Static default for both: a small resting dog-ear, and a fold-progress corner
+reading "Ch. 01 / 06" — correct at the top of the page even before any
+script runs.
+
 ## 6. Layout
 
 - Shell max-width **1240 px**; the studio is a two-column workbench that

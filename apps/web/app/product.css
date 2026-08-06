@@ -231,6 +231,84 @@ html.js .reveal[data-shown="false"] {
   }
 }
 
+/* --- fold progress: the scrollbar IS a folding page corner -------------- */
+
+.fold-progress {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 0 16px 14px 0;
+  pointer-events: none;
+}
+
+.fold-progress-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  background: color-mix(in srgb, var(--surface-0) 82%, transparent);
+  padding: 3px 7px;
+  border-radius: var(--r-sm);
+  margin-bottom: 3px;
+}
+
+.fold-progress-corner {
+  position: relative;
+  width: 72px;
+  height: 72px;
+}
+
+.fold-progress-flap {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(135deg, var(--surface-3) 0%, var(--border-lit) 100%);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  box-shadow: -3px -3px 10px -6px rgb(23 21 26 / 0.35);
+}
+
+@media (max-width: 640px) {
+  .fold-progress {
+    display: none;
+  }
+}
+
+/* --- paper: a dog-eared corner, the fold as a recurring surface language,
+   not a one-off illustration. Applied to every card-like surface. ------- */
+
+.paper {
+  position: relative;
+  overflow: hidden;
+}
+
+.paper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(135deg, transparent 50%, var(--border-lit) 50%);
+  clip-path: polygon(100% 0, 100% 100%, 0 0);
+  opacity: 0.6;
+  transition:
+    width var(--t-base) var(--ease),
+    height var(--t-base) var(--ease),
+    opacity var(--t-base) var(--ease);
+}
+
+.paper:hover::after {
+  width: 24px;
+  height: 24px;
+  opacity: 1;
+}
+
 /* --- chapter markers ---------------------------------------------------- */
 
 .chapter {
