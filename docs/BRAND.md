@@ -86,28 +86,41 @@ and the magic stays in the tagline.
 - `apps/web/public/brand-icon.svg` — badge mark, square, for favicons, avatars, tool listings
 - `apps/web/public/logo.svg` — horizontal lockup (mark + wordmark + tagline)
 - `apps/web/app/icon.svg` — Next.js favicon route
-- `apps/web/components/CraneVideo.tsx` — the mark, made real: the same five
-  facets, modelled and rendered as an actual papercraft object in Blender
-  (`blender/build_crane.py`), turning 360° beside the hero headline. Baked
-  onto the page's own paper colour at render time, so the loop is a plain
-  `<video>` — no WebGL, no runtime 3D dependency, works everywhere a video
-  tag does. An earlier live-WebGL version (Three.js, hand-extruded panels)
-  is what the script's material choices guard against: see the render
-  pipeline's own history below for what went wrong twice before the render
-  looked right.
-- `blender/build_crane.py` — the render pipeline. Two lessons paid for by
-  three failed renders, worth keeping if this is ever touched again:
-  (1) a *uniform* material colour lit by ordinary lights reads as grey
-  plastic regardless of intensity — give every facet its own emission-based
-  hex floor (white / lavender / ink, the flat mark's own scheme) instead of
-  trusting light to create the right colour; (2) a visible backdrop and the
-  *ambient light hitting the object* are the same world-background value in
-  Blender unless separated — colouring the world background to match the
-  page baked the crane out to solid white. Fix: a plain emissive backdrop
-  plane with **Base Color black** (zero diffuse response to the key/fill
-  lights, which were adding on top of its emission and clipping it to
-  white) carries the visible colour; the world stays a low, separate,
-  ordinary ambient light.
+- `apps/web/components/CraneVideo.tsx` — the mark, made real: the crane
+  modelled and rendered as an actual papercraft object in Blender
+  (`blender/build_crane.py`), swinging gently beside the hero headline.
+  Baked onto the page's own paper colour at render time, so the loop is a
+  plain `<video>` — no WebGL, no runtime 3D dependency, works everywhere a
+  video tag does.
+- `blender/build_crane.py` — the render pipeline. Four lessons paid for by
+  failed renders, worth keeping if this is ever touched again:
+
+  1. **Model the object, don't extrude the icon.** The first version mapped
+     `icon.svg`'s 2D facets onto near-coplanar panels with small tilts. That
+     renders fine head-on and collapses to an invisible sliver at 90°. The
+     3D crane is built from real anatomy instead — a centre keel front to
+     back, wings spreading to both sides with dihedral, neck forward, tail
+     back, left half mirrored — so no viewing angle degenerates. The side
+     view still matches the flat mark, because the flat mark was drawn from
+     a crane's profile in the first place.
+  2. **A uniform material colour lit by ordinary lights reads as grey
+     plastic** regardless of intensity. Give every facet its own
+     emission-based hex floor (white / lavender / ink, the flat mark's own
+     scheme) instead of trusting light to create colour.
+  3. **A visible backdrop and the ambient light hitting the object are the
+     same world-background value** unless separated — colouring the world
+     background to match the page baked the crane out to solid white. Fix: a
+     plain emissive backdrop plane with **Base Color black** (zero diffuse
+     response to the key/fill lights, which were adding on top of its
+     emission and clipping it to white) carries the visible colour; the
+     world stays a low, separate, ordinary ambient light.
+  4. **Swing, don't spin.** A full 360° turntable necessarily passes through
+     head-on and tail-on, where a crane's wings go edge-on and the lavender
+     body is fully occluded — it reads as a paper dart. The loop oscillates
+     between two three-quarter views (35°–135°) instead. `sin()` drives it,
+     which eases at both extremes for free and loops seamlessly. Pass
+     `--spin` for a full turntable if the geometry ever changes enough to
+     make the dead angles worth revisiting.
 
 **A cursor of its own.** `components/MdCursor.tsx` replaces the system arrow
 with a small `#` — a markdown heading mark, the smallest unit of branding
