@@ -1,0 +1,87 @@
+name: Security Scan
+
+# Diff-scoped AI pentest on every PR. Only changed files are tested, so the
+# scan stays fast and cheap; validated findings fail the build before merge.
+#
+# Requires two repository secrets (Settings -> Secrets and variables -> Actions):
+#   STRIX_LLM     model id, e.g. openai/gpt-5.4
+#   LLM_API_KEY   the provider key for that model
+# Without them this job fails at the scan step rather than passing silently.
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  strix-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # upload-sarif
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # required for diff-scope resolution
+
+      # Fail closed, but say why. A security gate must not pass silently when
+      # it is unconfigured, and a bare "strix: command failed" would send the
+      # next person hunting through logs.
+      - name: Preflight — required secrets
+        env:
+          STRIX_LLM: ${{ secrets.STRIX_LLM }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        run: |
+          missing=""
+          [ -z "$STRIX_LLM" ] && missing="$missing STRIX_LLM"
+          [ -z "$LLM_API_KEY" ] && missing="$missing LLM_API_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secret(s):$missing" >&2
+            echo "Add them under Settings -> Secrets and variables -> Actions." >&2
+            echo "STRIX_LLM is a model id (e.g. openai/gpt-5.4); LLM_API_KEY is that provider's key." >&2
+            echo "To turn this gate off instead, delete .github/workflows/security.yml." >&2
+            exit 1
+          fi
+
+      - name: Install Strix
+        run: curl -sSL https://strix.ai/install | bash
+
+      - name: Run security scan
+        env:
+          STRIX_LLM: ${{ secrets.STRIX_LLM }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        # Exit 0 pass, 2 validated vulnerabilities (fails the job), 1 setup error.
+        # --diff-base tracks the PR's real base branch rather than a hard-coded
+        # main, so this keeps working if the default branch is ever renamed.
+        run: |
+          strix -n -t ./ \
+            --scan-mode quick \
+            --scope-mode diff \
+            --diff-base "origin/${{ github.base_ref }}" \
+            --max-budget 10
+
+      # A run that exhausts its budget wraps up early and can still exit 0 —
+      # "no findings" would then mean "ran out of money", not "clean". run.json
+      # records "stopped" rather than "completed" in that case, so assert it.
+      # Not a complete guard (a run that wraps up on a budget *warning* still
+      # records "completed" with partial coverage), so keep the budget generous.
+      - name: Fail unless the scan completed
+        if: always()
+        run: |
+          run_json=$(ls -t strix_runs/*/run.json 2>/dev/null | head -1)
+          if [ -z "$run_json" ]; then
+            echo "No strix run.json found — the scan never produced a report." >&2
+            exit 1
+          fi
+          status=$(jq -r .status "$run_json")
+          cost=$(jq -r '.llm_usage.cost // 0' "$run_json")
+          echo "status=$status cost=$cost (budget 10)"
+          if [ "$status" != "completed" ]; then
+            echo "Strix status '$status' — scan did not complete, likely budget exhausted. Raise --max-budget." >&2
+            exit 1
+          fi
+
+      - name: Upload SARIF to code scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: strix_runs
