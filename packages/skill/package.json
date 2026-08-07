@@ -1,9 +1,46 @@
 {
-  "name": "@prompt2md/skill",
+  "name": "prompt2md-skill",
   "version": "0.1.0",
-  "description": "Standalone /prompt2md agent skill definition (YAML/Markdown) for Claude Code and compatible agent runtimes.",
+  "description": "Install the /prompt2md agent skill: convert messy prompts and documents into token-optimized, layout-aware Markdown with an honest token report.",
   "license": "Apache-2.0",
+  "author": "Hotragn",
+  "homepage": "https://prompt2md.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hotragn/Prompt2MD.git",
+    "directory": "packages/skill"
+  },
+  "bugs": {
+    "url": "https://github.com/Hotragn/Prompt2MD/issues"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "agent-skill",
+    "skill",
+    "markdown",
+    "token-optimization",
+    "llm",
+    "context-window",
+    "mcp",
+    "prompt-engineering"
+  ],
+  "bin": {
+    "prompt2md-skill": "bin/install.mjs"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "bin/",
+    "prompt2md/",
+    "README.md"
+  ],
   "scripts": {
     "lint": "node ./scripts/validate-skill.mjs"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

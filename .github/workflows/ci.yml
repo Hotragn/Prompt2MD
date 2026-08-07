@@ -63,7 +63,7 @@ jobs:
         run: pnpm test
 
       - name: Validate skill definition
-        run: pnpm --filter @prompt2md/skill lint
+        run: pnpm --filter prompt2md-skill lint
 
       # Numbers the project states about itself, re-derived from reality.
       # Catches stale counts and any "N% lossless" claim, which conflates

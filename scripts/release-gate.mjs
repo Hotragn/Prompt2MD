@@ -23,7 +23,7 @@ const STEPS = [
   { name: "build", cmd: "pnpm", args: ["build"] },
   { name: "typecheck", cmd: "pnpm", args: ["typecheck"] },
   { name: "unit + integration tests", cmd: "pnpm", args: ["test"] },
-  { name: "skill definition", cmd: "pnpm", args: ["--filter", "@prompt2md/skill", "lint"] },
+  { name: "skill definition", cmd: "pnpm", args: ["--filter", "prompt2md-skill", "lint"] },
   { name: "stated claims match reality", cmd: "pnpm", args: ["check:claims"] },
   { name: "installer isolation (sandboxed HOME)", cmd: "pnpm", args: ["test:install"] },
   { name: "MCP over real stdio", cmd: "node", args: ["packages/hermes-mcp/scripts/verify-stdio.mjs"] },

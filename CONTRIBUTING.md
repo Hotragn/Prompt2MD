@@ -25,7 +25,7 @@ a docling-serve container (`P2MD_DOCLING_URL`), a LiteLLM proxy
 
 ```bash
 pnpm build && pnpm typecheck && pnpm test
-pnpm --filter @prompt2md/skill lint
+pnpm --filter prompt2md-skill lint
 ```
 
 - Strict TypeScript (`exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`) — no `any`, no assertions to silence errors.
