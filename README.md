@@ -67,6 +67,16 @@ runs, and every summarized passage carries an anchor that returns the
 
 ## Quick start
 
+Install the agent skill, no clone required:
+
+```bash
+npx prompt2md-skill
+```
+
+Then start a new agent session and run `/prompt2md`. That is enough for prompt
+cleanup. For document conversion, budgets, and byte-exact retrieval, install
+the engine too:
+
 ```bash
 git clone https://github.com/Hotragn/Prompt2MD.git prompt2md && cd prompt2md
 pnpm install && pnpm build      # Node >= 20, pnpm >= 9
@@ -110,8 +120,14 @@ the model receives optimized Markdown instead of the paste. Preview changes with
 <summary><strong>Agent skill</strong></summary>
 
 ```bash
-cp -r packages/skill/prompt2md ~/.claude/skills/prompt2md   # or .claude/skills in a project
+npx prompt2md-skill              # ~/.claude/skills, and ~/.codex/skills if present
+npx prompt2md-skill --project    # this repo only (./.claude/skills)
+npx prompt2md-skill --dry-run    # show what would change, touch nothing
 ```
+
+Re-running is safe: an identical install is a no-op, and a copy you have edited
+is backed up rather than overwritten. From a clone, `pnpm setup` installs the
+same skill alongside the MCP server.
 
 Triggers on conversion, token-budget, and document-to-Markdown requests, and
 teaches the agent to retrieve verbatim sources instead of answering from a

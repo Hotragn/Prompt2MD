@@ -152,7 +152,7 @@ if (unit.status !== 0) {
   console.log(failingLines.map((l) => `        ${l.trim()}`).join("\n") || `        ${(unit.stderr ?? "").slice(-500)}`);
 }
 
-const skill = run("pnpm", ["--filter", "@prompt2md/skill", "lint"]);
+const skill = run("pnpm", ["--filter", "prompt2md-skill", "lint"]);
 check(skill.status === 0 && (skill.stdout ?? "").includes("SKILL.md valid"), "skill definition validates");
 
 const e2e = run("pnpm", ["--filter", "@prompt2md/web", "test:e2e"]);
