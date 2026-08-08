@@ -111,12 +111,37 @@ describe("against the real fixture", () => {
   it("reconstructs the financial table with every figure under the right heading", async () => {
     const result = await pdfToMarkdown(new Uint8Array(await readFile(fixture)));
 
-    expect(result.markdown).toContain("| Segment | Revenue | Op. Income | Revenue | Op. Income | YoY Rev |");
+    // The header itself is asserted below, where the spanning period tier is
+    // folded in; this case is about the figures landing in the right columns.
     expect(result.markdown).toContain("| Cloud Infrastructure | 4,812 | 1,204 | 3,977 | 902 | +21.0% |");
     // A negative rendered in accounting parentheses must survive intact.
     expect(result.markdown).toContain("| Professional Services | 917 | 64 | 1,033 | 96 | (11.2)% |");
     expect(result.markdown).toContain("| Total | 7,873 | 1,956 | 7,091 | 1,653 | +11.0% |");
     expect(result.empty).toBe(false);
+  });
+
+  it("folds the spanning period header into the column names", async () => {
+    // Without this the header reads Revenue | Op. Income | Revenue | Op.
+    // Income — two identical pairs with no way to tell which quarter is
+    // which. The table parses cleanly and means nothing.
+    const result = await pdfToMarkdown(new Uint8Array(await readFile(fixture)));
+    expect(result.markdown).toContain(
+      "| Segment | Q2 2026 Revenue | Q2 2026 Op. Income | Q2 2025 Revenue | Q2 2025 Op. Income | YoY Rev |",
+    );
+  });
+
+  it("keeps sub-rows marked as sub-rows so the totals still add up", async () => {
+    // Compute and Storage are indented beneath Cloud Infrastructure and are
+    // already inside its figure: 2,930 + 1,882 = 4,812. Flattened to peers,
+    // summing the column gives 12,685 against a printed Total of 7,873, and
+    // anything reading the table concludes the document contradicts itself.
+    const result = await pdfToMarkdown(new Uint8Array(await readFile(fixture)));
+    expect(result.markdown).toContain("| — Compute | 2,930 |");
+    expect(result.markdown).toContain("| — Storage | 1,882 |");
+    expect(result.markdown).toContain("| Cloud Infrastructure | 4,812 |");
+    // The parent and the total are top-level, and must not be marked.
+    expect(result.markdown).not.toContain("| — Cloud Infrastructure");
+    expect(result.markdown).not.toContain("| — Total");
   });
 
   it("leaves the escalation guard with nothing to report", async () => {

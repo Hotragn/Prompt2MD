@@ -156,30 +156,119 @@ export function segment(rows: readonly TextRow[]): Block[] {
   );
 }
 
-function renderTable(rows: readonly TextRow[]): string {
+/** Which column a cell's midpoint falls in. */
+function columnOf(centre: number, boundaries: readonly number[]): number {
+  let column = 0;
+  while (column < boundaries.length && centre > (boundaries[column] ?? 0)) column++;
+  return column;
+}
+
+/**
+ * Fold a spanning header tier into the column names.
+ *
+ * A financial table routinely puts "Q2 2026" over two columns and "Q2 2025"
+ * over the next two, leaving the header row itself reading
+ * `Revenue | Op. Income | Revenue | Op. Income`. Markdown has no spanning
+ * cells, so dropping the tier leaves two identical pairs and no way to tell
+ * which quarter is which — the table stops meaning anything. Pushing the label
+ * down into each column it covers keeps the fact and loses only the visual.
+ */
+function applySpanningHeader(
+  header: readonly string[],
+  span: TextRow | undefined,
+  boundaries: readonly number[],
+): string[] {
+  if (span === undefined) return [...header];
+  const prefixes = Array.from({ length: boundaries.length + 1 }, () => "");
+
+  // Each label runs from where the previous one stopped through its own right
+  // edge, rather than covering only the columns it literally sits over. A
+  // "Q2 2026" set over a Revenue/Op. Income pair is rarely centred on that
+  // pair — in the fixture it sits over the right half — so pure overlap labels
+  // one column of the pair and leaves the other ambiguous, which is the
+  // failure this exists to fix.
+  //
+  // The first label starts at column 1: column 0 is the row-label column, and
+  // period headers do not describe it. That assumes the grouping begins at the
+  // first data column, which is the ordinary shape; a table whose first group
+  // starts further right would pull the label one column too far left. The
+  // figures stay correct either way — only the heading text moves.
+  let start = 1;
+  for (const cell of cells(span, MIN_CORRIDOR)) {
+    const end = columnOf(cell.end, boundaries);
+    for (let c = start; c <= end && c < prefixes.length; c++) prefixes[c] = cell.text;
+    start = end + 1;
+  }
+  return header.map((name, i) => {
+    const prefix = prefixes[i] ?? "";
+    return prefix === "" || name === "" ? name : `${prefix} ${name}`;
+  });
+}
+
+/** Indented rows are children of the row above, not peers of it. */
+const INDENT_MIN = 4;
+
+function renderTable(rows: readonly TextRow[], span?: TextRow): string {
   const boundaries = findCorridors(rows);
   if (boundaries.length === 0) return renderProse(rows);
 
-  const grid = rows.map((row) => {
+  const rowCells = rows.map((row) => cells(row, MIN_CORRIDOR));
+  // The left edge of the label column, taken across the block: anything
+  // further right than this is indented under something.
+  const leftEdge = Math.min(...rowCells.map((c) => c[0]?.x ?? Number.POSITIVE_INFINITY));
+
+  const grid = rowCells.map((cellsInRow) => {
     const line = Array.from({ length: boundaries.length + 1 }, () => "");
-    for (const cell of cells(row, MIN_CORRIDOR)) {
+    for (const cell of cellsInRow) {
       // Place by the cell's midpoint: a right-aligned number and a
       // left-aligned label in the same column both land in the same slot.
-      const centre = (cell.x + cell.end) / 2;
-      let column = 0;
-      while (column < boundaries.length && centre > (boundaries[column] ?? 0)) column++;
-      line[column] = line[column] === "" ? cell.text : `${line[column]} ${cell.text}`;
+      line[columnOf((cell.x + cell.end) / 2, boundaries)] =
+        line[columnOf((cell.x + cell.end) / 2, boundaries)] === ""
+          ? cell.text
+          : `${line[columnOf((cell.x + cell.end) / 2, boundaries)]} ${cell.text}`;
+    }
+
+    // Subtotal rows are the reason this matters. In the fixture, Compute and
+    // Storage sit indented under Cloud Infrastructure and are included in its
+    // figure, so a flattened table invites anyone summing the column to
+    // double-count — and the printed Total then looks wrong. The indent is in
+    // the geometry; keeping it is free, and losing it silently corrupts the
+    // arithmetic.
+    const first = cellsInRow[0];
+    if (first !== undefined && Number.isFinite(leftEdge) && first.x - leftEdge >= INDENT_MIN) {
+      const column = columnOf((first.x + first.end) / 2, boundaries);
+      if (line[column] !== "") line[column] = `— ${line[column]}`;
     }
     return line;
   });
 
+  const [headerRow, ...bodyRows] = grid;
+  const withSpan = headerRow === undefined ? [] : [applySpanningHeader(headerRow, span, boundaries), ...bodyRows];
+
   // A column empty in every row is a corridor we split on twice; dropping it
   // avoids a table of blank gutters.
   const keep = Array.from({ length: boundaries.length + 1 }, (_, i) =>
-    grid.some((line) => (line[i] ?? "") !== ""),
+    withSpan.some((line) => (line[i] ?? "") !== ""),
   );
-  const trimmed = grid.map((line) => line.filter((_, i) => keep[i] === true));
-  return toMarkdownTable(trimmed);
+  return toMarkdownTable(withSpan.map((line) => line.filter((_, i) => keep[i] === true)));
+}
+
+/**
+ * Whether a prose row is really the top tier of the table below it: fewer
+ * cells than the table has columns, and sitting within its horizontal extent.
+ */
+function isSpanningHeaderFor(row: TextRow, table: readonly TextRow[], boundaries: readonly number[]): boolean {
+  const spanCells = cells(row, MIN_CORRIDOR);
+  if (spanCells.length < 2 || spanCells.length > boundaries.length) return false;
+
+  const tableCells = table.flatMap((r) => cells(r, MIN_CORRIDOR));
+  const left = Math.min(...tableCells.map((c) => c.x));
+  const right = Math.max(...tableCells.map((c) => c.end));
+  const first = spanCells[0];
+  const last = spanCells[spanCells.length - 1];
+  if (first === undefined || last === undefined) return false;
+  // Inside the table's own width, and covering more than one column.
+  return first.x >= left - MIN_CORRIDOR && last.end <= right + MIN_CORRIDOR;
 }
 
 /**
@@ -218,8 +307,34 @@ function canJoin(previous: string, line: string): boolean {
 
 /** One page of positioned runs to Markdown, tables kept as tables. */
 export function layoutToMarkdown(items: readonly PositionedItem[]): string {
-  return segment(groupRows(items))
-    .map((block) => (block.kind === "table" ? renderTable(block.rows) : renderProse(block.rows)))
+  const blocks = segment(groupRows(items));
+
+  // A spanning header tier has too few cells to look tabular, so it lands in
+  // the prose block above the table it belongs to. Hand it back before
+  // rendering, or the table keeps the columns and loses what they mean.
+  const spanFor = new Map<number, TextRow>();
+  const donated = new Set<number>();
+
+  for (let i = 1; i < blocks.length; i++) {
+    const table = blocks[i];
+    const above = blocks[i - 1];
+    if (table?.kind !== "table" || above?.kind !== "prose") continue;
+
+    const candidate = above.rows[above.rows.length - 1];
+    if (candidate === undefined) continue;
+    const boundaries = findCorridors(table.rows);
+    if (boundaries.length > 0 && isSpanningHeaderFor(candidate, table.rows, boundaries)) {
+      spanFor.set(i, candidate);
+      donated.add(i - 1);
+    }
+  }
+
+  return blocks
+    .map((block, i) => {
+      if (block.kind === "table") return renderTable(block.rows, spanFor.get(i));
+      const rows = donated.has(i) ? block.rows.slice(0, -1) : block.rows;
+      return renderProse(rows);
+    })
     .filter((s) => s.trim() !== "")
     .join("\n\n");
 }
