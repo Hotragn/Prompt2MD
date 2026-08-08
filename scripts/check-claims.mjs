@@ -127,6 +127,50 @@ if (conversion !== undefined) {
   );
 }
 
+// --- 3b. the compress figure quoted in README and BRAND -----------------
+
+// These went stale twice: once when ARCHITECTURE.md itself changed, once when
+// the compressor's layout fix moved the output. Both times the docs kept
+// quoting a run that no longer existed, under a heading promising every number
+// comes from a real command. Derive them instead of trusting them.
+let compression;
+try {
+  const cli = join(REPO, "packages", "cli", "dist", "index.js");
+  const out = run("node", [cli, "compress", join(REPO, "ARCHITECTURE.md"), "--token-budget", "500", "--json"], {
+    shell: false,
+  });
+  compression = JSON.parse(out);
+} catch (err) {
+  check(false, "compress sample runs", err instanceof Error ? err.message.slice(0, 120) : "failed");
+}
+
+if (compression !== undefined) {
+  const { rawTokens, compressedTokens, cache } = compression.savings;
+  const effective = cache.effectiveTokensPerSubsequentCall;
+  const group = (n) => n.toLocaleString("en-US");
+
+  const quoted = /compressed (\d+)→(\d+) tokens/.exec(readFileSync(join(REPO, "README.md"), "utf8"));
+  check(
+    quoted !== null && Number(quoted[1]) === rawTokens && Number(quoted[2]) === compressedTokens,
+    "README compress example matches a real run",
+    quoted === null
+      ? "no compress example found"
+      : `quoted ${quoted[1]}→${quoted[2]}, actual ${rawTokens}→${compressedTokens}`,
+  );
+
+  const brand = readFileSync(join(REPO, "docs", "BRAND.md"), "utf8");
+  check(
+    brand.includes(`${group(rawTokens)} → ${group(compressedTokens)}`),
+    "BRAND budgeted row matches a real run",
+    `actual ${group(rawTokens)} → ${group(compressedTokens)}`,
+  );
+  check(
+    brand.includes(`${group(rawTokens)} → ${effective} effective`),
+    "BRAND repeat-call row matches a real run",
+    `actual ${group(rawTokens)} → ${effective} effective`,
+  );
+}
+
 // --- 4. supported tools -------------------------------------------------
 
 const targets = readFileSync(join(REPO, "scripts", "lib", "targets.mjs"), "utf8");

@@ -66,9 +66,9 @@ favour, so the unit is always named.
 | Rambling chat prompt | 150 → 120 | 80% of input | Deterministic path, no LLM key |
 | Rambling chat prompt, structured | 150 → 127 | 85% of input | The +7 is the cost of Goal/Requirements headings |
 | HTML article fixture | 363 → 257 | 71% of input | Chrome and nav stripped. NB: the input is already-converted Markdown, not raw HTML — see below |
-| Markdown doc, budgeted | 1,856 → 1,504 | 81% of input | `compress --token-budget 500` |
+| Markdown doc, budgeted | 1,834 → 1,481 | 81% of input | `compress --token-budget 500` |
 | Daily Digest | 79,497 → 1,363 | 2% of input | **Selection + summary of raw JSON feeds — not compression of the same content** |
-| Same doc, repeat call | 1,856 → 167 effective | 9% of input | Cache-aware layout. **The strongest honest figure this project has.** |
+| Same doc, repeat call | 1,834 → 164 effective | 9% of input | Cache-aware layout. **The strongest honest figure this project has.** |
 
 **The HTML row measures the wrong stage, and must not be quoted as an
 HTML→Markdown saving.** 363 tokens is far too small for a real article's raw

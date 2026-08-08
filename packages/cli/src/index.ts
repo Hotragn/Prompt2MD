@@ -6,6 +6,7 @@ import { basename, dirname, extname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Command, InvalidArgumentError, Option } from "commander";
 import { glob } from "tinyglobby";
+import { BAD, GLYPH, OK, OPTIONAL, amber, bold, dim, green, pad, red, slate, violet, wordmark } from "./brand.js";
 import {
   createRuntimeFromEnv,
   parseAnchor,
@@ -42,18 +43,35 @@ function parseNonNegativeInt(value: string): number {
   return n;
 }
 
+/**
+ * Every coloured span below wraps a whole token, never splits one, so
+ * `engine=markitdown` and `tokens 100→90` survive a grep with colour on.
+ *
+ * "% of input" is spelled out deliberately: a bare percentage here reads as
+ * "% saved", which is the opposite figure. 93% of input is a 7% saving.
+ */
 export function summarizeReport(report: TokenReport, escalated: boolean): string {
   const pct = Math.round(report.ratio * 100);
   const budget =
     report.budget !== undefined
-      ? ` budget=${report.budget} ${report.withinBudget === true ? "OK" : "EXCEEDED"}`
+      ? `  ${report.withinBudget === true ? green(`budget=${report.budget} OK`) : amber(`budget=${report.budget} EXCEEDED`)}`
       : "";
-  return `engine=${report.engine}${escalated ? " (escalated)" : ""} tokens ${report.inputTokens}→${report.outputTokens} (${pct}% of input)${budget}`;
+  return `  ${violet(GLYPH)}  ${slate(`engine=${report.engine}`)}${escalated ? ` ${amber("(escalated)")}` : ""}  ${bold(`tokens ${report.inputTokens}→${report.outputTokens}`)}  ${slate(`(${pct}% of input)`)}${budget}`;
 }
 
 export function summarizeSavings(result: CompressResult): string {
   const { savings } = result;
-  return `compressed ${savings.rawTokens}→${savings.compressedTokens} tokens (${Math.round(savings.ratio * 100)}%), repeat-call cost ${savings.cache.effectiveTokensPerSubsequentCall} effective tokens (${savings.subsequentSavingsVsRawPct}% cheaper than raw), sourceId=${result.sourceId}`;
+  const shrink = `compressed ${savings.rawTokens}→${savings.compressedTokens} tokens (${Math.round(savings.ratio * 100)}% of input)`;
+  const repeat = `repeat-call cost ${savings.cache.effectiveTokensPerSubsequentCall} effective tokens (${savings.subsequentSavingsVsRawPct}% cheaper than raw)`;
+  return `  ${violet(GLYPH)}  ${bold(shrink)}\n     ${slate(repeat)}\n     ${slate(`sourceId=${result.sourceId}`)} ${dim("— retrieve the verbatim original with:")} ${violet(`prompt2md retrieve ${result.sourceId}`)}`;
+}
+
+function wroteLine(path: string): string {
+  return `  ${green(OK)}  ${bold(`wrote ${path}`)}`;
+}
+
+function warningLine(warning: { readonly code: string; readonly message: string }): string {
+  return `  ${amber("!")}  ${amber(`warning[${warning.code}]`)}  ${slate(warning.message)}`;
 }
 
 export function deriveOutPath(inputPath: string, outDir: string): string {
@@ -121,6 +139,14 @@ export async function mapPool<T, R>(
   return results;
 }
 
+interface DoctorRow {
+  /** ok = working. missing = a real fault. optional = a capability not switched on. */
+  readonly status: "ok" | "missing" | "optional";
+  readonly name: string;
+  readonly detail: string;
+  readonly fix?: string;
+}
+
 interface ConvertFlags {
   readonly text?: string;
   readonly out?: string;
@@ -130,6 +156,32 @@ interface ConvertFlags {
   readonly json?: boolean;
 }
 
+/**
+ * What a bare `prompt2md` prints. Commander's default for a missing subcommand
+ * is an error and a usage dump, which greets a first-time user with a failure
+ * for doing the most natural thing there is. This answers the two questions
+ * they actually have: what is it, and what do I type next.
+ */
+export function welcome(): string {
+  const example = (cmd: string, note: string): string => `    ${violet(pad(cmd, 44))}${slate(note)}`;
+  return [
+    ...wordmark(),
+    `  ${slate("Convert anything into token-optimized, layout-aware Markdown —")}`,
+    `  ${slate("and know what it saved you.")}`,
+    "",
+    `  ${bold("Start")}`,
+    example("prompt2md convert README.md", "a file to Markdown"),
+    example("prompt2md convert report.pdf -o out.md", "PDF, Office, scans"),
+    example("prompt2md compress notes.md -b 2000", "fit a token budget"),
+    example('prompt2md batch "docs/**/*.pdf" -d out/', "many files at once"),
+    example("prompt2md doctor", "what this machine can do"),
+    "",
+    `  ${bold(pad("All commands", 18))}${violet("prompt2md --help")}`,
+    `  ${bold(pad("Docs", 18))}${slate("https://prompt2md.vercel.app")}`,
+    "",
+  ].join("\n");
+}
+
 export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Command {
   let cached: HermesRuntime | undefined = runtime;
   // Lazy: --help and argument errors must not boot engine workers.
@@ -137,7 +189,23 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
 
   const program = new Command("prompt2md")
     .description("Convert anything into token-optimized, layout-aware Markdown — and know what it saved you.")
-    .version("0.1.0");
+    .version("0.1.0")
+    .addHelpText("beforeAll", `${wordmark().join("\n")}`)
+    .addHelpText(
+      "after",
+      [
+        "",
+        `${bold("Examples")}`,
+        `  ${violet(pad("prompt2md convert report.pdf -o report.md", 46))}${slate("a PDF to Markdown")}`,
+        `  ${violet(pad("prompt2md compress notes.md -b 2000", 46))}${slate("fit a token budget")}`,
+        `  ${violet(pad('prompt2md batch "docs/**/*" -d out/', 46))}${slate("a whole directory")}`,
+        `  ${violet(pad("prompt2md retrieve p2md:src=<id>#0-120", 46))}${slate("the verbatim original")}`,
+        "",
+        `${slate("Markdown and JSON go to stdout; every report goes to stderr, so")}`,
+        `${slate("`prompt2md convert x.pdf > out.md` writes only the document.")}`,
+        "",
+      ].join("\n"),
+    );
 
   const fidelityOption = new Option("-f, --fidelity <mode>", "engine routing override")
     .choices(["auto", "fast", "high"])
@@ -194,7 +262,7 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
         );
       } else if (flags.out !== undefined) {
         await writeFile(resolve(flags.out), markdown, "utf8");
-        io.err(`wrote ${flags.out}`);
+        io.err(wroteLine(flags.out));
         io.err(summarizeReport(outcome.report, outcome.escalated));
         if (compressed !== undefined) io.err(summarizeSavings(compressed));
       } else {
@@ -202,7 +270,7 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
         io.err(summarizeReport(outcome.report, outcome.escalated));
         if (compressed !== undefined) io.err(summarizeSavings(compressed));
       }
-      for (const warning of outcome.doc.warnings) io.err(`warning[${warning.code}]: ${warning.message}`);
+      for (const warning of outcome.doc.warnings) io.err(warningLine(warning));
     });
 
   program
@@ -278,7 +346,9 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
             return {
               file,
               ok: true,
-              detail: summarizeReport(outcome.report, outcome.escalated),
+              // Compact here on purpose: summarizeReport is a standalone line
+              // with its own glyph and indent, which misreads inside a table.
+              detail: `engine=${outcome.report.engine}${outcome.escalated ? " (escalated)" : ""}`,
               inTokens: outcome.report.inputTokens,
               outTokens: compressed?.savings.compressedTokens ?? outcome.report.outputTokens,
             };
@@ -296,24 +366,34 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
 
         const rows = await mapPool(files, flags.concurrency, convertOne);
 
-        for (const row of rows) {
-          io.out(`${row.ok ? "ok  " : "FAIL"} ${basename(row.file)} — ${row.detail}`);
-        }
+        const nameWidth = Math.max(...rows.map((r) => basename(r.file).length)) + 2;
+        const renderRow = (row: BatchRow, suffix = ""): string => {
+          const mark = row.ok ? green(OK) : red(BAD);
+          const name = bold(pad(basename(row.file), nameWidth));
+          if (!row.ok) return `  ${mark}  ${name}${amber(row.detail)}${suffix}`;
+          const share = row.inTokens > 0 ? ` ${slate(`(${Math.round((row.outTokens / row.inTokens) * 100)}% of input)`)}` : "";
+          return `  ${mark}  ${name}${slate(row.detail)}  ${bold(`tokens ${row.inTokens}→${row.outTokens}`)}${share}${suffix}`;
+        };
+
+        io.out("");
+        for (const row of rows) io.out(renderRow(row));
+
         const converted = rows.filter((r) => r.ok);
         const failed = rows.length - converted.length;
         const totalIn = converted.reduce((n, r) => n + r.inTokens, 0);
         const totalOut = converted.reduce((n, r) => n + r.outTokens, 0);
+        const tally = `${converted.length} converted, ${failed} failed`;
+        // The tally stays the last line on stdout — scripts tail it.
+        io.out("");
         io.out(
-          `${converted.length} converted, ${failed} failed — tokens ${totalIn}→${totalOut}${totalIn > 0 ? ` (${Math.round((totalOut / totalIn) * 100)}%)` : ""}`,
+          `  ${violet(GLYPH)}  ${bold(tally)}  ${bold(`tokens ${totalIn}→${totalOut}`)}${totalIn > 0 ? `  ${slate(`(${Math.round((totalOut / totalIn) * 100)}% of input)`)}` : ""}`,
         );
         if (failed > 0) process.exitCode = 1;
 
         if (flags.watch === true) {
-          io.err(`watching ${files.length} file(s) for changes — Ctrl+C to stop`);
+          io.err(`  ${violet(GLYPH)}  ${slate(`watching ${files.length} file(s) — ${bold("Ctrl+C")} to stop`)}`);
           watchFiles(files, (file) => {
-            void convertOne(file).then((row) =>
-              io.out(`${row.ok ? "ok  " : "FAIL"} ${basename(row.file)} — ${row.detail} (watch)`),
-            );
+            void convertOne(file).then((row) => io.out(renderRow(row, dim("  (watch)"))));
           });
           await new Promise(() => {}); // runs until interrupted
         }
@@ -352,13 +432,13 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
           );
         } else if (flags.out !== undefined) {
           await writeFile(resolve(flags.out), result.markdown, "utf8");
-          io.err(`wrote ${flags.out}`);
+          io.err(wroteLine(flags.out));
           io.err(summarizeSavings(result));
         } else {
           io.out(result.markdown);
           io.err(summarizeSavings(result));
         }
-        for (const warning of result.doc.warnings) io.err(`warning[${warning.code}]: ${warning.message}`);
+        for (const warning of result.doc.warnings) io.err(warningLine(warning));
       },
     );
 
@@ -389,12 +469,16 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
     .description("check engine sidecars and configuration")
     .action(async () => {
       const env = process.env;
-      const results: string[] = [];
-      const check = (ok: boolean, name: string, detail: string): void => {
-        results.push(`${ok ? "✓" : "✗"} ${name} — ${detail}`);
+      const rows: DoctorRow[] = [];
+      // "missing" is a real fault — something the user expects to work does
+      // not. "optional" is a capability they have not switched on. Reporting
+      // an unconfigured extra as a red ✗ trains people to ignore the output,
+      // so the two never share a glyph.
+      const check = (status: DoctorRow["status"], name: string, detail: string, fix?: string): void => {
+        rows.push({ status, name, detail, ...(fix !== undefined ? { fix } : {}) });
       };
 
-      check(true, "node", process.version);
+      check("ok", "node", process.version);
 
       const pythonBin = env["P2MD_PYTHON_BIN"] ?? "python";
       const py = spawnSync(pythonBin, ["-c", "import markitdown, sys; sys.stdout.write(getattr(markitdown, '__version__', 'installed'))"], {
@@ -402,9 +486,10 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
         timeout: 15_000,
       });
       check(
-        py.status === 0,
-        "markitdown (fast path)",
-        py.status === 0 ? `${pythonBin}: markitdown ${py.stdout.trim()}` : `not usable via '${pythonBin}' — pip install "markitdown[all]"`,
+        py.status === 0 ? "ok" : "missing",
+        "markitdown",
+        py.status === 0 ? `markitdown ${py.stdout.trim()} via ${pythonBin}` : `not usable via '${pythonBin}'`,
+        py.status === 0 ? undefined : 'pip install "markitdown[all]"',
       );
 
       // markitdown installs without PDF support, and the failure only appears
@@ -417,29 +502,67 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
           { encoding: "utf8", timeout: 15_000 },
         );
         check(
-          pdf.status === 0,
-          "markitdown PDF support",
-          pdf.status === 0
-            ? "pdfminer present — PDFs will convert"
-            : `missing — PDFs will fail until you run: pip install "markitdown[pdf]"`,
+          pdf.status === 0 ? "ok" : "missing",
+          "PDF support",
+          pdf.status === 0 ? "pdfminer present — PDFs will convert" : "pdfminer missing — PDFs will fail",
+          pdf.status === 0 ? undefined : 'pip install "markitdown[pdf]"',
         );
       }
 
       const doclingUrl = env["P2MD_DOCLING_URL"];
       if (doclingUrl === undefined || doclingUrl === "") {
-        check(false, "docling (high fidelity)", "P2MD_DOCLING_URL not set — scans/complex tables unavailable");
+        check(
+          "optional",
+          "docling",
+          "not configured — scans and complex tables fall back to the fast path",
+          "set P2MD_DOCLING_URL",
+        );
       } else {
-        check(await reachable(`${doclingUrl.replace(/\/+$/, "")}/health`), "docling (high fidelity)", doclingUrl);
+        const up = await reachable(`${doclingUrl.replace(/\/+$/, "")}/health`);
+        check(up ? "ok" : "missing", "docling", up ? doclingUrl : `unreachable at ${doclingUrl}`);
       }
 
       const litellm = env["P2MD_LITELLM_BASE_URL"];
       if (litellm === undefined || litellm === "") {
-        check(false, "LiteLLM gateway (LLM optimizer)", "P2MD_LITELLM_BASE_URL not set — deterministic/extractive fallbacks in use");
+        check(
+          "optional",
+          "LLM optimizer",
+          "not configured — deterministic cleanup only",
+          "set P2MD_LITELLM_BASE_URL",
+        );
       } else {
-        check(await reachable(`${litellm.replace(/\/+$/, "")}/models`), "LiteLLM gateway (LLM optimizer)", litellm);
+        const up = await reachable(`${litellm.replace(/\/+$/, "")}/models`);
+        check(up ? "ok" : "missing", "LLM optimizer", up ? litellm : `unreachable at ${litellm}`);
       }
 
-      for (const line of results) io.out(line);
+      io.out("");
+      io.out(`  ${violet(GLYPH)}  ${bold("prompt2md doctor")}`);
+      io.out("");
+
+      const width = Math.max(...rows.map((r) => r.name.length)) + 2;
+      for (const row of rows) {
+        const mark =
+          row.status === "ok" ? green(OK) : row.status === "missing" ? red(BAD) : slate(OPTIONAL);
+        const detail = row.status === "ok" ? slate(row.detail) : row.status === "missing" ? amber(row.detail) : slate(row.detail);
+        io.out(`  ${mark}  ${bold(pad(row.name, width))}${detail}`);
+        // The fix hangs under its own row, indented to the detail column.
+        if (row.fix !== undefined) io.out(`     ${pad("", width)}${violet(row.fix)}`);
+      }
+
+      const broken = rows.filter((r) => r.status === "missing").length;
+      const optional = rows.filter((r) => r.status === "optional").length;
+      io.out("");
+      if (broken > 0) {
+        io.out(
+          `  ${amber(broken === 1 ? "1 thing needs attention" : `${broken} things need attention`)} ${slate("— run the fix above, then re-run doctor")}`,
+        );
+        process.exitCode = 1;
+      } else if (optional > 0) {
+        io.out(`  ${green("Ready")} ${slate(`— conversion works. ${optional} optional upgrade${optional === 1 ? "" : "s"} available.`)}`);
+      } else {
+        io.out(`  ${green("Ready")} ${slate("— everything is configured.")}`);
+      }
+      io.out("");
     });
 
   return program;
@@ -468,12 +591,18 @@ function isDirectRun(): boolean {
   }
 }
 
-if (isDirectRun()) {
+if (isDirectRun() && process.argv.length <= 2) {
+  // Before createRuntimeFromEnv(): greeting a user must not spawn a python
+  // worker, and the process would then hang waiting on a runtime nothing uses.
+  process.stdout.write(welcome());
+} else if (isDirectRun()) {
   const runtime = createRuntimeFromEnv();
   buildProgram(runtime)
     .parseAsync(process.argv)
     .catch((err: unknown) => {
-      process.stderr.write(`error: ${err instanceof Error ? err.message : String(err)}\n`);
+      // "error:" stays lowercase and unprefixed by design — it is the string
+      // people grep for, and commander's own errors already use it.
+      process.stderr.write(`${red("error:")} ${err instanceof Error ? err.message : String(err)}\n`);
       process.exitCode = 1;
     })
     .finally(() => {

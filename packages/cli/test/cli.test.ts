@@ -17,7 +17,9 @@ import {
   deriveBatchOutPaths,
   deriveOutPath,
   mapPool,
+  summarizeReport,
   watchFiles,
+  welcome,
   type CliIo,
 } from "../src/index.js";
 
@@ -122,6 +124,47 @@ describe("helpers", () => {
     });
     expect(results).toEqual([30, 10, 20, 5, 15]);
     expect(peak).toBeLessThanOrEqual(2);
+  });
+});
+
+describe("terminal presentation", () => {
+  // vitest pipes stderr, so COLOR_LEVEL resolves to 0 here — which is the
+  // contract being asserted: no escape codes anywhere the output is not a TTY.
+  const ESC = String.fromCharCode(27);
+
+  it("emits no escape codes when stderr is not a TTY", () => {
+    const report = buildTokenReport(parseMarkdown(FAKE_MARKDOWN, approxCounter), {
+      counter: approxCounter,
+      inputTokens: 100,
+      engine: "markitdown",
+      escalated: false,
+    });
+    expect(summarizeReport(report, false)).not.toContain(ESC);
+    expect(welcome()).not.toContain(ESC);
+  });
+
+  it("keeps machine-readable tokens contiguous so colour never splits a grep", () => {
+    // Colour wraps whole tokens; if a future change paints *inside* one of
+    // these, anything parsing our stderr breaks silently.
+    const report = buildTokenReport(parseMarkdown(FAKE_MARKDOWN, approxCounter), {
+      counter: approxCounter,
+      inputTokens: 100,
+      engine: "markitdown",
+      escalated: false,
+    });
+    const line = summarizeReport(report, false);
+    expect(line).toContain("engine=markitdown");
+    expect(line).toMatch(/tokens 100→\d+/);
+    // The unit must stay attached to the number: a bare "%" here reads as
+    // "% saved", which is the opposite figure.
+    expect(line).toContain("% of input");
+  });
+
+  it("welcome answers what to type next, not just what the tool is", () => {
+    const text = welcome();
+    expect(text).toContain("prompt2md convert");
+    expect(text).toContain("prompt2md doctor");
+    expect(text).toContain("prompt2md --help");
   });
 });
 

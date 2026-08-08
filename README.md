@@ -11,7 +11,7 @@
   <a href="https://github.com/Hotragn/Prompt2MD/actions/workflows/ci.yml"><img src="https://github.com/Hotragn/Prompt2MD/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License: Apache-2.0"></a>
   <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg" alt="Node >= 20">
-  <img src="https://img.shields.io/badge/tests-185%20unit%20%2B%2015%20e2e-success.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-188%20unit%20%2B%2015%20e2e-success.svg" alt="Tests">
   <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-server%20%2B%20skill-7C5CFF.svg" alt="MCP server and skill"></a>
 </p>
 
@@ -42,15 +42,16 @@ ratio, per-section costs, and the effective cost of every repeat call.
 
 ```console
 $ prompt2md compress ARCHITECTURE.md --token-budget 500
-compressed 1856→1504 tokens (81%), repeat-call cost 167 effective tokens
-(91% cheaper than raw), sourceId=a473fa37ccf5b4b5
+  ◣  compressed 1834→1481 tokens (81% of input)
+     repeat-call cost 164 effective tokens (91.1% cheaper than raw)
+     sourceId=b326855315aded94 — retrieve the verbatim original with: prompt2md retrieve b326855315aded94
 ```
 
-Read those two percentages carefully, because they are different units. **`(81%)`
-is the output as a share of the input** — 1,504 is 81% *of* 1,856, a 19%
-reduction. **`91% cheaper` is a saving** — a repeat call costs 167 effective
-tokens against 1,856 raw. We name the unit every time rather than let a bare
-percentage flatter us four-fold.
+Read those two percentages carefully, because they are different units.
+**`81% of input` is the output as a share of the input** — 1,481 is 81% *of*
+1,834, a 19% reduction. **`91.1% cheaper` is a saving** — a repeat call costs
+164 effective tokens against 1,834 raw. The CLI spells the unit out in its own
+output rather than let a bare percentage flatter us four-fold.
 
 That repeat-call figure is the strongest honest number here, and it has nothing
 to do with Markdown: it comes from ordering sections so the provider's prompt
@@ -262,7 +263,7 @@ exactly.
 
 ```bash
 pnpm build         # core → hermes-mcp → cli → web + docs
-pnpm test          # 185 unit/integration tests
+pnpm test          # 188 unit/integration tests
 pnpm test:e2e      # 13 Selenium scenarios (landing + studio)
 pnpm test:install  # installer against a sandboxed HOME (your configs untouched)
 pnpm test:fresh    # full new-user simulation in a throwaway clone
