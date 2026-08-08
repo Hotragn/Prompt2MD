@@ -158,11 +158,27 @@ const WORD_RIGHT = [
 // worse than no banner. Fall back to the one-line lockup there.
 const WIDE_ENOUGH = (process.stdout.columns ?? 0) === 0 || (process.stdout.columns ?? 0) >= 60;
 
+/**
+ * The wordmark lit top-to-bottom in one hue. BRAND.md locks the palette to a
+ * single accent and retires the old two-hue gradient, so this is one colour
+ * shaded for depth, not a gradient. The bottom row is the canonical --brand
+ * #5B3DF5; the rows above lift it toward the light, because #5B3DF5 alone is
+ * too dark to read on the dark terminal this actually runs on.
+ */
+const WORDMARK_SHADES = [
+  [158, 137, 255],
+  [140, 116, 255],
+  [124, 92, 255],
+  [106, 74, 249],
+  [91, 61, 245],
+];
+
 function banner() {
   console.log("");
   if (UNICODE_OK && WIDE_ENOUGH) {
     for (let i = 0; i < WORD_LEFT.length; i++) {
-      console.log(`  ${paper(WORD_LEFT[i])} ${violet(WORD_RIGHT[i])}`);
+      const shade = WORDMARK_SHADES[i] ?? WORDMARK_SHADES[WORDMARK_SHADES.length - 1];
+      console.log(`  ${ink(shade, 99, "35")(`${WORD_LEFT[i]} ${WORD_RIGHT[i]}`)}`);
     }
     console.log("");
     console.log(`  ${violet(GLYPH)}  ${slate("A Markdown Magic")}`);

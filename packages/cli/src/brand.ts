@@ -120,6 +120,23 @@ function wideEnough(): boolean {
 }
 
 /**
+ * The wordmark lit top-to-bottom in one hue. BRAND.md locks the palette to a
+ * single accent and retires the old two-hue gradient, so this is not a
+ * gradient in that sense — it is one colour shaded for depth, the same move
+ * the mark makes on paper. The bottom row is the canonical --brand #5B3DF5;
+ * the rows above are it lifted toward the light, because #5B3DF5 alone is too
+ * dark to read on a dark terminal, which is the background this actually runs
+ * on. Shading needs truecolor; 256 and 16 fall back to flat accent.
+ */
+const WORDMARK_SHADES = [
+  [158, 137, 255],
+  [140, 116, 255],
+  [124, 92, 255],
+  [106, 74, 249],
+  [91, 61, 245],
+] as const;
+
+/**
  * The lockup, two-tone exactly as the website's logo splits it: paper-white
  * name, brand violet on "2md". Colour identifies here; it does not decorate.
  *
@@ -137,7 +154,10 @@ export function lockup(version?: string): string[] {
       "",
     ];
   }
-  const art = WORD_LEFT.map((left, i) => `  ${paper(left)} ${violet(WORD_RIGHT[i] ?? "")}`);
+  const art = WORD_LEFT.map((left, i) => {
+    const shade = WORDMARK_SHADES[i] ?? WORDMARK_SHADES[WORDMARK_SHADES.length - 1]!;
+    return `  ${ink(shade, 99, "35")(`${left} ${WORD_RIGHT[i] ?? ""}`)}`;
+  });
   return ["", ...art, "", `  ${violet(GLYPH)}  ${slate("A Markdown Magic")}${tag}`, ""];
 }
 
