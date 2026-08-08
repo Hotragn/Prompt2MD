@@ -1,6 +1,17 @@
 import { spawn } from "node:child_process";
 import { NextResponse } from "next/server";
-import { MAX_INPUT_CHARS, MAX_UPLOAD_BYTES, REQUEST_TIMEOUT_MS } from "../../../lib/guard";
+import {
+  MAX_INPUT_CHARS,
+  MAX_UPLOAD_BYTES,
+  REQUEST_TIMEOUT_MS,
+  enforceRateLimit,
+} from "../../../lib/guard";
+import {
+  RATE_LIMIT_CHEAP,
+  RATE_LIMIT_EXPENSIVE,
+  RATE_LIMIT_WINDOW_MS,
+  rateLimitIsPerInstance,
+} from "../../../lib/rate-limit";
 import { storeIsEphemeral } from "../../../lib/runtime";
 
 export const runtime = "nodejs";
@@ -63,7 +74,10 @@ function probeDocumentEngine(): Promise<boolean> {
   return documentEngine;
 }
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(req: Request): Promise<NextResponse> {
+  const limited = enforceRateLimit(req, RATE_LIMIT_CHEAP);
+  if (limited !== null) return limited;
+
   const [hasDocumentEngine] = await Promise.all([probeDocumentEngine()]);
 
   return NextResponse.json({
@@ -77,6 +91,13 @@ export async function GET(): Promise<NextResponse> {
       maxInputChars: MAX_INPUT_CHARS,
       maxUploadBytes: MAX_UPLOAD_BYTES,
       requestTimeoutMs: REQUEST_TIMEOUT_MS,
+      rateLimit: {
+        windowMs: RATE_LIMIT_WINDOW_MS,
+        convertOrCompressPerWindow: RATE_LIMIT_EXPENSIVE,
+        readsPerWindow: RATE_LIMIT_CHEAP,
+        // Counters are per instance, so this is a floor, not a global ceiling.
+        perInstanceOnly: rateLimitIsPerInstance(),
+      },
     },
   });
 }

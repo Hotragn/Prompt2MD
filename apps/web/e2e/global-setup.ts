@@ -20,7 +20,18 @@ export default async function setup(): Promise<() => void> {
   server = spawn(process.execPath, [nextBin, "start", "-p", String(E2E_PORT)], {
     cwd: WEB_DIR,
     stdio: ["ignore", "pipe", "pipe"],
-    env: { ...process.env, NODE_ENV: "production" },
+    env: {
+      ...process.env,
+      NODE_ENV: "production",
+      // Every request here arrives from localhost with no forwarding headers,
+      // so the limiter sees one caller and the whole suite shares a single
+      // budget. Left at the production default the suite would throttle
+      // itself, and the failure would look like a broken route rather than a
+      // working guard. The limiter's own behaviour is covered in
+      // test/rate-limit.test.ts, at the unit and route level.
+      P2MD_RATE_LIMIT_EXPENSIVE: "100000",
+      P2MD_RATE_LIMIT_CHEAP: "100000",
+    },
   });
   let outputTail = "";
   const capture = (chunk: Buffer): void => {

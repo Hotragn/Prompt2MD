@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { clientKey, rateLimit, rateLimitHeaders } from "./rate-limit";
 
 /**
  * Request guards for the public API.
@@ -26,6 +27,28 @@ export const MAX_UPLOAD_BYTES = int("P2MD_MAX_UPLOAD_BYTES", 25 * 1024 * 1024);
  * opaque 504. Failing first, with an explanation, is strictly better.
  */
 export const REQUEST_TIMEOUT_MS = int("P2MD_REQUEST_TIMEOUT_MS", 45_000);
+
+/**
+ * Count this request against the caller's budget; return a 429 when spent.
+ *
+ * Call it first in a handler, before reading the body: the point is to refuse
+ * work, and parsing 25MB to then reject it does the work anyway.
+ */
+export function enforceRateLimit(req: Request, limit: number): NextResponse | null {
+  const result = rateLimit(clientKey(req), limit);
+  if (result.ok) return null;
+  return NextResponse.json(
+    {
+      error:
+        `too many requests — the limit is ${result.limit} per minute. ` +
+        `Retry in ${result.resetSeconds}s, or run the CLI locally where no limit applies.`,
+    },
+    {
+      status: 429,
+      headers: { ...rateLimitHeaders(result), "Retry-After": String(result.resetSeconds) },
+    },
+  );
+}
 
 /** Read a JSON body, refusing oversized payloads before parsing them. */
 export async function readJsonBody<T>(

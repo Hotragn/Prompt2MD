@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { parseAnchor } from "@prompt2md/core";
-import { errorResponse, withDeadline } from "../../../lib/guard";
+import { enforceRateLimit, errorResponse, withDeadline } from "../../../lib/guard";
+import { RATE_LIMIT_CHEAP } from "../../../lib/rate-limit";
 import { getRuntime, storeIsEphemeral } from "../../../lib/runtime";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request): Promise<NextResponse> {
+  const limited = enforceRateLimit(req, RATE_LIMIT_CHEAP);
+  if (limited !== null) return limited;
+
   const url = new URL(req.url);
   const ref = url.searchParams.get("ref");
   if (ref === null || ref === "") {

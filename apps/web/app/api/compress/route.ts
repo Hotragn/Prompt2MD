@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
-import { checkText, errorResponse, readJsonBody, withDeadline } from "../../../lib/guard";
+import {
+  checkText,
+  enforceRateLimit,
+  errorResponse,
+  readJsonBody,
+  withDeadline,
+} from "../../../lib/guard";
+import { RATE_LIMIT_EXPENSIVE } from "../../../lib/rate-limit";
 import { getRuntime, storeIsEphemeral } from "../../../lib/runtime";
 
 export const runtime = "nodejs";
@@ -12,6 +19,9 @@ interface CompressBody {
 }
 
 export async function POST(req: Request): Promise<NextResponse> {
+  const limited = enforceRateLimit(req, RATE_LIMIT_EXPENSIVE);
+  if (limited !== null) return limited;
+
   const parsed = await readJsonBody<CompressBody>(req);
   if ("error" in parsed) return NextResponse.json({ error: parsed.error }, { status: parsed.status });
 

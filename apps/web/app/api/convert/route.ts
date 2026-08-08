@@ -4,10 +4,12 @@ import type { CompressResult } from "@prompt2md/core";
 import {
   MAX_UPLOAD_BYTES,
   checkText,
+  enforceRateLimit,
   errorResponse,
   readJsonBody,
   withDeadline,
 } from "../../../lib/guard";
+import { RATE_LIMIT_EXPENSIVE } from "../../../lib/rate-limit";
 import { getRuntime, storeIsEphemeral } from "../../../lib/runtime";
 
 export const runtime = "nodejs";
