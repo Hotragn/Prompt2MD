@@ -11,7 +11,7 @@
   <a href="https://github.com/Hotragn/Prompt2MD/actions/workflows/ci.yml"><img src="https://github.com/Hotragn/Prompt2MD/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License: Apache-2.0"></a>
   <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg" alt="Node >= 20">
-  <img src="https://img.shields.io/badge/tests-219%20unit%20%2B%2015%20e2e-success.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-231%20unit%20%2B%2015%20e2e-success.svg" alt="Tests">
   <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-server%20%2B%20skill-7C5CFF.svg" alt="MCP server and skill"></a>
 </p>
 
@@ -77,7 +77,7 @@ just the structure the remainder is kept in:
 
 | Mechanism | Applies to | Effect |
 |---|---|---|
-| Strip markup and chrome | HTML, PDF, DOCX, JSON | Large win — tags and layout scaffolding carry no meaning |
+| Strip markup and chrome | HTML, PDF, DOCX, JSON | Large win — tags and layout scaffolding carry no meaning (HTML: 56 → 19 tokens on the README fixture) |
 | Remove redundancy | Rambling prose | Repeated sentences, hedges, meta-commentary, sign-offs |
 | Summarize the middle | Oversized context | Head and tail stay verbatim; only safe middle prose condenses |
 | Add Markdown structure | Clean plain text | **Costs a little** — and we count it |
@@ -125,6 +125,7 @@ typical.
 |  | |
 |---|---|
 | **Works with nothing installed** | HTML, CSV, JSON, PDF, DOCX, XLSX and PPTX convert in-process — no Python, no sidecar, no service. `npx prompt2md convert report.pdf` works on a bare machine. |
+| **PDF tables survive** | Tables are rebuilt from the page geometry rather than flattened into a run-on line. Columns are found as vertical whitespace corridors, so right-aligned figures land under their own heading instead of scattering. |
 | **Tiered routing** | In-process fast path for the formats above; high-fidelity path (TableFormer + OCR) for scans, complex tables, and multi-column layouts. Routed on content evidence, never on file extension — and it self-heals, escalating when the fast path's output shows damage. |
 | **Token cost as a first-class output** | Every conversion returns a `TokenReport`. Set `--token-budget` and it is enforced, not suggested. |
 | **Prompt-cache-aware layout** | Stable content first, volatile content last, provider-specific breakpoints. Repeat calls cost up to ~90% less on cache-enabled providers. |
@@ -232,7 +233,7 @@ extend that, and none is required:
 | Sidecar | Unlocks | Install |
 |---|---|---|
 | [MarkItDown](https://github.com/microsoft/markitdown) | Legacy `.doc`/`.xls`/`.ppt`, OpenDocument, EPUB, email exports | `pip install "markitdown[all]"` |
-| [Docling](https://github.com/docling-project/docling) | Scans (OCR), complex tables, multi-column PDFs | `docker run -p 5001:5001 quay.io/docling-project/docling-serve` |
+| [Docling](https://github.com/docling-project/docling) | Scans (OCR), and tables whose structure defeats the geometric reader — merged cells, nested headers | `docker run -p 5001:5001 quay.io/docling-project/docling-serve` |
 | [LiteLLM](https://github.com/BerriAI/litellm) | LLM optimizer and summarizer, any provider | `litellm --port 4000` |
 
 Design decisions are recorded as ADRs: [dual-engine architecture](docs/adr/ADR-001-dual-engine.md),
@@ -270,7 +271,7 @@ exactly.
 
 ```bash
 pnpm build         # core → hermes-mcp → cli → web + docs
-pnpm test          # 219 unit/integration tests
+pnpm test          # 231 unit/integration tests
 pnpm test:e2e      # 13 Selenium scenarios (landing + studio)
 pnpm test:install  # installer against a sandboxed HOME (your configs untouched)
 pnpm test:fresh    # full new-user simulation in a throwaway clone

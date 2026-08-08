@@ -1,13 +1,15 @@
-import { looksLikeFlattenedTableRow } from "../../router/escalation.js";
+import { layoutToMarkdown, type PositionedItem } from "./pdf-layout.js";
+
 /**
- * PDF -> text, via unpdf (a Node-friendly build of Mozilla's pdf.js).
+ * PDF -> Markdown, via unpdf (a Node-friendly build of Mozilla's pdf.js).
  *
- * This is a text-layer extraction, the same class of operation the Python fast
- * path performs — it reads the text a PDF already contains. It does not
- * reconstruct table structure and it cannot read a scan, which is exactly what
- * the high-fidelity engine is for. Returning little or nothing on a scan is
- * the correct behaviour here, not a bug: the pipeline's `low-yield` check
- * reads that as evidence and escalates.
+ * Layout-aware rather than a flat text dump. pdf.js reports the position of
+ * every run, so tables are reconstructed from the page geometry instead of
+ * being flattened into a run-on line — see pdf-layout.ts for how the columns
+ * are found. What remains out of reach in-process is a page with no text layer
+ * at all: a scan is an image, and reading it needs OCR, which is what the
+ * high-fidelity engine is for. Returning nothing there is correct, and the
+ * pipeline's `low-yield` check reads it as evidence and escalates.
  */
 
 export interface PdfExtraction {
@@ -17,65 +19,58 @@ export interface PdfExtraction {
   readonly empty: boolean;
 }
 
+interface RawTextItem {
+  readonly str?: string;
+  readonly transform?: readonly number[];
+  readonly width?: number;
+  readonly height?: number;
+}
+
 export async function pdfToMarkdown(data: Uint8Array): Promise<PdfExtraction> {
-  const { extractText, getDocumentProxy } = await import("unpdf");
+  const { getDocumentProxy } = await import("unpdf");
 
-  // pdf.js transfers and detaches the buffer it is handed. Passing the caller's
-  // array directly would leave it zero-length afterwards — which matters
-  // because the pipeline may hand the same bytes to another engine when this
-  // one escalates, and that second read would silently see an empty file.
+  // pdf.js transfers and detaches the buffer it is handed. Passing the
+  // caller's array directly would leave it zero-length afterwards — which
+  // matters because the pipeline may hand the same bytes to another engine
+  // when this one escalates, and that second read would see an empty file.
   const pdf = await getDocumentProxy(Uint8Array.from(data));
-  const { totalPages, text } = await extractText(pdf, { mergePages: false });
+  const pages: string[] = [];
 
-  const pages = Array.isArray(text) ? text : [text];
-  const cleaned = pages.map(normalizePage);
-  const markdown = cleaned.filter((p) => p !== "").join("\n\n");
+  for (let n = 1; n <= pdf.numPages; n++) {
+    const page = await pdf.getPage(n);
+    const content = (await page.getTextContent()) as { items?: RawTextItem[] };
+    pages.push(layoutToMarkdown(toPositioned(content.items ?? [])));
+  }
 
+  const markdown = pages.filter((p) => p.trim() !== "").join("\n\n");
   return {
     markdown,
-    pages: totalPages,
-    // Per page rather than in total: one text page in a 200-page scan should
-    // still read as a scan.
-    empty: markdown.replace(/\s/g, "").length < Math.max(20, totalPages * 10),
+    pages: pdf.numPages,
+    // Measured per page rather than in total: one text page in a 200-page scan
+    // should still read as a scan.
+    empty: markdown.replace(/\s/g, "").length < Math.max(20, pdf.numPages * 10),
   };
 }
 
 /**
- * pdf.js emits text in layout order, so a paragraph arrives pre-broken at
- * whatever column the page happened to wrap at. Rejoining those lines stops
- * every wrapped sentence from parsing as its own block downstream.
- *
- * Table rows are deliberately left alone. Joining them would merge many
- * flattened rows into one line, and `detectTableDegradation` counts lines — so
- * tidying the text here would quietly disable the escalation that exists to
- * catch exactly this damage, and a mangled table would sail through looking
- * like clean prose. The shared predicate keeps the two in agreement.
+ * The transform matrix is [a, b, c, d, e, f]; e and f are the run's x and y.
+ * Items without one carry no geometry and cannot be placed, so they are
+ * dropped rather than guessed at.
  */
-function normalizePage(page: string): string {
-  const lines = page.replace(/\r\n/g, "\n").split("\n");
-  const out: string[] = [];
-
-  for (const raw of lines) {
-    const line = raw.replace(/[ \t]{2,}/g, " ").trim();
-    const previous = out[out.length - 1];
-
-    if (previous !== undefined && canJoin(previous, line)) {
-      // A hyphen at the end of a line is a word split across the break.
-      out[out.length - 1] = /\w-$/.test(previous)
-        ? previous.replace(/-$/, "") + line
-        : `${previous} ${line}`;
-      continue;
-    }
-    out.push(line);
+function toPositioned(items: readonly RawTextItem[]): PositionedItem[] {
+  const out: PositionedItem[] = [];
+  for (const item of items) {
+    const text = item.str;
+    const transform = item.transform;
+    if (typeof text !== "string" || transform === undefined || transform.length < 6) continue;
+    out.push({
+      text,
+      x: transform[4] ?? 0,
+      y: transform[5] ?? 0,
+      width: item.width ?? 0,
+      // Fall back to the matrix's vertical scale when height is absent.
+      height: item.height !== undefined && item.height > 0 ? item.height : Math.abs(transform[3] ?? 10),
+    });
   }
-
-  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
-}
-
-function canJoin(previous: string, line: string): boolean {
-  if (previous === "" || line === "") return false;
-  if (looksLikeFlattenedTableRow(previous) || looksLikeFlattenedTableRow(line)) return false;
-  // A finished sentence, or a new block of any kind, starts its own line.
-  if (/[.!?:;]$/.test(previous)) return false;
-  return !/^\s*(?:[-*•#>]|\d+[.)])/.test(line);
+  return out;
 }
