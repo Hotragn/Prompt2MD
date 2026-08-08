@@ -125,43 +125,21 @@ const UNICODE_OK = (() => {
 // and the glyph is reduced to the fold itself.
 const GLYPH = UNICODE_OK ? "◣" : ">";
 
-/**
- * The wordmark as block type, split so "2md" takes the accent exactly as it
- * does in the website's logo. Blocks are gated behind UNICODE_OK because a
- * legacy Windows code page renders them as mojibake, which looks far worse
- * than plain text; that path just prints the name in bold.
- */
-const WORD_LEFT = [
-  "███ ███ ███ █ █ ███ ███ ",
-  "█ █ █ █ █ █ ███ █ █  █  ",
-  "███ ███ █ █ ███ ███  █  ",
-  "█   █ █ █ █ █ █ █    █  ",
-  "█   █ █ ███ █ █ █    █  ",
-];
-const WORD_RIGHT = [
-  "███ █ █ ██  ",
-  "  █ ███ █ █ ",
-  "███ ███ █ █ ",
-  "█   █ █ █ █ ",
-  "███ █ █ ██  ",
-];
-
 // Paper-white for the name, brand violet for the accent: the same two-tone
 // split as the logo, not a rainbow. Colour here identifies, it does not decorate.
 const paper = ink([242, 239, 234], 255, "37");
 
+/**
+ * The lockup. Deliberately not block-letter ASCII art: a 3-cell-wide glyph
+ * cannot hold a lowercase "m" — it degenerates to two dots — so the wordmark
+ * rendered as a barcode and had to be read twice to be recognised. Type at
+ * terminal resolution is the terminal's own type; the identity comes from the
+ * mark, the two-tone split, and the space around them.
+ */
 function banner() {
   console.log("");
-  if (UNICODE_OK) {
-    for (let i = 0; i < WORD_LEFT.length; i++) {
-      console.log(`  ${paper(WORD_LEFT[i])}${violet(WORD_RIGHT[i])}`);
-    }
-    console.log("");
-    console.log(`  ${violet(GLYPH)}  ${slate("A Markdown Magic")}`);
-  } else {
-    console.log(`  ${violet(GLYPH)}  ${bold("prompt")}${violet(bold("2md"))}`);
-    console.log(`     ${slate("A Markdown Magic")}`);
-  }
+  console.log(`  ${violet(GLYPH)}  ${bold(paper("prompt"))}${bold(violet("2md"))}`);
+  console.log(`     ${slate("A Markdown Magic")}`);
   console.log("");
 }
 

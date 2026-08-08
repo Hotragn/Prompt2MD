@@ -85,25 +85,24 @@ export const BAD = UNICODE_OK ? "✗" : "x";
 /** Configured-but-optional and absent: a hollow ring, not a failure mark. */
 export const OPTIONAL = UNICODE_OK ? "○" : "-";
 
-const WORD_LEFT = [
-  "███ ███ ███ █ █ ███ ███ ",
-  "█ █ █ █ █ █ ███ █ █  █  ",
-  "███ ███ █ █ ███ ███  █  ",
-  "█   █ █ █ █ █ █ █    █  ",
-  "█   █ █ ███ █ █ █    █  ",
-] as const;
-const WORD_RIGHT = ["███ █ █ ██  ", "  █ ███ █ █ ", "███ ███ █ █ ", "█   █ █ █ █ ", "███ █ █ ██  "] as const;
-
 /**
- * The wordmark, two-tone exactly as the website's logo splits it: paper-white
+ * The lockup, two-tone exactly as the website's logo splits it: paper-white
  * name, brand violet on "2md". Colour identifies here; it does not decorate.
+ *
+ * Deliberately not block-letter ASCII art. A 3-cell-wide glyph cannot hold a
+ * lowercase "m" — it degenerates to two dots — so the wordmark rendered as a
+ * barcode and had to be read twice to be recognised at all. Type at terminal
+ * resolution is the terminal's own type; the identity comes from the mark, the
+ * two-tone split, and the space around them.
  */
-export function wordmark(): string[] {
-  if (!UNICODE_OK) {
-    return ["", `  ${violet(GLYPH)}  ${bold("prompt")}${violet(bold("2md"))}`, `     ${slate("A Markdown Magic")}`, ""];
-  }
-  const lines = WORD_LEFT.map((left, i) => `  ${paper(left)}${violet(WORD_RIGHT[i] ?? "")}`);
-  return ["", ...lines, "", `  ${violet(GLYPH)}  ${slate("A Markdown Magic")}`, ""];
+export function lockup(version?: string): string[] {
+  const name = `${bold(paper("prompt"))}${bold(violet("2md"))}`;
+  return [
+    "",
+    `  ${violet(GLYPH)}  ${name}${version !== undefined ? `  ${slate(version)}` : ""}`,
+    `     ${slate("A Markdown Magic")}`,
+    "",
+  ];
 }
 
 /** Pad before colouring — escape codes have zero screen width but real string

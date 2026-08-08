@@ -6,7 +6,7 @@ import { basename, dirname, extname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Command, InvalidArgumentError, Option } from "commander";
 import { glob } from "tinyglobby";
-import { BAD, GLYPH, OK, OPTIONAL, amber, bold, dim, green, pad, red, slate, violet, wordmark } from "./brand.js";
+import { BAD, GLYPH, OK, OPTIONAL, amber, bold, dim, green, lockup, pad, red, slate, violet } from "./brand.js";
 import {
   createRuntimeFromEnv,
   parseAnchor,
@@ -27,6 +27,8 @@ const defaultIo: CliIo = {
   out: (t) => process.stdout.write(`${t}\n`),
   err: (t) => process.stderr.write(`${t}\n`),
 };
+
+const VERSION = "0.1.0";
 
 const PROVIDERS = ["anthropic", "openai", "gemini", "kimi"] as const;
 type Provider = (typeof PROVIDERS)[number];
@@ -163,21 +165,22 @@ interface ConvertFlags {
  * they actually have: what is it, and what do I type next.
  */
 export function welcome(): string {
-  const example = (cmd: string, note: string): string => `    ${violet(pad(cmd, 44))}${slate(note)}`;
+  const example = (cmd: string, note: string): string => `    ${violet(pad(cmd, 42))}${slate(note)}`;
   return [
-    ...wordmark(),
+    ...lockup(VERSION),
     `  ${slate("Convert anything into token-optimized, layout-aware Markdown —")}`,
     `  ${slate("and know what it saved you.")}`,
     "",
-    `  ${bold("Start")}`,
+    `  ${dim("START")}`,
     example("prompt2md convert README.md", "a file to Markdown"),
     example("prompt2md convert report.pdf -o out.md", "PDF, Office, scans"),
     example("prompt2md compress notes.md -b 2000", "fit a token budget"),
     example('prompt2md batch "docs/**/*.pdf" -d out/', "many files at once"),
     example("prompt2md doctor", "what this machine can do"),
     "",
-    `  ${bold(pad("All commands", 18))}${violet("prompt2md --help")}`,
-    `  ${bold(pad("Docs", 18))}${slate("https://prompt2md.vercel.app")}`,
+    `  ${dim("MORE")}`,
+    `    ${violet(pad("prompt2md --help", 42))}${slate("every command and flag")}`,
+    `    ${slate(pad("prompt2md.vercel.app", 42))}${slate("docs and live studio")}`,
     "",
   ].join("\n");
 }
@@ -189,8 +192,8 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
 
   const program = new Command("prompt2md")
     .description("Convert anything into token-optimized, layout-aware Markdown — and know what it saved you.")
-    .version("0.1.0")
-    .addHelpText("beforeAll", `${wordmark().join("\n")}`)
+    .version(VERSION)
+    .addHelpText("beforeAll", lockup().join("\n"))
     .addHelpText(
       "after",
       [
