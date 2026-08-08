@@ -139,24 +139,29 @@ const NODE = UNICODE_OK ? "◇" : "o";
  * read as a barcode. Uppercase because lowercase needs descenders for the two
  * p's and the d, costing two more rows and reading worse at this size.
  */
-const WORD_LEFT = [
+const WORD_PROMPT = [
   "████  ████   ███  █   █ ████  █████",
   "█   █ █   █ █   █ ██ ██ █   █   █  ",
   "████  ████  █   █ █ █ █ ████    █  ",
   "█     █  █  █   █ █   █ █       █  ",
   "█     █   █  ███  █   █ █       █  ",
 ];
-const WORD_RIGHT = [
-  " ███  █   █ ████ ",
-  "█   █ ██ ██ █   █",
-  "   █  █ █ █ █   █",
-  "  █   █   █ █   █",
-  "█████ █   █ ████ ",
-];
+
+/**
+ * The crane, standing in for the "2" — prompt-TO-md, where the 2 is the thing
+ * that does the folding. Traced from the app icon: facing left, beak
+ * upper-left, one dominant raised wing, low tail, tapering to a point. Half
+ * blocks (▀▄) buy a second row of vertical resolution per text row, which is
+ * what makes a bird possible in five rows at all. Paper-white against violet
+ * letters, because that is the icon's own relationship.
+ */
+const CRANE = ["    ▄██▄ ", " █▄▄████▄", "  ██████▀", "   ███▀▀ ", "    ▀    "];
+
+const WORD_MD = ["█   █ ████ ", "██ ██ █   █", "█ █ █ █   █", "█   █ █   █", "█   █ ████ "];
 
 // Below ~60 columns the banner wraps, which looks like a rendering fault —
 // worse than no banner. Fall back to the one-line lockup there.
-const WIDE_ENOUGH = (process.stdout.columns ?? 0) === 0 || (process.stdout.columns ?? 0) >= 60;
+const WIDE_ENOUGH = (process.stdout.columns ?? 0) === 0 || (process.stdout.columns ?? 0) >= 64;
 
 /**
  * The wordmark lit top-to-bottom in one hue. BRAND.md locks the palette to a
@@ -176,9 +181,10 @@ const WORDMARK_SHADES = [
 function banner() {
   console.log("");
   if (UNICODE_OK && WIDE_ENOUGH) {
-    for (let i = 0; i < WORD_LEFT.length; i++) {
+    for (let i = 0; i < WORD_PROMPT.length; i++) {
       const shade = WORDMARK_SHADES[i] ?? WORDMARK_SHADES[WORDMARK_SHADES.length - 1];
-      console.log(`  ${ink(shade, 99, "35")(`${WORD_LEFT[i]} ${WORD_RIGHT[i]}`)}`);
+      const letters = ink(shade, 99, "35");
+      console.log(`  ${letters(WORD_PROMPT[i])} ${paper(CRANE[i])} ${letters(WORD_MD[i])}`);
     }
     console.log("");
     console.log(`  ${violet(GLYPH)}  ${slate("A Markdown Magic")}`);

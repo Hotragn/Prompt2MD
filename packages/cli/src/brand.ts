@@ -98,25 +98,44 @@ export const NODE_ON = UNICODE_OK ? "◆" : "*";
  * Set uppercase on purpose: lowercase needs descenders for the two p's and a
  * d, which costs two more rows and reads worse, not better, at this size.
  */
-const WORD_LEFT = [
+const WORD_PROMPT = [
   "████  ████   ███  █   █ ████  █████",
   "█   █ █   █ █   █ ██ ██ █   █   █  ",
   "████  ████  █   █ █ █ █ ████    █  ",
   "█     █  █  █   █ █   █ █       █  ",
   "█     █   █  ███  █   █ █       █  ",
 ] as const;
-const WORD_RIGHT = [
-  " ███  █   █ ████ ",
-  "█   █ ██ ██ █   █",
-  "   █  █ █ █ █   █",
-  "  █   █   █ █   █",
-  "█████ █   █ ████ ",
+
+/**
+ * The crane, standing in for the "2" — prompt-TO-md, where the 2 is the thing
+ * that does the folding. Traced from apps/web/app/icon.svg: facing left, beak
+ * upper-left, one dominant raised wing, low tail, body tapering to a point.
+ *
+ * Half blocks (▀▄) buy a second row of vertical resolution per text row, which
+ * is what makes a bird possible at all in five rows — at full-block resolution
+ * it is a blob. It is drawn in paper-white against the violet letters because
+ * that is the icon's own relationship: white crane, violet field.
+ */
+const CRANE = [
+  "    ▄██▄ ",
+  " █▄▄████▄",
+  "  ██████▀",
+  "   ███▀▀ ",
+  "    ▀    ",
 ] as const;
 
-/** The block wordmark needs ~55 columns; below that it would wrap into noise. */
+const WORD_MD = [
+  "█   █ ████ ",
+  "██ ██ █   █",
+  "█ █ █ █   █",
+  "█   █ █   █",
+  "█   █ ████ ",
+] as const;
+
+/** The block wordmark needs 59 columns; below that it would wrap into noise. */
 function wideEnough(): boolean {
   const columns = process.stdout.columns ?? process.stderr.columns ?? 0;
-  return columns === 0 || columns >= 60;
+  return columns === 0 || columns >= 64;
 }
 
 /**
@@ -154,9 +173,10 @@ export function lockup(version?: string): string[] {
       "",
     ];
   }
-  const art = WORD_LEFT.map((left, i) => {
+  const art = WORD_PROMPT.map((left, i) => {
     const shade = WORDMARK_SHADES[i] ?? WORDMARK_SHADES[WORDMARK_SHADES.length - 1]!;
-    return `  ${ink(shade, 99, "35")(`${left} ${WORD_RIGHT[i] ?? ""}`)}`;
+    const letters = ink(shade, 99, "35");
+    return `  ${letters(left)} ${paper(CRANE[i] ?? "")} ${letters(WORD_MD[i] ?? "")}`;
   });
   return ["", ...art, "", `  ${violet(GLYPH)}  ${slate("A Markdown Magic")}${tag}`, ""];
 }
