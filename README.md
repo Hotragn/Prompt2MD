@@ -11,7 +11,7 @@
   <a href="https://github.com/Hotragn/Prompt2MD/actions/workflows/ci.yml"><img src="https://github.com/Hotragn/Prompt2MD/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License: Apache-2.0"></a>
   <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg" alt="Node >= 20">
-  <img src="https://img.shields.io/badge/tests-233%20unit%20%2B%2015%20e2e-success.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-234%20unit%20%2B%2015%20e2e-success.svg" alt="Tests">
   <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-server%20%2B%20skill-7C5CFF.svg" alt="MCP server and skill"></a>
 </p>
 
@@ -125,7 +125,7 @@ typical.
 |  | |
 |---|---|
 | **Works with nothing installed** | HTML, CSV, JSON, PDF, DOCX, XLSX and PPTX convert in-process — no Python, no sidecar, no service. `npx prompt2md convert report.pdf` works on a bare machine. |
-| **PDF tables survive** | Tables are rebuilt from the page geometry rather than flattened into a run-on line. Columns are found as vertical whitespace corridors, so right-aligned figures land under their own heading; spanning period headers fold into the column names, and indented sub-rows stay marked as sub-rows so subtotals still reconcile. |
+| **PDF tables survive** | Tables are rebuilt from the page geometry rather than flattened into a run-on line. Columns are found as vertical whitespace corridors, so right-aligned figures land under their own heading; spanning period headers fold into the column names, and indented sub-rows are named after their parent (`Cloud Infrastructure › Compute`) so subtotals reconcile and a quoted row still says what it belongs to. |
 | **Tiered routing** | In-process fast path for the formats above; high-fidelity path (TableFormer + OCR) for scans, complex tables, and multi-column layouts. Routed on content evidence, never on file extension — and it self-heals, escalating when the fast path's output shows damage. |
 | **Token cost as a first-class output** | Every conversion returns a `TokenReport`. Set `--token-budget` and it is enforced, not suggested. |
 | **Prompt-cache-aware layout** | Stable content first, volatile content last, provider-specific breakpoints. Repeat calls cost up to ~90% less on cache-enabled providers. |
@@ -271,7 +271,7 @@ exactly.
 
 ```bash
 pnpm build         # core → hermes-mcp → cli → web + docs
-pnpm test          # 233 unit/integration tests
+pnpm test          # 234 unit/integration tests
 pnpm test:e2e      # 13 Selenium scenarios (landing + studio)
 pnpm test:install  # installer against a sandboxed HOME (your configs untouched)
 pnpm test:fresh    # full new-user simulation in a throwaway clone

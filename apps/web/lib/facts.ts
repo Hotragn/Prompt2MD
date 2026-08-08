@@ -11,7 +11,7 @@
 
 /** Unit + integration tests. Verified by running the suites, not by counting
  *  `it(` calls — the core package generates cases from the fixture corpus. */
-export const UNIT_TESTS = 233;
+export const UNIT_TESTS = 234;
 
 /** Selenium scenarios across the landing page, the studio, and the cursor. */
 export const E2E_TESTS = 15;

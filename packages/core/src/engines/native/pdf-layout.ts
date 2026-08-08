@@ -208,15 +208,59 @@ function applySpanningHeader(
 /** Indented rows are children of the row above, not peers of it. */
 const INDENT_MIN = 4;
 
+/**
+ * Name an indented row after the row it sits under: "Cloud Infrastructure ›
+ * Compute".
+ *
+ * The indent carries a fact the numbers depend on — a sub-row is already
+ * counted inside its parent, so flattening the rows to peers makes the column
+ * sum to 12,685 against a printed Total of 7,873, and a reader concludes the
+ * source contradicts itself.
+ *
+ * A bare marker like "— Compute" records the same fact but does not explain
+ * it: nothing in the table says what the dash means, and the meaning is lost
+ * entirely the moment a single row is quoted on its own — which is precisely
+ * what happens downstream, where this output is summarized and excerpted.
+ * Writing the parent into the name costs a few tokens and makes every row
+ * true in isolation.
+ */
+function qualifyHierarchy(
+  grid: readonly string[][],
+  rowCells: readonly { x: number; end: number; text: string }[][],
+  boundaries: readonly number[],
+): void {
+  const stack: { x: number; label: string }[] = [];
+
+  // Row 0 is the header; the hierarchy is in the body beneath it.
+  for (let r = 1; r < grid.length; r++) {
+    const first = rowCells[r]?.[0];
+    const line = grid[r];
+    if (first === undefined || line === undefined) continue;
+
+    const column = columnOf((first.x + first.end) / 2, boundaries);
+    const label = line[column] ?? "";
+    if (label === "") continue;
+
+    // Anything at or left of this row's indent is a sibling or an aunt, not a
+    // parent. Half the indent threshold absorbs sub-point jitter between rows
+    // that are meant to line up.
+    while (stack.length > 0 && (stack[stack.length - 1]?.x ?? 0) >= first.x - INDENT_MIN / 2) {
+      stack.pop();
+    }
+
+    const parent = stack[stack.length - 1];
+    const qualified = parent === undefined ? label : `${parent.label} › ${label}`;
+    line[column] = qualified;
+    // Push the qualified name so a third level reads as the full path.
+    stack.push({ x: first.x, label: qualified });
+  }
+}
+
 function renderTable(rows: readonly TextRow[], span?: TextRow): string {
   const boundaries = findCorridors(rows);
   if (boundaries.length === 0) return renderProse(rows);
 
   const rowCells = rows.map((row) => cells(row, MIN_CORRIDOR));
-  // The left edge of the label column, taken across the block: anything
-  // further right than this is indented under something.
-  const leftEdge = Math.min(...rowCells.map((c) => c[0]?.x ?? Number.POSITIVE_INFINITY));
-
   const grid = rowCells.map((cellsInRow) => {
     const line = Array.from({ length: boundaries.length + 1 }, () => "");
     for (const cell of cellsInRow) {
@@ -228,19 +272,10 @@ function renderTable(rows: readonly TextRow[], span?: TextRow): string {
           : `${line[columnOf((cell.x + cell.end) / 2, boundaries)]} ${cell.text}`;
     }
 
-    // Subtotal rows are the reason this matters. In the fixture, Compute and
-    // Storage sit indented under Cloud Infrastructure and are included in its
-    // figure, so a flattened table invites anyone summing the column to
-    // double-count — and the printed Total then looks wrong. The indent is in
-    // the geometry; keeping it is free, and losing it silently corrupts the
-    // arithmetic.
-    const first = cellsInRow[0];
-    if (first !== undefined && Number.isFinite(leftEdge) && first.x - leftEdge >= INDENT_MIN) {
-      const column = columnOf((first.x + first.end) / 2, boundaries);
-      if (line[column] !== "") line[column] = `— ${line[column]}`;
-    }
     return line;
   });
+
+  qualifyHierarchy(grid, rowCells, boundaries);
 
   const [headerRow, ...bodyRows] = grid;
   const withSpan = headerRow === undefined ? [] : [applySpanningHeader(headerRow, span, boundaries), ...bodyRows];

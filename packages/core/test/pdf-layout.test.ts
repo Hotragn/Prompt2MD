@@ -130,18 +130,31 @@ describe("against the real fixture", () => {
     );
   });
 
-  it("keeps sub-rows marked as sub-rows so the totals still add up", async () => {
+  it("names a sub-row after its parent so the row is true on its own", async () => {
     // Compute and Storage are indented beneath Cloud Infrastructure and are
     // already inside its figure: 2,930 + 1,882 = 4,812. Flattened to peers,
     // summing the column gives 12,685 against a printed Total of 7,873, and
     // anything reading the table concludes the document contradicts itself.
+    //
+    // Naming the parent rather than marking the row with a symbol is what
+    // keeps this readable once a single row is quoted out of the table, which
+    // is exactly what downstream summarization does.
     const result = await pdfToMarkdown(new Uint8Array(await readFile(fixture)));
-    expect(result.markdown).toContain("| — Compute | 2,930 |");
-    expect(result.markdown).toContain("| — Storage | 1,882 |");
+    expect(result.markdown).toContain("| Cloud Infrastructure › Compute | 2,930 |");
+    expect(result.markdown).toContain("| Cloud Infrastructure › Storage | 1,882 |");
     expect(result.markdown).toContain("| Cloud Infrastructure | 4,812 |");
-    // The parent and the total are top-level, and must not be marked.
-    expect(result.markdown).not.toContain("| — Cloud Infrastructure");
-    expect(result.markdown).not.toContain("| — Total");
+    // Top-level rows must not be attributed to anything.
+    expect(result.markdown).not.toContain("› Enterprise Software");
+    expect(result.markdown).not.toContain("› Total");
+  });
+
+  it("returns to the top level after a nested group ends", async () => {
+    // The row after a set of children is a sibling of their parent, not
+    // another child. Getting this wrong would file Enterprise Software under
+    // Cloud Infrastructure and make the figures nonsense.
+    const result = await pdfToMarkdown(new Uint8Array(await readFile(fixture)));
+    expect(result.markdown).toContain("| Enterprise Software | 2,144 |");
+    expect(result.markdown).toContain("| Total | 7,873 |");
   });
 
   it("leaves the escalation guard with nothing to report", async () => {
