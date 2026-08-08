@@ -13,8 +13,39 @@ import { XMLParser } from "fast-xml-parser";
 
 export type ZipEntries = Readonly<Record<string, Uint8Array>>;
 
+/**
+ * Decompression ceilings. DEFLATE reaches roughly 1000:1, so without a limit a
+ * 25MB upload — comfortably inside the web app's size guard, which weighs the
+ * compressed bytes — expands to about 25GB and takes the process out with it.
+ * A real .xlsx of a few hundred MB uncompressed does not exist in practice, so
+ * these are far above any honest document and far below anything fatal.
+ */
+const MAX_ENTRY_BYTES = 50 * 1024 * 1024;
+const MAX_TOTAL_BYTES = 200 * 1024 * 1024;
+
 export function unzip(data: Uint8Array): ZipEntries {
-  return unzipSync(data);
+  let total = 0;
+
+  // The check runs in `filter`, which fflate calls before inflating anything —
+  // the size comes from the archive's directory, so an oversized entry is
+  // refused without ever being expanded.
+  //
+  // That directory is written by whoever made the file, so a header that
+  // understates its entry still gets inflated: this stops every ordinary bomb,
+  // not a determined liar. The caller's own byte limit on the upload is what
+  // bounds that case, which is why this is a guard and not a guarantee.
+  return unzipSync(data, {
+    filter: (file) => {
+      total += file.originalSize;
+      if (file.originalSize > MAX_ENTRY_BYTES || total > MAX_TOTAL_BYTES) {
+        throw new Error(
+          `archive declares ${Math.round(total / 1024 / 1024)}MB uncompressed, ` +
+            `over the ${Math.round(MAX_TOTAL_BYTES / 1024 / 1024)}MB limit — refusing to expand it`,
+        );
+      }
+      return true;
+    },
+  });
 }
 
 const decoder = new TextDecoder("utf8");

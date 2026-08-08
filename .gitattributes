@@ -1,0 +1,18 @@
+# Line endings are LF in every working tree, on every platform.
+#
+# Not a style preference — a correctness one. scripts/check-claims.mjs verifies
+# quoted figures by re-measuring the files they describe, and CRLF adds a byte
+# per line. A Windows checkout with the default core.autocrlf=true measured
+# ARCHITECTURE.md at 1,867 tokens where Linux CI measured 1,834, so the same
+# README was simultaneously accurate on CI and wrong on a developer's laptop.
+# Pinning eol=lf makes those measurements mean the same thing everywhere.
+* text=auto eol=lf
+
+# Binary formats git must never touch.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.mp4 binary
+*.woff binary
+*.woff2 binary
+*.ico binary

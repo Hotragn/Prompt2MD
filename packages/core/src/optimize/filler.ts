@@ -33,9 +33,29 @@ function normalize(sentence: string): string {
  * normalized) of one already kept — the common "did I mention X? yeah X"
  * pattern.
  */
+/**
+ * How far back the containment scan looks.
+ *
+ * Exact repeats are caught at any distance by the set below; this bounds only
+ * the substring test, which cannot be indexed and is therefore the term that
+ * used to make this quadratic. The pattern it exists for — "did I mention X?
+ * yeah, X" — restates something a sentence or two earlier, never a thousand.
+ * Past the window a near-duplicate survives, which costs a few tokens and
+ * never changes a word: this pass only ever deletes, so the failure direction
+ * is keeping too much.
+ */
+const DUPLICATE_WINDOW = 200;
+
 function cleanParagraph(paragraph: string): string {
   const sentences = paragraph.split(/(?<=[.!?])\s+/);
   const kept: string[] = [];
+  // Normalizing was previously redone for every kept sentence on every new
+  // sentence — O(n²) work, and measurably fatal on the input this path is
+  // aimed at: a pasted transcript with no blank lines is one paragraph, and
+  // 4,000 sentences took 5s while 40,000 took minutes. Each sentence is now
+  // normalized once and the result carried.
+  const keptNormalized: string[] = [];
+  const seen = new Set<string>();
 
   for (const raw of sentences) {
     const cleaned = raw
@@ -47,13 +67,21 @@ function cleanParagraph(paragraph: string): string {
 
     const normalized = normalize(cleaned);
     if (normalized.length === 0) continue;
-    const isDuplicate = kept.some((existing) => {
-      const existingNormalized = normalize(existing);
-      return existingNormalized.includes(normalized) || normalized.includes(existingNormalized);
-    });
+    if (seen.has(normalized)) continue;
+
+    let isDuplicate = false;
+    for (let i = Math.max(0, keptNormalized.length - DUPLICATE_WINDOW); i < keptNormalized.length; i++) {
+      const existing = keptNormalized[i] ?? "";
+      if (existing.includes(normalized) || normalized.includes(existing)) {
+        isDuplicate = true;
+        break;
+      }
+    }
     if (isDuplicate) continue;
 
     kept.push(cleaned);
+    keptNormalized.push(normalized);
+    seen.add(normalized);
   }
 
   let out = kept.join(" ");

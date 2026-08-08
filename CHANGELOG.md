@@ -8,11 +8,34 @@ tagged release.
 Every performance or savings figure quoted here comes from a real run and is
 reproducible from the repository.
 
-## [Unreleased]
+## [0.1.1] — 2026-08-08
 
-Nothing tagged yet. Everything below is on `main` and working, but the packages
-are not published to npm — that is deliberate, and gated on the repository going
-public. Until then, install by cloning (see the README).
+### Fixed
+
+- **Refuse decompression bombs.** Office files are ZIP containers, and the
+  reader inflated every entry with no ceiling. DEFLATE reaches roughly 1000:1,
+  so a 0.1MB `.xlsx` expanding to 60MB was enough to kill the process with a
+  heap OOM — and the web app's 25MB upload limit weighs the *compressed* bytes,
+  so a conforming upload could ask for about 25GB. Entry sizes are now checked
+  against the archive's directory before anything is inflated, so an oversized
+  archive is refused without being expanded. The declared size is written by
+  whoever made the file, so this stops ordinary bombs rather than a header that
+  lies; the caller's byte limit remains the backstop for that case.
+- **Filler dedupe is no longer quadratic.** The deterministic no-LLM path
+  re-normalized every kept sentence for every new one, which is O(n²) inside a
+  paragraph — and a pasted transcript with no blank lines is one paragraph.
+  Measured before: 1,000 sentences 269ms, 2,000 1,051ms, 4,000 5,019ms, with
+  ~40,000 projecting to minutes. Each sentence is now normalized once, exact
+  repeats go through a set at any distance, and the containment scan is bounded
+  to a 200-sentence window. 8,000 sentences now complete in a fraction of the
+  time 4,000 used to take. Past the window a near-duplicate survives, which
+  costs a few tokens and never alters a word.
+
+## [0.1.0] — 2026-08-08
+
+First published release. `prompt2md` (CLI), `@prompt2md/core`, and
+`prompt2md-skill` are on npm; `npx prompt2md convert report.pdf` works on a
+machine with no Python installed.
 
 ### Added
 

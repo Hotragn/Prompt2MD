@@ -28,7 +28,9 @@ const defaultIo: CliIo = {
   err: (t) => process.stderr.write(`${t}\n`),
 };
 
-const VERSION = "0.1.0";
+// Kept in step with packages/cli/package.json by hand. `prompt2md --version`
+// reads this, so a stale value here makes the CLI lie about itself.
+const VERSION = "0.1.1";
 
 const PROVIDERS = ["anthropic", "openai", "gemini", "kimi"] as const;
 type Provider = (typeof PROVIDERS)[number];

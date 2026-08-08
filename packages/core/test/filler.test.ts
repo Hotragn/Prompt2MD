@@ -2,6 +2,38 @@ import { describe, expect, it } from "vitest";
 import { stripPromptFiller } from "../src/optimize/filler.js";
 import { approxCounter } from "../src/tokens/counter.js";
 
+describe("filler stripping stays linear on one huge paragraph", () => {
+  it("handles a pasted transcript without blank lines in reasonable time", () => {
+    // A chat log or transcript pasted straight in is one paragraph with
+    // thousands of sentences — the exact shape this path is aimed at. The
+    // dedupe used to re-normalize every kept sentence for every new one, so
+    // 4,000 sentences took 5s and 40,000 took minutes: the CLI hung with no
+    // output, and the hosted studio burned its whole 45s deadline. This is a
+    // timing test on purpose; nothing else catches a return to quadratic.
+    const sentences = Array.from({ length: 8000 }, (_, i) => `Sentence number ${i} covers a topic.`);
+    const started = Date.now();
+    const { text } = stripPromptFiller(sentences.join(" "), approxCounter);
+    const elapsed = Date.now() - started;
+
+    // Quadratic put 8,000 sentences near 20s; linear lands comfortably under
+    // a second. The bar is loose so a slow CI machine cannot flake it, while
+    // still failing hard if the old behaviour returns.
+    expect(elapsed).toBeLessThan(5000);
+    expect(text).toContain("Sentence number 7999");
+  });
+
+  it("still removes an exact repeat however far apart it is", () => {
+    // Bounding the containment scan must not stop catching outright repeats:
+    // those go through a set, which has no window.
+    const filler = Array.from({ length: 400 }, (_, i) => `Filler line ${i} adds nothing.`);
+    const input = ["The API key must be read from the environment.", ...filler, "The API key must be read from the environment."].join(" ");
+    const { text } = stripPromptFiller(input, approxCounter);
+
+    const occurrences = text.split("The API key must be read from the environment.").length - 1;
+    expect(occurrences).toBe(1);
+  });
+});
+
 describe("prompt filler stripping (deterministic, no-LLM path)", () => {
   it("shrinks a rambling chat-box prompt without losing requirements", () => {
     const input =

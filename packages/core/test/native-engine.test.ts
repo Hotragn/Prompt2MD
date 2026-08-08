@@ -16,6 +16,45 @@ import type { SniffReport } from "../src/types/engine.js";
 
 const engine = createNativeEngine();
 
+describe("refusing a decompression bomb", () => {
+  it("rejects an archive that declares more than it may expand to", async () => {
+    // A few hundred KB on disk, ~120MB inflated. DEFLATE reaches about
+    // 1000:1, so a 25MB upload — inside the web app's limit, which weighs the
+    // COMPRESSED bytes — expands to roughly 25GB. Unguarded, this killed the
+    // process outright with a heap OOM rather than returning an error.
+    const filler = "A".repeat(120 * 1024 * 1024);
+    const bomb = zipSync({
+      "xl/workbook.xml": strToU8('<?xml version="1.0"?><workbook><sheets/></workbook>'),
+      "xl/sharedStrings.xml": strToU8(`<?xml version="1.0"?><sst><si><t>${filler}</t></si></sst>`),
+    });
+    // The point of the guard: it refuses cheaply, on the declared size,
+    // without ever inflating the entry.
+    expect(bomb.length).toBeLessThan(2 * 1024 * 1024);
+
+    await expect(
+      engine.convert({ kind: "buffer", data: bomb, filename: "bomb.xlsx" }, sniff("office", bomb.length), {}),
+    ).rejects.toThrow(/refusing to expand|over the .*limit/i);
+  });
+
+  it("still opens an ordinary workbook", async () => {
+    // The ceiling must sit far above any honest document.
+    const ok = zipSync({
+      "xl/workbook.xml": strToU8(
+        '<?xml version="1.0"?><workbook><sheets><sheet name="S1" sheetId="1" r:id="rId1"/></sheets></workbook>',
+      ),
+      "xl/worksheets/sheet1.xml": strToU8(
+        '<?xml version="1.0"?><worksheet><sheetData><row r="1"><c r="A1" t="inlineStr"><is><t>Header</t></is></c></row></sheetData></worksheet>',
+      ),
+    });
+    const result = await engine.convert(
+      { kind: "buffer", data: ok, filename: "fine.xlsx" },
+      sniff("office", ok.length),
+      {},
+    );
+    expect(result.markdown).toContain("Header");
+  });
+});
+
 function sniff(kind: SniffReport["kind"], bytes = 0): SniffReport {
   return { kind, mime: "application/octet-stream", bytes };
 }
