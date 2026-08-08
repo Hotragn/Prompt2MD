@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createDeterministicTextEngine, withDeterministicFallback } from "../src/runtime.js";
-import type { Engine, SniffReport } from "@prompt2md/core";
+import type { Engine, SniffReport } from "../src/types/engine.js";
 
 const TEXT_SNIFF: SniffReport = { kind: "prompt", mime: "text/plain", bytes: 0 };
 

@@ -1,4 +1,5 @@
-import type { LlmGateway, TokenCounter } from "@prompt2md/core";
+import type { LlmGateway } from "../types/gateway.js";
+import type { TokenCounter } from "../types/tokens.js";
 
 /**
  * Phase 3 summarizers. The LLM summarizer is preferred; the extractive one is

@@ -2,8 +2,10 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { approxCounter, parseMarkdown, renderMarkdown } from "@prompt2md/core";
-import { stripBoilerplate } from "../src/compress/boilerplate.js";
+import { parseMarkdown } from "../src/markdown/parse.js";
+import { stripBoilerplate } from "../src/optimize/boilerplate.js";
+import { approxCounter } from "../src/tokens/counter.js";
+import { renderMarkdown } from "../src/types/document.js";
 
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "fixtures", "cases");
 

@@ -71,5 +71,4 @@ Operational guardrails baked into the decision:
 ## References
 
 - Engine research: `docs/research/ENGINES.md` (Docling 2.116.0, MarkItDown 0.1.7, July 2026, with sources)
-- Competitive analysis: `docs/research/COMPETITIVE-LANDSCAPE.md`
 - Benchmarks cited: danilchenko.dev MarkItDown/Docling/Marker comparison; Procycons PDF extraction benchmark

@@ -2,28 +2,23 @@ import { existsSync, readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-  approxCounter,
-  convertDocument,
-  createDoclingEngine,
-  createLiteLlmGateway,
-  createMarkitdownEngine,
-  createPromptOptimizerEngine,
-  parseMarkdown,
-  renderMarkdown,
-  stripPromptFiller,
-  structurePrompt,
-  type ConversionOutcome,
-  type ConversionWarning,
-  type ConvertOptions,
-  type Engine,
-  type LlmGateway,
-  type SourceInput,
-} from "@prompt2md/core";
 import { compressContext, type CompressOptions, type CompressResult } from "./compress/compressor.js";
 import { createLlmSummarizer } from "./compress/summarize.js";
-import { stripBoilerplate } from "./compress/boilerplate.js";
+import { createDoclingEngine } from "./engines/docling.js";
+import { createMarkitdownEngine } from "./engines/markitdown.js";
+import { createPromptOptimizerEngine } from "./engines/prompt-optimizer.js";
+import { createLiteLlmGateway } from "./gateway/litellm.js";
+import { parseMarkdown } from "./markdown/parse.js";
+import { stripBoilerplate } from "./optimize/boilerplate.js";
+import { stripPromptFiller } from "./optimize/filler.js";
+import { structurePrompt } from "./optimize/structure.js";
+import { convertDocument, type ConversionOutcome } from "./pipeline.js";
 import { createFileStore, type OriginalStore } from "./store.js";
+import { approxCounter } from "./tokens/counter.js";
+import { renderMarkdown } from "./types/document.js";
+import type { ConversionWarning } from "./types/document.js";
+import type { ConvertOptions, Engine, SourceInput } from "./types/engine.js";
+import type { LlmGateway } from "./types/gateway.js";
 
 /**
  * Shared runtime for every prompt2md surface (MCP server, CLI). Configured

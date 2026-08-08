@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@prompt2md/core": "workspace:*",
-    "@prompt2md/hermes-mcp": "workspace:*",
     "@vercel/blob": "^2.6.1",
     "dompurify": "^3.4.13",
     "gsap": "^3.12.7",

@@ -1,7 +1,7 @@
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { approxCounter } from "@prompt2md/core";
+import { approxCounter } from "../src/tokens/counter.js";
 import { describe, expect, it } from "vitest";
 import { compressContext } from "../src/compress/compressor.js";
 import { createFileStore, parseAnchor } from "../src/store.js";

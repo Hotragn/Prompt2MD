@@ -14,9 +14,15 @@ Start a new agent session, then run `/prompt2md`. The skill also triggers on
 its own when you ask to clean up a prompt, convert a document to Markdown, cut
 token usage, or fit something into a context window.
 
-Installs to `~/.claude/skills/prompt2md`, and to `~/.codex/skills` when Codex
-CLI is present. Re-running is safe: an identical install is a no-op, and a copy
-you have edited is backed up beside itself rather than overwritten.
+Installs to `~/.claude/skills/prompt2md`, and to the shared `~/.agents/skills`
+when that exists. Re-running is safe: an identical install is a no-op, and a
+copy you have edited is backed up beside itself rather than overwritten.
+
+For any other agent, point `--dir` at its own skills directory. Note that
+skill *locations* are not yet standardised across tools even though `SKILL.md`
+itself is converging — Codex, for instance, loads skills from inside plugins
+rather than from a flat directory. **The universal path is the MCP server**,
+which any MCP client can use; see the root README.
 
 | Flag | Effect |
 |---|---|

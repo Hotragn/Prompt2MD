@@ -4,8 +4,8 @@ Sprint cadence: 1-week sprints; each HITL checkpoint closes an epic. Board colum
 Backlog → In Progress → Review (HITL) → Done.
 
 ## Epic 1 — Blueprint & fixtures (Phase 1) ✅ done (Checkpoint 1 approved)
-Turborepo scaffold, ARCHITECTURE.md, ADR-001, 6-case golden corpus, engine +
-competitor research.
+Turborepo scaffold, ARCHITECTURE.md, ADR-001, 6-case golden corpus, engine
+research.
 
 ## Epic 2 — Core engine (Phase 2) ✅ done (Checkpoint 2 approved)
 Strict TS interfaces (`MarkdownDoc` IR, `Engine`, `SniffReport`, `TokenReport`),

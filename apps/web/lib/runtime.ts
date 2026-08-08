@@ -1,5 +1,5 @@
 import { get as blobGet, put as blobPut } from "@vercel/blob";
-import { createRuntimeFromEnv, type HermesRuntime } from "@prompt2md/hermes-mcp";
+import { createRuntimeFromEnv, type HermesRuntime } from "@prompt2md/core";
 import { createBlobStore, type BlobClient } from "./blob-store";
 
 let cached: HermesRuntime | undefined;

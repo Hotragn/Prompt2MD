@@ -11,7 +11,7 @@ parser. It converts unstructured text, messy prompts, and complex documents into
 **token-optimized, layout-aware Markdown** for LLM consumption, and it reports the
 cost impact of every conversion.
 
-Positioning (from the competitive analysis in `docs/research/COMPETITIVE-LANDSCAPE.md`):
+Positioning:
 
 | USP | Who else does it |
 |---|---|
@@ -38,7 +38,7 @@ prompt2md/
 │   └── scripts/              # Binary fixture generators (PDFs)
 ├── docs/
 │   ├── adr/                  # Architectural Decision Records
-│   ├── research/             # Engine + competitor research (cited)
+│   ├── research/             # Engine research (cited)
 │   └── ROADMAP.md            # Agile epics: product, growth, testing, legal
 ├── turbo.json                # Turborepo 2.x task graph
 └── pnpm-workspace.yaml

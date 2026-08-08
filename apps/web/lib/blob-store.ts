@@ -1,5 +1,5 @@
 import { hashSource } from "@prompt2md/core";
-import type { OriginalStore, StoredOriginal } from "@prompt2md/hermes-mcp";
+import type { OriginalStore, StoredOriginal } from "@prompt2md/core";
 
 /**
  * Durable originals store backed by Vercel Blob.

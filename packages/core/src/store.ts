@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { hashSource } from "@prompt2md/core";
+import { hashSource } from "./markdown/parse.js";
 
 /**
  * Content-addressed store of verbatim originals. Compression is never

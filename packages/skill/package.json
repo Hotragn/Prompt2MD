@@ -35,7 +35,8 @@
   "files": [
     "bin/",
     "prompt2md/",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "lint": "node ./scripts/validate-skill.mjs"

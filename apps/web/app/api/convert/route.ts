@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { Fidelity, SourceInput } from "@prompt2md/core";
-import type { CompressResult } from "@prompt2md/hermes-mcp";
+import type { CompressResult } from "@prompt2md/core";
 import {
   MAX_UPLOAD_BYTES,
   checkText,

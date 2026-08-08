@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { createRuntimeFromEnv } from "./runtime.js";
+import { createRuntimeFromEnv } from "@prompt2md/core";
 import { createHermesServer } from "./server.js";
 
 async function main(): Promise<void> {

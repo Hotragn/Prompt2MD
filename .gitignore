@@ -50,3 +50,10 @@ fixtures/_generated/
 
 # DSPy optimization artifacts are machine-generated per run.
 eval/artifacts/
+
+# Agent skills installed by `npx skills add` — vendored third-party content that
+# goes stale. `skills-lock.json` IS tracked (it records source + content hash),
+# so the set is reproducible the same way node_modules is: ignore the install,
+# commit the lockfile.
+.agents/
+.claude/skills/

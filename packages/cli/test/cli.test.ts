@@ -11,7 +11,7 @@ import {
   type ConvertOptions,
   type SourceInput,
 } from "@prompt2md/core";
-import { compressContext, createFileStore, type HermesRuntime, type OriginalStore } from "@prompt2md/hermes-mcp";
+import { compressContext, createFileStore, type HermesRuntime, type OriginalStore } from "@prompt2md/core";
 import {
   buildProgram,
   deriveBatchOutPaths,

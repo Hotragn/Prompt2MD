@@ -2,7 +2,7 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createFileStore } from "@prompt2md/hermes-mcp";
+import { createFileStore } from "@prompt2md/core";
 import { generateDigest, getDailyDigest } from "../lib/digest";
 
 const HN_PAYLOAD = {

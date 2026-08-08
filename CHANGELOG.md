@@ -39,8 +39,7 @@ public. Until then, install by cloning (see the README).
   filler stripping still shrinks rambling chat-box prompts — measured 150 → 120
   tokens on a real example, with every requirement preserved.
 - **A documented design system** — the story, marks, palette, and rules — in
-  [docs/BRAND.md](docs/BRAND.md), with the research behind it in
-  [docs/research/UI-LANDSCAPE.md](docs/research/UI-LANDSCAPE.md).
+  [docs/BRAND.md](docs/BRAND.md).
 - **A product website** with a hero demo that runs the real conversion API, and
   the studio at `/studio`.
 

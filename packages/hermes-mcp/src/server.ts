@@ -1,8 +1,15 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import type { CacheProvider, ConversionOutcome, ConvertOptions, SourceInput } from "@prompt2md/core";
-import { parseAnchor, type OriginalStore } from "./store.js";
-import type { CompressOptions, CompressResult } from "./compress/compressor.js";
+import { approxCounter, buildOutline, parseAnchor } from "@prompt2md/core";
+import type {
+  CacheProvider,
+  CompressOptions,
+  CompressResult,
+  ConversionOutcome,
+  ConvertOptions,
+  OriginalStore,
+  SourceInput,
+} from "@prompt2md/core";
 
 export interface HermesDeps {
   readonly store: OriginalStore;
@@ -95,6 +102,61 @@ export function createHermesServer(deps: HermesDeps): McpServer {
         };
       } catch (err) {
         return fail(`compression failed: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    },
+  );
+
+  server.tool(
+    "outline",
+    "Lazy context: return a navigable INDEX of a large document instead of the document. Headings stay verbatim; every other section becomes a one-line stub with its kind, token cost, a short preview, and a `p2md:src` anchor. Read a stub's content by passing its anchor to retrieve_original. Prefer this over `convert` with a tokenBudget whenever the task needs a few sections out of many: nothing is summarized, so nothing is approximated, and only the sections actually needed are ever paid for. Returns the index Markdown, then a JSON report of index vs full token cost.",
+    {
+      text: z.string().min(1).describe("The document text to index"),
+      previewChars: z.number().int().positive().max(240).optional().describe("Preview length per stub (default 72)"),
+    },
+    async (args): Promise<ToolText> => {
+      try {
+        // An unbounded budget runs strip + structure only, never
+        // summarization — the index must point at verbatim source, so the
+        // sections it describes have to still be the original text.
+        const prepared = await deps.compress(args.text, { tokenBudget: Number.MAX_SAFE_INTEGER });
+        const outline = buildOutline(
+          prepared.doc,
+          (t) => approxCounter.count(t),
+          args.previewChars !== undefined ? { previewChars: args.previewChars } : {},
+        );
+        return {
+          content: [
+            text(outline.markdown),
+            text(
+              JSON.stringify(
+                {
+                  sourceId: prepared.sourceId,
+                  indexTokens: outline.indexTokens,
+                  fullTokens: outline.fullTokens,
+                  indexShareOfFullPct:
+                    outline.fullTokens === 0
+                      ? null
+                      : Math.round((outline.indexTokens / outline.fullTokens) * 100),
+                  stubbed: outline.stubbed,
+                  verbatim: outline.verbatim,
+                  unanchored: outline.unanchored,
+                  worthwhile: outline.worthwhile,
+                  ...(outline.worthwhile
+                    ? {}
+                    : {
+                        advice:
+                          "This index costs at least as much as the document. Send the document itself instead — it is too short or too table/code-heavy to index.",
+                      }),
+                  warnings: prepared.doc.warnings,
+                },
+                null,
+                2,
+              ),
+            ),
+          ],
+        };
+      } catch (err) {
+        return fail(`outline failed: ${err instanceof Error ? err.message : String(err)}`);
       }
     },
   );

@@ -6,13 +6,15 @@ import { basename, dirname, extname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Command, InvalidArgumentError, Option } from "commander";
 import { glob } from "tinyglobby";
-import type { ConvertOptions, Fidelity, TokenReport } from "@prompt2md/core";
 import {
   createRuntimeFromEnv,
   parseAnchor,
   type CompressResult,
+  type ConvertOptions,
+  type Fidelity,
   type HermesRuntime,
-} from "@prompt2md/hermes-mcp";
+  type TokenReport,
+} from "@prompt2md/core";
 
 /** Injectable output sink so tests can capture stdout/stderr streams. */
 export interface CliIo {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { parseAnchor } from "@prompt2md/hermes-mcp";
+import { parseAnchor } from "@prompt2md/core";
 import { errorResponse, withDeadline } from "../../../lib/guard";
 import { getRuntime, storeIsEphemeral } from "../../../lib/runtime";
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { CACHE_PROFILES, type MarkdownDoc, type MarkdownSection } from "@prompt2md/core";
+import { CACHE_PROFILES } from "../src/gateway/cache-profiles.js";
+import type { MarkdownDoc, MarkdownSection } from "../src/types/document.js";
 import { buildSavings, stablePrefixTokens } from "../src/compress/savings.js";
 
 const section = (id: string, volatility: "stable" | "volatile", tokens: number): MarkdownSection => ({

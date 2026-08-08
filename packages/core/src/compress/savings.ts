@@ -1,4 +1,5 @@
-import type { CacheProfile, MarkdownDoc } from "@prompt2md/core";
+import type { CacheProfile } from "../gateway/cache-profiles.js";
+import type { MarkdownDoc } from "../types/document.js";
 
 /**
  * Token-savings accounting (ADR-003). Two independent levers multiply:

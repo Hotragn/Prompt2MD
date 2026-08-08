@@ -1,17 +1,11 @@
-import {
-  CACHE_PROFILES,
-  approxCounter,
-  orderForCache,
-  parseMarkdown,
-  renderMarkdown,
-  type CacheProvider,
-  type ConversionWarning,
-  type MarkdownDoc,
-  type MarkdownSection,
-  type TokenCounter,
-} from "@prompt2md/core";
+import { CACHE_PROFILES, orderForCache, type CacheProvider } from "../gateway/cache-profiles.js";
+import { parseMarkdown } from "../markdown/parse.js";
+import { renderMarkdown } from "../types/document.js";
+import type { ConversionWarning, MarkdownDoc, MarkdownSection } from "../types/document.js";
+import type { TokenCounter } from "../types/tokens.js";
+import { approxCounter } from "../tokens/counter.js";
 import { formatAnchor, type OriginalStore } from "../store.js";
-import { stripBoilerplate } from "./boilerplate.js";
+import { stripBoilerplate } from "../optimize/boilerplate.js";
 import { createExtractiveSummarizer, type Summarizer } from "./summarize.js";
 import { buildSavings, type PhaseTrace, type SavingsReport } from "./savings.js";
 

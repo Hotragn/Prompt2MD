@@ -1,23 +1,25 @@
 ---
 name: prompt2md
-description: Convert unstructured text, messy prompts, and documents (PDF, Office, HTML, CSV, scans) into token-optimized, layout-aware Markdown with an honest token report; compress oversized context to a token budget; retrieve the verbatim original behind any compressed section. Use when the user asks to clean up or restructure a prompt, convert a document or web page to Markdown, reduce token usage or LLM cost, fit content into a context window, or batch-convert files.
+description: Convert unstructured text, messy prompts, and documents (PDF, Office, HTML, CSV, scans) into token-optimized, layout-aware Markdown with an honest token report; compress oversized context to a token budget; retrieve the verbatim original behind any compressed section. Use when the user asks to "clean up this prompt", "convert this to markdown", "reduce tokens", "make this cheaper", "fit this in the context window", or asks to restructure a prompt, convert a document or web page, or batch-convert files.
+version: 0.1.0
 ---
 
 # prompt2md — token-optimized Markdown conversion
 
-You convert content into Markdown that is cheap to keep in context, and you
-never lose information: every compression is reversible via stored originals.
+Convert content into Markdown that is cheap to keep in context, without ever
+losing information: every compression is reversible via stored originals.
 
 ## Tool selection
 
 Prefer the **MCP tools** when the `prompt2md-hermes` server is connected
 (`convert`, `compress_context`, `retrieve_original`). Otherwise use the **CLI**
-(`prompt2md`, from `@prompt2md/cli`). Both expose the same pipeline; flags and
+(`prompt2md`, installable with `npm i -g prompt2md`). Both expose the same pipeline; flags and
 arguments map 1:1.
 
 | Goal | MCP | CLI |
 |---|---|---|
 | Convert file/text | `convert {text\|path, tokenBudget?, fidelity?}` | `prompt2md convert <file> [-b N] [-f mode]` |
+| Index a large doc | `outline {text, previewChars?}` | — |
 | Compress context | `compress_context {text, tokenBudget, provider?}` | `prompt2md compress <file> -b N [--provider p]` |
 | Recover original | `retrieve_original {anchor\|sourceId}` | `prompt2md retrieve <anchor\|sourceId>` |
 | Many files | — | `prompt2md batch "docs/**/*.pdf" -d out/ [--report]` |
@@ -38,6 +40,16 @@ maximum table/scan fidelity, or `"fast"` for speed on bulk text.
 verbatim; middle prose is summarized; tables/code/headings are never
 summarized. The output may exceed a very small budget — check the
 `budget-exceeded` warning instead of assuming.
+
+**3b. Large document, narrow question — prefer `outline` over a budget.** When
+the task needs a few sections out of many (searching a contract, answering one
+question about a long report), call `outline` first. It returns headings
+verbatim plus a one-line stub per section carrying a preview and an anchor.
+Read the stubs, decide which sections matter, then `retrieve_original` on those
+anchors only. Nothing is summarized, so nothing is approximated, and unread
+sections are never paid for. Quote retrieved text, never a stub preview — the
+preview is clipped and exists only to choose by. Reach for `tokenBudget`
+instead when the whole document genuinely has to be present at once.
 
 **4. Chat-box optimization.** When the user pastes long raw content (logs,
 emails, docs, rambling requirements) intended as context for further work,

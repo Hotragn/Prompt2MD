@@ -4,8 +4,7 @@ import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import { compressContext } from "../src/compress/compressor.js";
-import { createFileStore, parseAnchor } from "../src/store.js";
+import { compressContext, createFileStore, parseAnchor } from "@prompt2md/core";
 import { createHermesServer } from "../src/server.js";
 
 interface TextContent {
@@ -42,9 +41,16 @@ describe("hermes MCP server (in-memory client integration)", () => {
     ].join("\n\n");
   });
 
-  it("exposes exactly the three Phase-3 tools", async () => {
+  // Pins the whole tool surface on purpose: every tool costs the client context
+  // in its listing, so one must never appear here unnoticed.
+  it("exposes exactly the four tools", async () => {
     const { tools } = await client.listTools();
-    expect(tools.map((t) => t.name).sort()).toEqual(["compress_context", "convert", "retrieve_original"]);
+    expect(tools.map((t) => t.name).sort()).toEqual([
+      "compress_context",
+      "convert",
+      "outline",
+      "retrieve_original",
+    ]);
   });
 
   it("compress_context returns compressed markdown + JSON savings report", async () => {

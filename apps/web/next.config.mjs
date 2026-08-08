@@ -15,7 +15,7 @@ const nextConfig = {
 
   // Keep the pipeline packages un-bundled: the markitdown engine resolves its
   // Python worker via import.meta.url, which bundling would break.
-  serverExternalPackages: ["@prompt2md/core", "@prompt2md/hermes-mcp"],
+  serverExternalPackages: ["@prompt2md/core"],
 };
 
 export default nextConfig;

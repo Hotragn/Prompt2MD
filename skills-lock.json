@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "ci-security-scanning-with-strix": {
+      "source": "usestrix/strix",
+      "sourceType": "github",
+      "skillPath": "skills/ci-security-scanning-with-strix/SKILL.md",
+      "computedHash": "251d8c761c00f9dcc02dc04ed824798e71927ccff2b43ee1134b7cd87feee951"
+    }
+  }
+}

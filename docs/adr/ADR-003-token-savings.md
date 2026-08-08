@@ -75,8 +75,7 @@ back pays for that one span, not for having carried the whole document.
 - (+) Every number in the report is reproducible from the profile constants
   and the section list; no black-box claims.
 - (+) The headline metric argues for prompt2md in the agent's own currency
-  (effective tokens per call), which no competitor reports (see
-  `docs/research/COMPETITIVE-LANDSCAPE.md`).
+  (effective tokens per call), which comparable tools do not report.
 - (−) Token counts use the chars/4 heuristic by default (±10%); reports name
   the counter used, and exact tokenizers are injectable via `TokenCounter`.
 - (−) `writePremium`/`readCostFactor` values drift with provider pricing;

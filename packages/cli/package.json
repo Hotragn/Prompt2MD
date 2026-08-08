@@ -1,17 +1,45 @@
 {
-  "name": "@prompt2md/cli",
+  "name": "prompt2md",
   "version": "0.1.0",
-  "description": "prompt2md command-line interface for single-file and batch conversion.",
+  "description": "Turn messy prompts and documents (PDF, Office, HTML, CSV) into token-optimized, layout-aware Markdown, with an honest token report and byte-exact retrieval of anything a summary replaced.",
   "license": "Apache-2.0",
+  "author": "Hotragn",
+  "homepage": "https://prompt2md.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hotragn/Prompt2MD.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/Hotragn/Prompt2MD/issues"
+  },
+  "keywords": [
+    "markdown",
+    "token-optimization",
+    "llm",
+    "context-window",
+    "prompt-engineering",
+    "pdf-to-markdown",
+    "document-conversion",
+    "prompt-compression",
+    "cli"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
     "prompt2md": "./dist/index.js"
   },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -20,7 +48,6 @@
   },
   "dependencies": {
     "@prompt2md/core": "workspace:*",
-    "@prompt2md/hermes-mcp": "workspace:*",
     "commander": "^12.1.0",
     "tinyglobby": "^0.2.10"
   },

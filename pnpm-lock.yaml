@@ -42,9 +42,6 @@ importers:
       '@prompt2md/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@prompt2md/hermes-mcp':
-        specifier: workspace:*
-        version: link:../../packages/hermes-mcp
       '@vercel/blob':
         specifier: ^2.6.1
         version: 2.6.1
@@ -94,9 +91,6 @@ importers:
       '@prompt2md/core':
         specifier: workspace:*
         version: link:../core
-      '@prompt2md/hermes-mcp':
-        specifier: workspace:*
-        version: link:../hermes-mcp
       commander:
         specifier: ^12.1.0
         version: 12.1.0

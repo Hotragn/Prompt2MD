@@ -11,7 +11,7 @@
   <a href="https://github.com/Hotragn/Prompt2MD/actions/workflows/ci.yml"><img src="https://github.com/Hotragn/Prompt2MD/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License: Apache-2.0"></a>
   <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg" alt="Node >= 20">
-  <img src="https://img.shields.io/badge/tests-175%20unit%20%2B%2013%20e2e-success.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-184%20unit%20%2B%2015%20e2e-success.svg" alt="Tests">
   <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-server%20%2B%20skill-7C5CFF.svg" alt="MCP server and skill"></a>
 </p>
 
@@ -46,12 +46,75 @@ compressed 1856→1504 tokens (81%), repeat-call cost 167 effective tokens
 (91% cheaper than raw), sourceId=a473fa37ccf5b4b5
 ```
 
-That run is reproducible from this repository — every number in this README
-comes from a real command, not an estimate.
+Read those two percentages carefully, because they are different units. **`(81%)`
+is the output as a share of the input** — 1,504 is 81% *of* 1,856, a 19%
+reduction. **`91% cheaper` is a saving** — a repeat call costs 167 effective
+tokens against 1,856 raw. We name the unit every time rather than let a bare
+percentage flatter us four-fold.
+
+That repeat-call figure is the strongest honest number here, and it has nothing
+to do with Markdown: it comes from ordering sections so the provider's prompt
+cache hits. Agents send the same context over and over, so that is where the
+real money is.
+
+Every number in this README comes from a real command in this repository, not
+an estimate.
 
 Nothing is discarded to get there: the original is stored before compression
 runs, and every summarized passage carries an anchor that returns the
 **byte-exact** source on demand.
+
+## Where the savings actually come from
+
+Worth stating plainly, because the common version of this pitch is wrong:
+**Markdown syntax does not reduce tokens — it costs them.** Adding `#`, `**`,
+and `-` to clean prose makes it about 5-15% *larger*. "Convert to Markdown to
+save tokens" only holds when the thing you started from was HTML or PDF.
+
+The reduction comes from removing what the model does not need. Markdown is
+just the structure the remainder is kept in:
+
+| Mechanism | Applies to | Effect |
+|---|---|---|
+| Strip markup and chrome | HTML, PDF, DOCX, JSON | Large win — tags and layout scaffolding carry no meaning |
+| Remove redundancy | Rambling prose | Repeated sentences, hedges, meta-commentary, sign-offs |
+| Summarize the middle | Oversized context | Head and tail stay verbatim; only safe middle prose condenses |
+| Add Markdown structure | Clean plain text | **Costs a little** — and we count it |
+
+That last row is why the figure this project quotes for a messy prompt is
+**150 → 127 tokens**, not 150 → 120. Cleaned prose alone reaches 120; the
+Goal/Requirements/Constraints headings cost 7 tokens on top, and the headline
+number is the one that has already paid for them.
+
+Structure earns that cost by surviving compression legibly and by being parsed
+more reliably — never by being smaller. And the pipeline refuses to make things
+worse: `convert` declines a result bigger than its input (warning
+`layout-skipped`), and `compress` is measured never to grow.
+
+### When this helps, and when it does not
+
+**Worth it:**
+
+- HTML, PDF, DOCX, CSV, or JSON going into a model — markup is pure overhead
+- Rambling prompts and email threads, where redundancy is the bulk
+- Context that must fit a budget, where the alternative is truncation
+- Anything you may need to quote verbatim later, because the original is kept
+
+**Not worth it:**
+
+- Short, already-clean plain text. Structure costs a few tokens and buys
+  nothing you did not already have. The pipeline will decline rather than
+  return something larger, but the honest answer is to skip the step.
+- One-off conversions where the token cost was never the problem.
+- Cases needing guaranteed machine-parseable output — use a JSON schema or
+  tool-use contract, which is a stronger guarantee than any text format.
+
+**The trade-off, stated plainly:** the reduction comes from removing
+redundancy and markup. If your input has neither, there is nothing to remove,
+and Markdown structure is a small net cost. Everything above is measured on
+inputs that had something to remove — see the figures table in
+[docs/BRAND.md](docs/BRAND.md), including the outlier we refuse to quote as
+typical.
 
 ## Features
 
@@ -179,11 +242,9 @@ palette, and the rules — in **[docs/BRAND.md](docs/BRAND.md)**.
 
 That is the product's architecture, not a metaphor: originals are stored before
 any transformation, and every summarized section resolves back to byte-exact
-source. The icon is an accordion fold whose silhouette reads as **M**.
-
-The visual research behind it — what currently-funded developer-tool companies
-do, and which of it survives contact with an open-source project that has no
-sales funnel — is in [docs/research/UI-LANDSCAPE.md](docs/research/UI-LANDSCAPE.md).
+source. The icon is an origami crane — fold a sheet into one and every square
+millimetre of paper is still there; unfold it and you have the original sheet,
+exactly.
 
 ## Project layout
 
@@ -201,7 +262,7 @@ sales funnel — is in [docs/research/UI-LANDSCAPE.md](docs/research/UI-LANDSCAP
 
 ```bash
 pnpm build         # core → hermes-mcp → cli → web + docs
-pnpm test          # 175 unit/integration tests
+pnpm test          # 184 unit/integration tests
 pnpm test:e2e      # 13 Selenium scenarios (landing + studio)
 pnpm test:install  # installer against a sandboxed HOME (your configs untouched)
 pnpm test:fresh    # full new-user simulation in a throwaway clone

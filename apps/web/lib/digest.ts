@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { approxCounter } from "@prompt2md/core";
-import type { OriginalStore } from "@prompt2md/hermes-mcp";
+import type { OriginalStore } from "@prompt2md/core";
 
 /**
  * Daily Digest (Epic 6): pulls from vetted, keyless public APIs and republishes

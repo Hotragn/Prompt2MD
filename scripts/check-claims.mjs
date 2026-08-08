@@ -17,7 +17,7 @@
  * effectively free.
  */
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -79,9 +79,15 @@ check(
 
 // Safe to count statically: the E2E specs declare every case literally, with
 // no generated or skipped tests. Asserted below so that stays true.
-const e2eSources = ["landing.e2e.ts", "studio.e2e.ts"].map((f) =>
-  readFileSync(join(REPO, "apps", "web", "e2e", f), "utf8"),
-);
+//
+// Discovered by reading the directory, NOT from a hardcoded list. The first
+// version listed ["landing.e2e.ts", "studio.e2e.ts"] by name, so when
+// cursor.e2e.ts was added the checker kept counting 13 of 15 and reported
+// success — a guard that cannot see a new file is not a guard. Any spec added
+// here is now counted automatically.
+const E2E_DIR = join(REPO, "apps", "web", "e2e");
+const e2eFiles = readdirSync(E2E_DIR).filter((f) => f.endsWith(".e2e.ts"));
+const e2eSources = e2eFiles.map((f) => readFileSync(join(E2E_DIR, f), "utf8"));
 const e2eActual = e2eSources.reduce((n, s) => n + (s.match(/^\s*it\(/gm) ?? []).length, 0);
 const e2eDynamic = e2eSources.some((s) => /it\.each|it\.skip|it\.only|it\.todo/.test(s));
 
@@ -164,6 +170,34 @@ for (const file of ["apps/web/public/og.svg", "apps/web/app/page.tsx", "README.m
     .split(/\n/)
     .filter((line) => /lossless/i.test(line) && /\d{2,3}(\.\d+)?\s*%/.test(line));
   check(offending.length === 0, `no "N% lossless" claim in ${file}`, offending[0]?.trim().slice(0, 80) ?? "");
+}
+
+// Markdown syntax COSTS tokens (~5-15% on clean prose); the saving comes from
+// stripping markup, removing redundancy, and summarizing. Copy that credits the
+// format itself is the single most tempting false claim this project can make,
+// because the product is named after the format. See docs/BRAND.md §1.
+// The gaps after "Markdown" forbid commas on purpose. A comma means a LIST
+// ("convert a document to Markdown, reduce token usage" — two separate things
+// a user might ask for), while a causal claim runs straight through
+// ("convert to Markdown to save tokens"). The first version of this check
+// allowed commas and flagged SKILL.md's trigger-phrase list as a false claim.
+const FORMAT_CLAIM =
+  /(convert(ing)?|turn(ing)?|switch(ing)?)[^.\n]{0,40}\b(to|into)\s+m(ark)?d(own)?\b[^.,\n]{0,20}\b(saves?|reduces?|cuts?|fewer|less)\b[^.,\n]{0,15}\btokens?\b/i;
+for (const file of [
+  "README.md",
+  "apps/web/app/page.tsx",
+  "apps/web/app/layout.tsx",
+  "packages/skill/README.md",
+  "packages/skill/prompt2md/SKILL.md",
+  "docs/index.md",
+]) {
+  const text = readFileSync(join(REPO, file), "utf8");
+  const offending = text.split(/\n/).filter((line) => FORMAT_CLAIM.test(line));
+  check(
+    offending.length === 0,
+    `no "Markdown itself saves tokens" claim in ${file}`,
+    offending[0]?.trim().slice(0, 80) ?? "",
+  );
 }
 
 // --- report -------------------------------------------------------------
