@@ -129,18 +129,55 @@ const GLYPH = UNICODE_OK ? "◣" : ">";
 // split as the logo, not a rainbow. Colour here identifies, it does not decorate.
 const paper = ink([242, 239, 234], 255, "37");
 
+/** Rail glyphs — a vertical spine with nodes, for step-by-step flows. */
+const RAIL = UNICODE_OK ? "│" : "|";
+const NODE = UNICODE_OK ? "◇" : "o";
+
 /**
- * The lockup. Deliberately not block-letter ASCII art: a 3-cell-wide glyph
- * cannot hold a lowercase "m" — it degenerates to two dots — so the wordmark
- * rendered as a barcode and had to be read twice to be recognised. Type at
- * terminal resolution is the terminal's own type; the identity comes from the
- * mark, the two-tone split, and the space around them.
+ * The wordmark at 5 cells per letter, which is the narrowest that still holds
+ * an M and a D apart. An earlier 3-cell version turned "m" into two dots and
+ * read as a barcode. Uppercase because lowercase needs descenders for the two
+ * p's and the d, costing two more rows and reading worse at this size.
  */
+const WORD_LEFT = [
+  "████  ████   ███  █   █ ████  █████",
+  "█   █ █   █ █   █ ██ ██ █   █   █  ",
+  "████  ████  █   █ █ █ █ ████    █  ",
+  "█     █  █  █   █ █   █ █       █  ",
+  "█     █   █  ███  █   █ █       █  ",
+];
+const WORD_RIGHT = [
+  " ███  █   █ ████ ",
+  "█   █ ██ ██ █   █",
+  "   █  █ █ █ █   █",
+  "  █   █   █ █   █",
+  "█████ █   █ ████ ",
+];
+
+// Below ~60 columns the banner wraps, which looks like a rendering fault —
+// worse than no banner. Fall back to the one-line lockup there.
+const WIDE_ENOUGH = (process.stdout.columns ?? 0) === 0 || (process.stdout.columns ?? 0) >= 60;
+
 function banner() {
   console.log("");
-  console.log(`  ${violet(GLYPH)}  ${bold(paper("prompt"))}${bold(violet("2md"))}`);
-  console.log(`     ${slate("A Markdown Magic")}`);
+  if (UNICODE_OK && WIDE_ENOUGH) {
+    for (let i = 0; i < WORD_LEFT.length; i++) {
+      console.log(`  ${paper(WORD_LEFT[i])} ${violet(WORD_RIGHT[i])}`);
+    }
+    console.log("");
+    console.log(`  ${violet(GLYPH)}  ${slate("A Markdown Magic")}`);
+  } else {
+    console.log(`  ${violet(GLYPH)}  ${bold(paper("prompt"))}${bold(violet("2md"))}`);
+    console.log(`     ${slate("A Markdown Magic")}`);
+  }
   console.log("");
+}
+
+/** One step on the rail: a node, its label, then indented detail under the spine. */
+function step(label, detail) {
+  console.log(`  ${violet(NODE)}  ${bold(label)}`);
+  for (const line of detail) console.log(`  ${slate(RAIL)}  ${line}`);
+  console.log(`  ${slate(RAIL)}`);
 }
 
 /* ------------------------------------------------------------ destinations */
@@ -333,35 +370,46 @@ async function main() {
   };
 
   const pad = (s, n) => String(s).padEnd(n);
-  for (const r of results) {
+  // The header states the outcome only when every location agrees on one;
+  // otherwise it stays neutral and the rows carry the detail.
+  const every = (s) => results.every((r) => r.status === s);
+  const heading = every("installed")
+    ? "Installed"
+    : every("up to date")
+      ? "Already up to date"
+      : results.length === 1
+        ? "Location"
+        : "Locations";
+  step(
+    heading,
     // Pad before colouring: escape codes have width 0 on screen but length in
     // the string, so padEnd on an already-coloured string mis-aligns the column.
-    console.log(`  ${bold(pad(r.agent, 22))}${paintStatus(pad(r.status, 14))}${slate(r.detail)}`);
-  }
+    results.map((r) => `${bold(pad(r.agent, 22))}${paintStatus(pad(r.status, 14))}${slate(r.detail)}`),
+  );
 
   if (failed) {
-    console.log("");
     console.log(`  ${amber("The skill was not installed everywhere.")}`);
     console.log(`  ${slate("Try a writable location:")} ${violet("npx prompt2md-skill --dir <path>")}`);
     console.log("");
     process.exit(1);
   }
 
+  step("Next", [
+    `${violet("1")}  Start a new agent session, so it picks up the new skill`,
+    `${violet("2")}  Run ${violet(bold("/prompt2md"))}, or just ask it to clean up a prompt`,
+  ]);
+
   // `prompt2md` is this project's own npm package, so naming it here is safe.
   // It was deliberately omitted while the name was unclaimed: an unscoped
   // `npx prompt2md` pointing at a package we did not own would have told users
   // to execute a stranger's code.
-  console.log(`
-  ${bold("Next")}
-    ${violet("1")}  Start a new agent session, so it picks up the new skill
-    ${violet("2")}  Run ${violet(bold("/prompt2md"))}, or just ask it to clean up a prompt
-
-  ${slate("Optional — document conversion (PDF, Office, scans) and byte-exact")}
-  ${slate("retrieval need the engine too. See what this machine can already do:")}
-    ${violet("npx prompt2md doctor")}
-
-  ${slate("https://prompt2md.vercel.app")}
-`);
+  console.log(`  ${violet(NODE)}  ${bold("Optional — the engine")}`);
+  console.log(`  ${slate(RAIL)}  ${slate("Document conversion (PDF, Office, scans) and byte-exact")}`);
+  console.log(`  ${slate(RAIL)}  ${slate("retrieval need it too. See what this machine can already do:")}`);
+  console.log(`  ${slate(RAIL)}  ${violet("npx prompt2md doctor")}`);
+  console.log("");
+  console.log(`  ${slate("https://prompt2md.vercel.app")}`);
+  console.log("");
 }
 
 main().catch((err) => {

@@ -85,24 +85,60 @@ export const BAD = UNICODE_OK ? "✗" : "x";
 /** Configured-but-optional and absent: a hollow ring, not a failure mark. */
 export const OPTIONAL = UNICODE_OK ? "○" : "-";
 
+/** Rail glyphs — a vertical spine with nodes, for step-by-step flows. */
+export const RAIL = UNICODE_OK ? "│" : "|";
+export const NODE = UNICODE_OK ? "◇" : "o";
+export const NODE_ON = UNICODE_OK ? "◆" : "*";
+
+/**
+ * The wordmark at 5 cells per letter, which is the narrowest that still holds
+ * an M and a D apart. The earlier attempt used 3, where "m" degenerates to two
+ * dots and the whole thing read as a barcode.
+ *
+ * Set uppercase on purpose: lowercase needs descenders for the two p's and a
+ * d, which costs two more rows and reads worse, not better, at this size.
+ */
+const WORD_LEFT = [
+  "████  ████   ███  █   █ ████  █████",
+  "█   █ █   █ █   █ ██ ██ █   █   █  ",
+  "████  ████  █   █ █ █ █ ████    █  ",
+  "█     █  █  █   █ █   █ █       █  ",
+  "█     █   █  ███  █   █ █       █  ",
+] as const;
+const WORD_RIGHT = [
+  " ███  █   █ ████ ",
+  "█   █ ██ ██ █   █",
+  "   █  █ █ █ █   █",
+  "  █   █   █ █   █",
+  "█████ █   █ ████ ",
+] as const;
+
+/** The block wordmark needs ~55 columns; below that it would wrap into noise. */
+function wideEnough(): boolean {
+  const columns = process.stdout.columns ?? process.stderr.columns ?? 0;
+  return columns === 0 || columns >= 60;
+}
+
 /**
  * The lockup, two-tone exactly as the website's logo splits it: paper-white
  * name, brand violet on "2md". Colour identifies here; it does not decorate.
  *
- * Deliberately not block-letter ASCII art. A 3-cell-wide glyph cannot hold a
- * lowercase "m" — it degenerates to two dots — so the wordmark rendered as a
- * barcode and had to be read twice to be recognised at all. Type at terminal
- * resolution is the terminal's own type; the identity comes from the mark, the
- * two-tone split, and the space around them.
+ * Degrades to a single line when the terminal is narrow or cannot render block
+ * glyphs — a wrapped banner looks like a rendering fault, which is worse than
+ * no banner at all.
  */
 export function lockup(version?: string): string[] {
-  const name = `${bold(paper("prompt"))}${bold(violet("2md"))}`;
-  return [
-    "",
-    `  ${violet(GLYPH)}  ${name}${version !== undefined ? `  ${slate(version)}` : ""}`,
-    `     ${slate("A Markdown Magic")}`,
-    "",
-  ];
+  const tag = version !== undefined ? `  ${slate(version)}` : "";
+  if (!UNICODE_OK || !wideEnough()) {
+    return [
+      "",
+      `  ${violet(GLYPH)}  ${bold(paper("prompt"))}${bold(violet("2md"))}${tag}`,
+      `     ${slate("A Markdown Magic")}`,
+      "",
+    ];
+  }
+  const art = WORD_LEFT.map((left, i) => `  ${paper(left)} ${violet(WORD_RIGHT[i] ?? "")}`);
+  return ["", ...art, "", `  ${violet(GLYPH)}  ${slate("A Markdown Magic")}${tag}`, ""];
 }
 
 /** Pad before colouring — escape codes have zero screen width but real string
