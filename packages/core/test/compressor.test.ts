@@ -79,6 +79,19 @@ describe("4-phase compression pipeline", () => {
     expect(outcome.markdown).toContain("Short content.");
   });
 
+  it("never hands back more tokens than the raw input on a tiny document", async () => {
+    // Regression: layoutHelps used to hardcode `true` whenever strip/summarize
+    // didn't shrink the doc below rawTokens — exactly the case where adding
+    // cache-breakpoint/generation-stamp overhead is guaranteed to make things
+    // worse. A 6-token note came back as 32 tokens with zero warning, a silent
+    // 4x expansion that contradicts the "honest savings report" promise.
+    const small = "# Note\n\nShort content.";
+    const outcome = await compressContext(small, store, { tokenBudget: 500 });
+    expect(outcome.savings.compressedTokens).toBeLessThanOrEqual(outcome.savings.rawTokens);
+    expect(outcome.savings.savedTokens).toBeGreaterThanOrEqual(0);
+    expect(outcome.doc.warnings.some((w) => w.code === "layout-skipped")).toBe(true);
+  });
+
   it("keeps summaries only when they actually shrink the section", async () => {
     // A one-sentence paragraph cannot be extractively shrunk — must stay verbatim.
     const stubborn = ["# T", "Head.", "single sentence with no shrink potential repeated words ".repeat(3), "Tail."].join("\n\n");

@@ -95,7 +95,7 @@ export async function compressContext(
   const rawTokens = counter.count(text);
   const preLayout = doc;
   const laidOut = alignForCache(doc, profile.breakpointStyle === "explicit", counter);
-  const layoutHelps = totalTokens(preLayout) < rawTokens ? totalTokens(laidOut) < rawTokens : true;
+  const layoutHelps = totalTokens(laidOut) < rawTokens;
   doc = layoutHelps ? laidOut : preLayout;
   phases.push({ phase: "layout", tokens: totalTokens(doc) });
   if (!layoutHelps) {
