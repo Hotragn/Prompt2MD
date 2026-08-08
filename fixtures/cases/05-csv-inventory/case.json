@@ -2,7 +2,7 @@
   "id": "05-csv-inventory",
   "title": "CSV export → Markdown table with derived flags",
   "inputKind": "csv",
-  "expectedEngine": "markitdown",
+  "expectedEngine": "native",
   "routingReason": "Structured text format — always the fast path; Docling would add latency for zero fidelity gain.",
   "features": ["csv-to-table", "header-humanization", "numeric-alignment", "derived-summary-line"],
   "tokens": {

@@ -15,16 +15,28 @@ export function detectLowYield(sniff: SniffReport, markdown: string): boolean {
 }
 
 /**
+ * One line carrying several numeric clusters and no pipe syntax — what a table
+ * row looks like after a text extractor has walked over it.
+ *
+ * Exported because the PDF reader has to agree with this exactly. That reader
+ * rejoins wrapped lines so prose does not arrive pre-broken, and a line join
+ * across a table turns many flattened rows into one, which is invisible to the
+ * check below. Sharing the predicate makes "do not join this" and "this is
+ * damage" the same sentence rather than two that can drift apart.
+ */
+export function looksLikeFlattenedTableRow(line: string): boolean {
+  if (line.includes("|")) return false;
+  const clusters = line.match(/(?:^|\s)\(?\d[\d,.]*\)?%?(?=\s|$)/g) ?? [];
+  return clusters.length >= THRESHOLDS.TABLE_ROW_NUMERIC_CLUSTERS;
+}
+
+/**
  * Flattened-table signature: multiple lines carrying several numeric clusters
  * with no pipe-table syntax — the classic result of a text extractor running
  * over a table region.
  */
 export function detectTableDegradation(markdown: string): boolean {
-  const flattenedRows = markdown.split(/\r?\n/).filter((line) => {
-    if (line.includes("|")) return false;
-    const clusters = line.match(/(?:^|\s)\(?\d[\d,.]*\)?%?(?=\s|$)/g) ?? [];
-    return clusters.length >= THRESHOLDS.TABLE_ROW_NUMERIC_CLUSTERS;
-  });
+  const flattenedRows = markdown.split(/\r?\n/).filter(looksLikeFlattenedTableRow);
   return flattenedRows.length >= THRESHOLDS.TABLE_DEGRADATION_MIN_ROWS;
 }
 

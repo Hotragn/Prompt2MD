@@ -11,7 +11,7 @@
   <a href="https://github.com/Hotragn/Prompt2MD/actions/workflows/ci.yml"><img src="https://github.com/Hotragn/Prompt2MD/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License: Apache-2.0"></a>
   <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg" alt="Node >= 20">
-  <img src="https://img.shields.io/badge/tests-200%20unit%20%2B%2015%20e2e-success.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-219%20unit%20%2B%2015%20e2e-success.svg" alt="Tests">
   <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-server%20%2B%20skill-7C5CFF.svg" alt="MCP server and skill"></a>
 </p>
 
@@ -88,9 +88,12 @@ Goal/Requirements/Constraints headings cost 7 tokens on top, and the headline
 number is the one that has already paid for them.
 
 Structure earns that cost by surviving compression legibly and by being parsed
-more reliably — never by being smaller. And the pipeline refuses to make things
-worse: `convert` declines a result bigger than its input (warning
-`layout-skipped`), and `compress` is measured never to grow.
+more reliably — never by being smaller. The pipeline will not pretend
+otherwise: `compress` is measured never to grow, and when `convert` produces
+something larger than its source it says so (warning `layout-skipped`) rather
+than quietly presenting an expansion as a win. It does not refuse the result —
+a small CSV becomes a bigger Markdown table, and that table is still the more
+useful artifact — it just declines to call it a saving.
 
 ### When this helps, and when it does not
 
@@ -104,8 +107,8 @@ worse: `convert` declines a result bigger than its input (warning
 **Not worth it:**
 
 - Short, already-clean plain text. Structure costs a few tokens and buys
-  nothing you did not already have. The pipeline will decline rather than
-  return something larger, but the honest answer is to skip the step.
+  nothing you did not already have. The report will tell you when that
+  happened, but the honest answer is to skip the step.
 - One-off conversions where the token cost was never the problem.
 - Cases needing guaranteed machine-parseable output — use a JSON schema or
   tool-use contract, which is a stronger guarantee than any text format.
@@ -121,13 +124,14 @@ typical.
 
 |  | |
 |---|---|
-| **Dual-engine routing** | Fast path (~0.6 s) for HTML, Office, CSV, and text-layer PDFs; high-fidelity path (TableFormer + OCR) for scans, complex tables, and multi-column layouts. Routed on content evidence, never on file extension — and it self-heals, escalating when the fast path's output shows damage. |
+| **Works with nothing installed** | HTML, CSV, JSON, PDF, DOCX, XLSX and PPTX convert in-process — no Python, no sidecar, no service. `npx prompt2md convert report.pdf` works on a bare machine. |
+| **Tiered routing** | In-process fast path for the formats above; high-fidelity path (TableFormer + OCR) for scans, complex tables, and multi-column layouts. Routed on content evidence, never on file extension — and it self-heals, escalating when the fast path's output shows damage. |
 | **Token cost as a first-class output** | Every conversion returns a `TokenReport`. Set `--token-budget` and it is enforced, not suggested. |
 | **Prompt-cache-aware layout** | Stable content first, volatile content last, provider-specific breakpoints. Repeat calls cost up to ~90% less on cache-enabled providers. |
 | **Lossless compression** | Originals stored content-addressed before any transformation; `retrieve_original` returns the exact source bytes behind any anchor. |
 | **Agent-native** | MCP server (`convert`, `compress_context`, `retrieve_original`, plus an `optimize` chat-box prompt) and a `/prompt2md` skill. |
 | **Any provider** | One OpenAI-compatible endpoint covers Claude, GPT, Gemini, Grok, Kimi, or local models via Ollama/vLLM. |
-| **Degrades gracefully** | With zero sidecars installed, deterministic cleanup takes over and says so. Textual input never hard-fails. |
+| **Degrades gracefully** | Where a sidecar genuinely is required — scans need OCR — it says which one and why, rather than failing obscurely. Textual input never hard-fails. |
 
 ## Quick start
 
@@ -214,17 +218,20 @@ rendered preview, voice input/readback, and the Daily Digest tab.
 ```
  input ─► SNIFF ─► ROUTE ──────────────► OPTIMIZE ─► LAYOUT ─► Markdown + TokenReport
           (cheap    ├─ prompt-optimizer   (strip      (cache-
-          content   ├─ markitdown  ┐       chrome,     aligned
-          probes)   └─ docling  ◄──┘       dedupe,     sections)
+          content   ├─ native ─────┐       chrome,     aligned
+          probes)   ├─ markitdown  │       dedupe,     sections)
+                    └─ docling  ◄──┘       budget)
                         ▲  escalate on     budget)
                         │  evidence of damage
 ```
 
-Optional engine sidecars — each unlocks capability, none is required:
+The **native** engine is in-process and always present: HTML, CSV, JSON, PDF
+(text layer), DOCX, XLSX and PPTX need nothing installed. The sidecars below
+extend that, and none is required:
 
 | Sidecar | Unlocks | Install |
 |---|---|---|
-| [MarkItDown](https://github.com/microsoft/markitdown) | Fast path for Office, HTML, CSV, simple PDFs | `pip install "markitdown[all]"` |
+| [MarkItDown](https://github.com/microsoft/markitdown) | Legacy `.doc`/`.xls`/`.ppt`, OpenDocument, EPUB, email exports | `pip install "markitdown[all]"` |
 | [Docling](https://github.com/docling-project/docling) | Scans (OCR), complex tables, multi-column PDFs | `docker run -p 5001:5001 quay.io/docling-project/docling-serve` |
 | [LiteLLM](https://github.com/BerriAI/litellm) | LLM optimizer and summarizer, any provider | `litellm --port 4000` |
 
@@ -263,7 +270,7 @@ exactly.
 
 ```bash
 pnpm build         # core → hermes-mcp → cli → web + docs
-pnpm test          # 200 unit/integration tests
+pnpm test          # 219 unit/integration tests
 pnpm test:e2e      # 13 Selenium scenarios (landing + studio)
 pnpm test:install  # installer against a sandboxed HOME (your configs untouched)
 pnpm test:fresh    # full new-user simulation in a throwaway clone

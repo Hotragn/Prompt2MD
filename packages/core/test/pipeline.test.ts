@@ -26,19 +26,19 @@ const echoing = (id: Engine["id"], markdown: string): Engine => ({
 });
 
 describe("pipeline resilience (missing sidecars must not break textual input)", () => {
-  it("falls back to the text path when markitdown is unavailable for textual input", async () => {
+  it("falls back to the text path when the document engine is unavailable for textual input", async () => {
     const outcome = await convertDocument(
       { kind: "text", text: "<html><body><p>hello</p></body></html>", filename: "page.html" },
       {
         engines: {
           "prompt-optimizer": textEngine,
-          markitdown: failing("markitdown", "spawn python ENOENT"),
+          native: failing("native", "spawn python ENOENT"),
           docling: failing("docling", "not configured"),
         },
       },
     );
 
-    expect(outcome.decision.engine).toBe("markitdown");
+    expect(outcome.decision.engine).toBe("native");
     expect(outcome.report.engine).toBe("prompt-optimizer");
     expect(outcome.markdown).toContain("# Cleaned");
     expect(outcome.doc.warnings.some((w) => w.code === "engine-error")).toBe(true);
@@ -54,14 +54,14 @@ describe("pipeline resilience (missing sidecars must not break textual input)", 
       {
         engines: {
           "prompt-optimizer": textEngine,
-          markitdown: echoing("markitdown", degraded),
+          native: echoing("native", degraded),
           docling: failing("docling", "P2MD_DOCLING_URL not set"),
         },
       },
     );
 
     expect(outcome.escalated).toBe(false);
-    expect(outcome.report.engine).toBe("markitdown");
+    expect(outcome.report.engine).toBe("native");
     expect(outcome.markdown).toBe(degraded);
     const codes = outcome.doc.warnings.map((w) => w.code);
     expect(codes).toContain("engine-error");
@@ -77,7 +77,7 @@ describe("pipeline resilience (missing sidecars must not break textual input)", 
       {
         engines: {
           "prompt-optimizer": textEngine,
-          markitdown: echoing("markitdown", degraded),
+          native: echoing("native", degraded),
           docling: echoing("docling", "| Segment | Revenue |\n|---|---|\n| Cloud | 4,812 |"),
         },
       },
@@ -102,7 +102,7 @@ describe("pipeline resilience (missing sidecars must not break textual input)", 
       {
         engines: {
           "prompt-optimizer": textEngine,
-          markitdown: echoing("markitdown", rawEngineOutput),
+          native: echoing("native", rawEngineOutput),
           docling: failing("docling", "unused"),
         },
       },
@@ -125,7 +125,7 @@ describe("pipeline resilience (missing sidecars must not break textual input)", 
         {
           engines: {
             "prompt-optimizer": textEngine,
-            markitdown: failing("markitdown", "nope"),
+            native: failing("native", "nope"),
             docling: failing("docling", "not configured"),
           },
         },
@@ -147,19 +147,21 @@ describe("failures a user actually hits (found by scripts/probe-reliability.mjs)
         {
           engines: {
             "prompt-optimizer": textEngine,
-            markitdown: failing("markitdown", "markitdown worker failed to start (spawn python ENOENT)"),
+            native: failing("native", "engine unavailable"),
             docling: failing("docling", "not configured"),
           },
         },
       ),
-    ).rejects.toThrow(/needs a document engine/i);
+    // Wording is not the contract; being actionable is. The message has to
+    // name what will work without a sidecar, which is now most formats.
+    ).rejects.toThrow(/in-process with no sidecar/i);
 
     const error = await convertDocument(
       { kind: "buffer", data: scanned, filename: "scan.pdf" },
       {
         engines: {
           "prompt-optimizer": textEngine,
-          markitdown: failing("markitdown", "markitdown worker failed to start (spawn python ENOENT)"),
+          native: failing("native", "engine unavailable"),
           // A scanned PDF routes to docling for OCR, so this is the engine
           // whose failure the user is actually told about.
           docling: failing("docling", "ECONNREFUSED 127.0.0.1:5001"),
@@ -179,7 +181,7 @@ describe("failures a user actually hits (found by scripts/probe-reliability.mjs)
         {
           engines: {
             "prompt-optimizer": textEngine,
-            markitdown: echoing("markitdown", "x"),
+            native: echoing("native", "x"),
             docling: echoing("docling", "x"),
           },
         },

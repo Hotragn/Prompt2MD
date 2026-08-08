@@ -2,7 +2,7 @@
   "id": "03-html-article",
   "title": "News article with nav, ads, cookie banner, newsletter interstitial",
   "inputKind": "html",
-  "expectedEngine": "markitdown",
+  "expectedEngine": "native",
   "routingReason": "HTML is a fast-path format; MarkItDown converts it directly, then the boilerplate stripper removes nav/footer/ad/cookie/newsletter chrome.",
   "features": ["boilerplate-removal", "heading-hierarchy", "list-preservation", "byline-normalization"],
   "tokens": {

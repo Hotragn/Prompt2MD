@@ -148,7 +148,7 @@ describe("prompt2md studio (Selenium E2E)", () => {
     }
   });
 
-  it("keeps working via API when the input routes to a missing sidecar (graceful degradation)", async () => {
+  it("converts via API with no sidecar installed at all", async () => {
     const res = await driver.executeAsyncScript<{ status: number; engine: string; warnings: string[] }>(
       `const done = arguments[arguments.length - 1];
        fetch("/api/convert", {
@@ -163,11 +163,12 @@ describe("prompt2md studio (Selenium E2E)", () => {
     );
 
     expect(res.status).toBe(200);
-    expect(res.engine.length).toBeGreaterThan(0);
-    // With sidecars installed this is markitdown with no warnings; without,
-    // the text-path fallback with an engine-error warning. Both are correct.
-    if (res.engine !== "markitdown") {
-      expect(res.warnings).toContain("engine-error");
-    }
+    // This used to assert the opposite shape: that without a sidecar the
+    // request degraded to the text path and carried an engine-error. CSV now
+    // converts in-process, so the deployment needs nothing installed — and the
+    // absence of that warning is the whole point of the native engine, which
+    // makes it worth asserting rather than tolerating.
+    expect(res.engine).toBe("native");
+    expect(res.warnings).not.toContain("engine-error");
   });
 });

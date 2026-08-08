@@ -6,6 +6,7 @@ import { compressContext, type CompressOptions, type CompressResult } from "./co
 import { createLlmSummarizer } from "./compress/summarize.js";
 import { createDoclingEngine } from "./engines/docling.js";
 import { createMarkitdownEngine } from "./engines/markitdown.js";
+import { createNativeEngine } from "./engines/native/index.js";
 import { createPromptOptimizerEngine } from "./engines/prompt-optimizer.js";
 import { createLiteLlmGateway } from "./gateway/litellm.js";
 import { parseMarkdown } from "./markdown/parse.js";
@@ -235,6 +236,7 @@ export function createRuntimeFromEnv(
       gateway !== undefined
         ? withDeterministicFallback(createPromptOptimizerEngine(gateway, buildOptimizerOptions(env)))
         : createDeterministicTextEngine(),
+    native: createNativeEngine(),
     markitdown,
     docling:
       doclingUrl !== undefined && doclingUrl !== ""

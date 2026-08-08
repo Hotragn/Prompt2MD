@@ -71,7 +71,7 @@ describe("token report", () => {
     const report = buildTokenReport(doc, {
       counter: approxCounter,
       inputTokens: 100,
-      engine: "markitdown",
+      engine: "native",
       escalated: false,
       budget: 50,
     });

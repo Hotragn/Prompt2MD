@@ -52,7 +52,12 @@ export interface SniffReport {
   readonly pdf?: PdfProbe;
 }
 
-export type EngineId = "prompt-optimizer" | "markitdown" | "docling";
+/**
+ * `native` is the in-process default: no sidecar, no Python, always present.
+ * `markitdown` remains the extended-coverage sidecar (legacy Office, OpenDocument,
+ * EPUB, email exports) and `docling` the high-fidelity one (scans, complex tables).
+ */
+export type EngineId = "prompt-optimizer" | "native" | "markitdown" | "docling";
 
 /**
  * auto — router decides (default). fast — pin the fast path (never escalate).

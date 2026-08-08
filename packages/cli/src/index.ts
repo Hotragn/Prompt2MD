@@ -483,34 +483,29 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
 
       check("ok", "node", process.version);
 
+      // The in-process engine ships with the package, so this is a statement
+      // of fact rather than a probe. It is listed anyway: the first question
+      // doctor exists to answer is "what works right now", and the answer
+      // being "most of it, with nothing installed" is the useful headline.
+      check("ok", "documents", "HTML, CSV, JSON, PDF, DOCX, XLSX, PPTX — built in, no setup");
+
+      // markitdown is an extension, not a prerequisite. It used to be reported
+      // as `missing` — a red mark for a machine that converts every common
+      // format perfectly well — which is exactly the crying-wolf this command
+      // is supposed to avoid.
       const pythonBin = env["P2MD_PYTHON_BIN"] ?? "python";
       const py = spawnSync(pythonBin, ["-c", "import markitdown, sys; sys.stdout.write(getattr(markitdown, '__version__', 'installed'))"], {
         encoding: "utf8",
         timeout: 15_000,
       });
       check(
-        py.status === 0 ? "ok" : "missing",
+        py.status === 0 ? "ok" : "optional",
         "markitdown",
-        py.status === 0 ? `markitdown ${py.stdout.trim()} via ${pythonBin}` : `not usable via '${pythonBin}'`,
+        py.status === 0
+          ? `markitdown ${py.stdout.trim()} via ${pythonBin}`
+          : "not installed — legacy .doc/.xls/.ppt, OpenDocument and EPUB unavailable",
         py.status === 0 ? undefined : 'pip install "markitdown[all]"',
       );
-
-      // markitdown installs without PDF support, and the failure only appears
-      // on a user's first PDF as a MissingDependencyException. Report it here
-      // instead, where it is cheap to fix.
-      if (py.status === 0) {
-        const pdf = spawnSync(
-          pythonBin,
-          ["-c", "import importlib.util,sys; sys.exit(0 if importlib.util.find_spec('pdfminer') else 1)"],
-          { encoding: "utf8", timeout: 15_000 },
-        );
-        check(
-          pdf.status === 0 ? "ok" : "missing",
-          "PDF support",
-          pdf.status === 0 ? "pdfminer present — PDFs will convert" : "pdfminer missing — PDFs will fail",
-          pdf.status === 0 ? undefined : 'pip install "markitdown[pdf]"',
-        );
-      }
 
       const doclingUrl = env["P2MD_DOCLING_URL"];
       if (doclingUrl === undefined || doclingUrl === "") {

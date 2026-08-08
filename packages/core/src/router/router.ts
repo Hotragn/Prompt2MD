@@ -35,10 +35,10 @@ export function route(sniff: SniffReport, options: ConvertOptions = {}): Routing
     case "json":
     case "html":
       return {
-        engine: "markitdown",
+        engine: "native",
         ocr: false,
         postChecks: [],
-        reason: `${sniff.kind} is a structured fast-path format with lossless conversion`,
+        reason: `${sniff.kind} converts in-process — no sidecar needed`,
       };
 
     case "office":
@@ -46,10 +46,10 @@ export function route(sniff: SniffReport, options: ConvertOptions = {}): Routing
         return docling(false, "fidelity=high pins office documents to the high-fidelity engine");
       }
       return {
-        engine: "markitdown",
+        engine: "native",
         ocr: false,
         postChecks: [],
-        reason: "OOXML carries explicit structure — fast path is near-lossless for office formats",
+        reason: "OOXML carries explicit structure — read in-process, near-lossless",
       };
 
     case "image":
@@ -57,7 +57,7 @@ export function route(sniff: SniffReport, options: ConvertOptions = {}): Routing
 
     case "pdf": {
       if (fidelity === "fast") {
-        return { engine: "markitdown", ocr: false, postChecks: [], reason: "fidelity=fast pins the fast path (escalation disabled)" };
+        return { engine: "native", ocr: false, postChecks: [], reason: "fidelity=fast pins the fast path (escalation disabled)" };
       }
       if (fidelity === "high") {
         return docling(options.ocr ?? false, "fidelity=high pins the high-fidelity engine");
@@ -69,7 +69,7 @@ export function route(sniff: SniffReport, options: ConvertOptions = {}): Routing
         return docling(true, "no font objects but image XObjects present — image-only scan needs OCR");
       }
       return {
-        engine: "markitdown",
+        engine: "native",
         ocr: false,
         postChecks: ["low-yield", "table-degradation"],
         reason: "PDF with a text layer — provisional fast path; escalation checks armed",

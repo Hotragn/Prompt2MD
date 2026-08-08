@@ -30,7 +30,7 @@ function finalEngine({ meta, dir }: FixtureCase): EngineId {
       // trip the table-degradation escalation.
       const sniff = sniffBuffer(syntheticTextPdf(1), "quarterly-report.pdf");
       const decision = route(sniff);
-      expect(decision.engine).toBe("markitdown");
+      expect(decision.engine).toBe("native");
       expect(decision.postChecks).toContain("table-degradation");
       const verdict = shouldEscalate(decision, sniff, readFixture(dir, "input.extracted.txt"));
       expect(verdict.failedChecks).toContain("table-degradation");
@@ -59,7 +59,7 @@ describe("routing overrides", () => {
 
   it("fidelity=fast pins the fast path and disarms escalation", () => {
     const decision = route(textPdfSniff, { fidelity: "fast" });
-    expect(decision.engine).toBe("markitdown");
+    expect(decision.engine).toBe("native");
     expect(decision.postChecks).toEqual([]);
   });
 

@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { shouldEscalate } from "./router/escalation.js";
 import { route } from "./router/router.js";
 import { sniffInput } from "./router/sniffer.js";
@@ -76,11 +77,11 @@ export async function convertDocument(
       // and this is the first thing anyone hits on a deployment without the
       // sidecars. Say what is missing and how to get it.
       throw new Error(
-        `${sniff.kind} input needs a document engine, and ${engineId} is unavailable ` +
-          `(${errorMessage(err)}). Install the MarkItDown sidecar with ` +
-          `\`pip install "markitdown[all]"\`, or set P2MD_DOCLING_URL to a docling-serve ` +
-          `instance for scans and complex tables. Text, Markdown, HTML, CSV and JSON ` +
-          `convert with no sidecar at all.`,
+        `${sniff.kind} input could not be converted by the ${engineId} engine ` +
+          `(${errorMessage(err)}). HTML, CSV, JSON, PDF, DOCX, XLSX and PPTX convert ` +
+          `in-process with no sidecar; legacy .doc/.xls/.ppt, OpenDocument and EPUB need ` +
+          `MarkItDown (\`pip install "markitdown[all]"\`), and scans need OCR via ` +
+          `P2MD_DOCLING_URL.`,
       );
     }
     warnings.push({
@@ -145,14 +146,33 @@ export async function convertDocument(
       }
     }
   }
+  const inputTokens = counter.count(await baselineText(sniff, result.markdown, input));
+
+  // Structure is not free, and for the formats where the raw source is an
+  // honest baseline it can cost more than it saves — a small CSV becomes a
+  // pipe table that is legitimately larger than the file it came from.
+  //
+  // Declining that result would be the wrong fix: the table is more useful
+  // than the CSV, which is why it is produced at all. Saying so is the right
+  // one. Silence here would let the tool present a 69% expansion as a
+  // conversion win, which is the exact failure the token report exists to
+  // prevent.
+  const outputTokens = doc.sections.reduce((n, s) => n + s.tokens, 0);
+  const baselineIsRawSource = sniff.kind === "html" || sniff.kind === "csv" || sniff.kind === "json";
+  if (baselineIsRawSource && inputTokens > 0 && outputTokens > inputTokens) {
+    warnings.push({
+      code: "layout-skipped",
+      message:
+        `Markdown structure cost more than it saved here: ${inputTokens} → ${outputTokens} tokens ` +
+        `(${Math.round((outputTokens / inputTokens) * 100)}% of input). The raw source was already ` +
+        `compact; structure buys parseability, not size.`,
+    });
+  }
+
   const docWithWarnings: MarkdownDoc = {
     ...doc,
     warnings: [...doc.warnings, ...result.warnings, ...warnings],
   };
-
-  const inputTokens = counter.count(
-    input.kind === "text" ? input.text : sniffedTextOr(sniff, result.markdown, input),
-  );
   const report = buildTokenReport(docWithWarnings, {
     counter,
     inputTokens,
@@ -169,13 +189,26 @@ function errorMessage(err: unknown): string {
 }
 
 /**
- * Input-token baseline for non-text inputs: textual files (html/csv/json)
- * measure the raw file text — what a user would otherwise paste; binary
- * formats measure the raw engine extraction (see TokenReport docs).
+ * Input-token baseline: textual formats (html/csv/json) measure the raw source
+ * — what a user would otherwise have pasted — while binary formats measure the
+ * engine's own extraction, since the tokens of a PDF's bytes are not a number
+ * anyone can act on (see TokenReport docs).
+ *
+ * The `file` case used to fall through to the engine's output, so a converted
+ * HTML *file* was measured against itself and always reported 100% of input.
+ * That is the path the CLI takes for every file argument, so the headline
+ * number was pinned at "saved nothing" precisely where the saving is largest:
+ * this fixture drops 56 tokens of markup to 19, and reported no change.
  */
-function sniffedTextOr(sniff: SniffReport, engineMarkdown: string, input: SourceInput): string {
-  if (input.kind === "buffer" && (sniff.kind === "html" || sniff.kind === "csv" || sniff.kind === "json")) {
-    return Buffer.from(input.data).toString("utf8");
-  }
-  return engineMarkdown;
+async function baselineText(
+  sniff: SniffReport,
+  engineMarkdown: string,
+  input: SourceInput,
+): Promise<string> {
+  if (input.kind === "text") return input.text;
+  const textual = sniff.kind === "html" || sniff.kind === "csv" || sniff.kind === "json";
+  if (!textual) return engineMarkdown;
+  if (input.kind === "buffer") return Buffer.from(input.data).toString("utf8");
+  // Decoding failure here should cost the report, not the conversion.
+  return readFile(input.path, "utf8").catch(() => engineMarkdown);
 }
