@@ -24,8 +24,8 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "@types/selenium-webdriver": "^4.1.27",
     "selenium-webdriver": "^4.27.0",
     "typescript": "^5.7.2",
