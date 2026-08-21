@@ -59,6 +59,21 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      # `pnpm test` includes the PDF layout suite, which reads real PDFs. The
+      # repo stays text-only, so they are generated here — same recipe as the
+      # docling job below. Without this the core tests die on ENOENT, and
+      # because steps are sequential every gate after this one is skipped:
+      # claims, installer, and both smoke tests stop running entirely.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate binary fixtures
+        shell: bash
+        run: |
+          pip install reportlab pillow
+          python fixtures/scripts/make_binary_fixtures.py
+
       - name: Test (golden corpus + unit + MCP integration + CLI)
         run: pnpm test
 
