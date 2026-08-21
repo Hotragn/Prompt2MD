@@ -1,12 +1,36 @@
 name: Daily Digest
 
+# Generates the day's digest and publishes it to the orphaned `digests` branch.
+#
+# It used to commit straight to main. That stopped working the moment the
+# "main: changes ship through green CI" ruleset went active, and the rejection
+# was correct rather than unfortunate:
+#
+#   remote: error: GH013: Repository rule violations found for refs/heads/main.
+#   remote: - Changes must be made through a pull request.
+#   remote: - 7 of 7 required status checks are expected.
+#   remote: - Code scanning is waiting for results from CodeQL for the commit.
+#
+# A bypass was the obvious fix and the wrong one. GITHUB_TOKEN pushes are
+# attributed to the GitHub Actions app, which cannot hold a ruleset bypass on a
+# personal repository, so the bypass would have had to belong to a personal
+# access token -- putting a credential that can push past every rule into a job
+# that runs `pnpm install` and then executes project code. One hostile
+# transitive dependency and the protection is gone. Relaxing the ruleset was the
+# other option, and that weakens the guarantee for everyone to admit one writer.
+#
+# The archive is append-only published data, not source, and nothing on main
+# reads it at build time. So the archive moved off main instead. main's
+# guarantee stays literally true with no exceptions, and this branch needs no
+# bypass, no extra credential and no CI run.
+
 on:
   schedule:
     - cron: "0 13 * * *" # 13:00 UTC daily
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: write # push to refs/heads/digests
 
 jobs:
   generate:
@@ -32,17 +56,47 @@ jobs:
       - name: Generate digest into the docs archive
         run: pnpm --filter @prompt2md/web digest:archive
 
-      - name: Commit archive entry
+      - name: Publish the archive entry to the digests branch
         run: |
-          git config user.name "prompt2md-digest[bot]"
-          git config user.email "digest-bot@users.noreply.github.com"
-          git add docs/digests
-          if git diff --cached --quiet; then
-            echo "no new digest content — nothing to commit"
+          set -euo pipefail
+
+          # The generator is a no-op on a day it has already run. Nothing new in
+          # the tree means nothing to publish, which is not a failure.
+          if [ -z "$(git status --porcelain docs/digests)" ]; then
+            echo "no new digest content — nothing to publish"
             exit 0
           fi
-          git commit -m "chore(digest): daily archive entry [skip ci]"
-          # main can move between checkout and push; rebase rather than fail
-          # the scheduled run. Retry once, then surface the real error.
-          git pull --rebase --autostash origin main || true
-          git push || (git pull --rebase --autostash origin main && git push)
+
+          git config user.name "prompt2md-digest[bot]"
+          git config user.email "digest-bot@users.noreply.github.com"
+
+          wt="$RUNNER_TEMP/digest-archive"
+
+          # Rebuild the commit from the remote tip on each attempt rather than
+          # rebasing a local one, so a retry cannot push a stale parent. A single
+          # scheduled writer makes a race unlikely; unlikely is not handled.
+          publish() {
+            rm -rf "$wt"
+            git worktree prune
+            git fetch --no-tags --force origin digests
+            git worktree add --detach "$wt" FETCH_HEAD
+
+            # Copies the whole archive rather than just today's file, which is
+            # what seeds the branch with the entries that predate it. Idempotent
+            # after that: same bytes, no diff, no commit.
+            mkdir -p "$wt/digests"
+            cp -R docs/digests/. "$wt/digests/"
+
+            git -C "$wt" add digests
+            if git -C "$wt" diff --cached --quiet; then
+              echo "archive already carries this entry — nothing to publish"
+              return 0
+            fi
+
+            # No [skip ci] marker needed. ci.yml and codeql.yml both trigger on
+            # push to main only, so nothing here starts a run.
+            git -C "$wt" commit -m "chore(digest): archive entry for $(date -u +%F)"
+            git -C "$wt" push origin HEAD:digests
+          }
+
+          publish || publish
