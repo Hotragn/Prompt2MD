@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@prompt2md/core": "workspace:*",
-    "@vercel/blob": "^2.6.1",
+    "@vercel/blob": "^2.8.0",
     "dompurify": "^3.4.13",
     "gsap": "^3.12.7",
     "marked": "^15.0.4",
