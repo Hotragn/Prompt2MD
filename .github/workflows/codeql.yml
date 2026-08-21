@@ -1,0 +1,60 @@
+name: CodeQL
+
+# The blocking security gate on pull requests. CodeQL is free and unlimited on
+# public repositories, which is why it holds the gate rather than the Strix
+# scan: a pentest that costs money per pull request cannot also be the thing
+# that must pass before every merge.
+#
+# Note what "required" means for this workflow. The analyze step succeeds even
+# when it finds problems -- alerts land in the Security tab, they do not fail
+# the job. Blocking on the findings themselves is done by the `code_scanning`
+# rule in the "main: changes ship through green CI" ruleset, which is set to
+# stop a merge on high-or-higher severity. Requiring this check only proves the
+# analysis actually ran.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly, so a query-pack update finds old code even when nothing is merged.
+    # Odd minute to stay out of the top-of-hour cron rush.
+    - cron: "41 4 * * 1"
+
+jobs:
+  analyze:
+    name: analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      security-events: write # upload the SARIF this produces
+      contents: read
+      actions: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Both are interpreted, so `build-mode: none` is correct and means no
+          # pnpm install and no build -- CodeQL reads the source directly.
+          - language: javascript-typescript
+          - language: python
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          # security-extended over the default pack. This tool parses PDFs, ZIP
+          # archives and XML from untrusted input, so the extra taint-tracking
+          # queries are worth their false-positive rate here.
+          queries: security-extended
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"

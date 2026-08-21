@@ -1,16 +1,24 @@
 name: Security Scan
 
-# Diff-scoped AI pentest on every PR. Only changed files are tested, so the
-# scan stays fast and cheap; validated findings fail the build before merge.
+# Whole-repo AI pentest, weekly and on demand -- NOT a pull request gate.
+# It was one, and that was the wrong shape: Strix spends LLM budget per run, so
+# sitting on `pull_request` meant paying to pentest Dependabot lockfile bumps.
+# The blocking PR gate is now CodeQL (.github/workflows/codeql.yml), which is
+# free and unlimited on public repos. This one runs deeper, on a schedule,
+# where the spend is a deliberate choice rather than a tax on every push.
 #
 # Requires two repository secrets (Settings -> Secrets and variables -> Actions):
 #   STRIX_LLM     model id, e.g. openai/gpt-5.4
 #   LLM_API_KEY   the provider key for that model
-# Without them this job fails at the scan step rather than passing silently.
+# Without them this job fails at the preflight step rather than passing
+# silently. Note that it has never once run past that step, so everything below
+# it -- the installer URL, the flag set, the run.json shape -- is unverified
+# against a real Strix release. Expect to fix something on the first green run.
 
 on:
-  pull_request:
-    branches: [main]
+  schedule:
+    - cron: "23 5 * * 1" # Mondays 05:23 UTC, after the weekly CodeQL sweep
+  workflow_dispatch:
 
 jobs:
   strix-scan:
@@ -21,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # required for diff-scope resolution
+          fetch-depth: 0 # full history; the scan reads the whole tree
 
       # Fail closed, but say why. A security gate must not pass silently when
       # it is unconfigured, and a bare "strix: command failed" would send the
@@ -50,14 +58,17 @@ jobs:
           STRIX_LLM: ${{ secrets.STRIX_LLM }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
         # Exit 0 pass, 2 validated vulnerabilities (fails the job), 1 setup error.
-        # --diff-base tracks the PR's real base branch rather than a hard-coded
-        # main, so this keeps working if the default branch is ever renamed.
+        # Diff scoping goes away with the PR trigger: github.base_ref is empty
+        # on a schedule, so --diff-base would have resolved to the string
+        # "origin/". The scope flags are dropped rather than pointed at
+        # something invented, leaving Strix its own default over -t.
+        # Budget raised because whole-repo costs more than a diff. 25 is a
+        # guess; the step below fails the job if the scan runs out, so tune it
+        # from the first real run instead of trusting this number.
         run: |
           strix -n -t ./ \
             --scan-mode quick \
-            --scope-mode diff \
-            --diff-base "origin/${{ github.base_ref }}" \
-            --max-budget 10
+            --max-budget 25
 
       # A run that exhausts its budget wraps up early and can still exit 0 —
       # "no findings" would then mean "ran out of money", not "clean". run.json
@@ -74,7 +85,7 @@ jobs:
           fi
           status=$(jq -r .status "$run_json")
           cost=$(jq -r '.llm_usage.cost // 0' "$run_json")
-          echo "status=$status cost=$cost (budget 10)"
+          echo "status=$status cost=$cost (budget 25)"
           if [ "$status" != "completed" ]; then
             echo "Strix status '$status' — scan did not complete, likely budget exhausted. Raise --max-budget." >&2
             exit 1
