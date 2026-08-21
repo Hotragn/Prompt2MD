@@ -38,17 +38,66 @@ export interface DigestOptions {
   readonly refresh?: boolean;
 }
 
-const HN_SOURCE: DigestSource = {
-  name: "Hacker News front page (Algolia API)",
-  url: "https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=10",
-  license: "Public API; links lead to original discussions",
-};
+/**
+ * The bounds of one UTC day, in the two shapes these APIs ask for: epoch
+ * seconds for Algolia's numericFilters, ISO instants for Spaceflight News.
+ * Half-open [start, end) so a story timestamped exactly at midnight belongs to
+ * one day rather than both.
+ */
+interface DayWindow {
+  readonly startSeconds: number;
+  readonly endSeconds: number;
+  readonly startIso: string;
+  readonly endIso: string;
+}
 
-const SNAPI_SOURCE: DigestSource = {
-  name: "Spaceflight News API",
-  url: "https://api.spaceflightnewsapi.net/v4/articles/?limit=5&ordering=-published_at",
-  license: "Free API; summaries attributed to their original news sites",
-};
+function utcDayWindow(date: Date): DayWindow {
+  const start = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  const end = start + 86_400_000;
+  return {
+    startSeconds: Math.floor(start / 1000),
+    endSeconds: Math.floor(end / 1000),
+    startIso: new Date(start).toISOString(),
+    endIso: new Date(end).toISOString(),
+  };
+}
+
+/**
+ * `day` undefined means "right now", which is the only thing the live front
+ * page can mean: Algolia's front_page tag carries no history, so a run for an
+ * earlier day cannot ask for it and get that day back. A backfill asks instead
+ * for the stories timestamped inside that UTC day, ranked by Algolia's default
+ * popularity ordering. That is the closest honest equivalent, and it is not the
+ * same thing -- which is why the rendered heading changes with it.
+ */
+function hnSource(day: DayWindow | undefined): DigestSource {
+  const license = "Public API; links lead to original discussions";
+  if (day === undefined) {
+    return {
+      name: "Hacker News front page (Algolia API)",
+      url: "https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=10",
+      license,
+    };
+  }
+  const filter = encodeURIComponent(`created_at_i>=${day.startSeconds},created_at_i<${day.endSeconds}`);
+  return {
+    name: "Hacker News top stories of the day (Algolia API)",
+    url: `https://hn.algolia.com/api/v1/search?tags=story&hitsPerPage=10&numericFilters=${filter}`,
+    license,
+  };
+}
+
+function snapiSource(day: DayWindow | undefined): DigestSource {
+  const base = "https://api.spaceflightnewsapi.net/v4/articles/?limit=5&ordering=-published_at";
+  return {
+    name: "Spaceflight News API",
+    url:
+      day === undefined
+        ? base
+        : `${base}&published_at_gte=${day.startIso}&published_at_lte=${day.endIso}`,
+    license: "Free API; summaries attributed to their original news sites",
+  };
+}
 
 function wikiSource(date: Date): DigestSource {
   const y = date.getUTCFullYear();
@@ -110,7 +159,7 @@ function stripHtml(html: string): string {
     .trim();
 }
 
-function hnSection(payload: unknown): string {
+function hnSection(payload: unknown, backfilled: boolean): string {
   const hits = ((payload as { hits?: readonly HnHit[] }).hits ?? []).filter((h) => h.title);
   if (hits.length === 0) throw new Error("empty front page");
   const lines = hits.slice(0, 10).map((h) => {
@@ -118,7 +167,10 @@ function hnSection(payload: unknown): string {
     const discussion = `https://news.ycombinator.com/item?id=${h.objectID ?? ""}`;
     return `- [${h.title}](${link}) — ${h.points ?? 0} points, ${h.num_comments ?? 0} comments ([discussion](${discussion}))`;
   });
-  return `## Hacker News front page\n\n${lines.join("\n")}`;
+  // The heading has to describe what was actually fetched. A backfill never
+  // saw a front page, so it must not call itself one.
+  const heading = backfilled ? "## Hacker News top stories" : "## Hacker News front page";
+  return `${heading}\n\n${lines.join("\n")}`;
 }
 
 function snapiSection(payload: unknown): string {
@@ -168,19 +220,25 @@ function wikiSections(payload: unknown): string {
 
 export async function generateDigest(options: DigestOptions = {}): Promise<DigestResult> {
   const fetchImpl = options.fetchImpl ?? fetch;
-  const date = options.date ?? new Date();
+  const now = new Date();
+  const date = options.date ?? now;
   const dateKey = date.toISOString().slice(0, 10);
+  // Only a run for today can ask the live sources for "now"; any earlier day
+  // has to be addressed by timestamp window instead. See hnSource.
+  const day = dateKey === now.toISOString().slice(0, 10) ? undefined : utcDayWindow(date);
+  const hn = hnSource(day);
+  const snapi = snapiSource(day);
   const wiki = wikiSource(date);
-  const sources: DigestSource[] = [HN_SOURCE, wiki, SNAPI_SOURCE];
+  const sources: DigestSource[] = [hn, wiki, snapi];
 
   const sections: string[] = [];
   const failures: string[] = [];
   const rawPayloads: string[] = [];
 
   const jobs: readonly [DigestSource, (payload: unknown) => string][] = [
-    [HN_SOURCE, hnSection],
+    [hn, (p) => hnSection(p, day !== undefined)],
     [wiki, wikiSections],
-    [SNAPI_SOURCE, snapiSection],
+    [snapi, snapiSection],
   ];
   for (const [source, render] of jobs) {
     try {

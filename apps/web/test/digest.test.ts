@@ -100,7 +100,8 @@ describe("daily digest generation", () => {
     const oneDown = fakeFetch({ wiki: () => new Response("nope", { status: 503 }) });
     const digest = await generateDigest({ fetchImpl: oneDown.fetchImpl, date: FIXED_DATE });
     expect(digest.failures).toHaveLength(1);
-    expect(digest.markdown).toContain("Hacker News front page");
+    // FIXED_DATE is in the past, so this exercises the windowed backfill path.
+    expect(digest.markdown).toContain("Hacker News top stories");
     expect(digest.markdown).toContain("source(s) unavailable today");
 
     const allDown = fakeFetch({

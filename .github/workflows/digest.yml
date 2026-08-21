@@ -23,11 +23,20 @@ name: Daily Digest
 # reads it at build time. So the archive moved off main instead. main's
 # guarantee stays literally true with no exceptions, and this branch needs no
 # bypass, no extra credential and no CI run.
+#
+# Dispatch with a `date` input (YYYY-MM-DD) to backfill a day the schedule
+# missed. A backfill is not the same artefact as having run on the day, and the
+# generated page says so -- see apps/web/scripts/generate-digest.ts.
 
 on:
   schedule:
     - cron: "0 13 * * *" # 13:00 UTC daily
   workflow_dispatch:
+    inputs:
+      date:
+        description: "UTC day to generate, YYYY-MM-DD. Blank means today. Use it to backfill a day the schedule missed."
+        required: false
+        default: ""
 
 permissions:
   contents: write # push to refs/heads/digests
@@ -35,6 +44,12 @@ permissions:
 jobs:
   generate:
     runs-on: ubuntu-latest
+    # Job-level so the generate step and the publish step below both see it.
+    # Passed as an environment variable rather than interpolated into a run
+    # block, so a dispatch input can never become shell. Empty on a schedule,
+    # which the generator reads as "today".
+    env:
+      DIGEST_DATE: ${{ inputs.date }}
     steps:
       - uses: actions/checkout@v4
 
@@ -95,7 +110,7 @@ jobs:
 
             # No [skip ci] marker needed. ci.yml and codeql.yml both trigger on
             # push to main only, so nothing here starts a run.
-            git -C "$wt" commit -m "chore(digest): archive entry for $(date -u +%F)"
+            git -C "$wt" commit -m "chore(digest): archive entry for ${DIGEST_DATE:-$(date -u +%F)}"
             git -C "$wt" push origin HEAD:digests
           }
 

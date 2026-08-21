@@ -1,8 +1,20 @@
 /**
- * Generates today's digest into the docs archive (docs/digests/<date>.md) and
+ * Generates a digest into the docs archive (docs/digests/<date>.md) and
  * refreshes the archive index. Run by the scheduled digest workflow (and
  * locally via `pnpm --filter @prompt2md/web digest:archive`). Requires built
  * workspace packages; Node >= 22.6 (type stripping).
+ *
+ * Defaults to today. Pass a UTC day as YYYY-MM-DD, either as an argument or in
+ * DIGEST_DATE, to backfill a day the schedule missed:
+ *
+ *   pnpm --filter @prompt2md/web digest:archive 2026-08-20
+ *   DIGEST_DATE=2026-08-20 pnpm --filter @prompt2md/web digest:archive
+ *
+ * A backfill is not the same artefact as having run on the day, and the page
+ * says so rather than leaving a reader to assume otherwise. Wikipedia's
+ * featured feed is addressable by date and comes back exactly right. Hacker
+ * News and Spaceflight News keep no record of what their front pages held, so
+ * those sections are the items timestamped inside that UTC day instead.
  */
 import { mkdir, readdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
@@ -12,11 +24,46 @@ import { generateDigest } from "../lib/digest.ts";
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const archiveDir = join(repoRoot, "docs", "digests");
 
-const digest = await generateDigest({});
+const ISO_DAY = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
+const requested = (process.argv[2] ?? process.env.DIGEST_DATE ?? "").trim();
+const today = new Date().toISOString().slice(0, 10);
+
+function fail(message: string): never {
+  console.error(`digest: ${message}`);
+  process.exit(1);
+}
+
+let requestedDate: Date | undefined;
+if (requested !== "") {
+  if (!ISO_DAY.test(requested)) fail(`date must be YYYY-MM-DD, got "${requested}"`);
+  // Noon UTC rather than midnight: the pipeline only ever reads the UTC
+  // calendar day, and midnight is the one instant where a stray local-time
+  // conversion could silently shift it by a day.
+  const parsed = new Date(`${requested}T12:00:00Z`);
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== requested) {
+    fail(`"${requested}" is not a real calendar date`);
+  }
+  if (requested > today) fail(`"${requested}" is in the future, so there is nothing to summarise yet`);
+  requestedDate = parsed;
+}
+
+const backfilled = requestedDate !== undefined && requested !== today;
+const digest = await generateDigest(requestedDate !== undefined ? { date: requestedDate } : {});
 await mkdir(archiveDir, { recursive: true });
+
+// Spread rather than a placeholder entry, so a normal run's page is byte-for-byte
+// what it was before backfilling existed.
+const backfillNote = [
+  "",
+  "> Backfilled after the fact. Wikipedia's featured feed is addressable by date,",
+  "> so that section is what it was. Hacker News and Spaceflight News keep no",
+  "> record of their own front pages, so those sections are the items timestamped",
+  "> inside that UTC day rather than the pages as they appeared.",
+].join("\n");
 
 const page = [
   digest.markdown,
+  ...(backfilled ? [backfillNote] : []),
   "",
   `> Raw source payloads: ${digest.rawTokens.toLocaleString()} tokens → this digest: ${digest.digestTokens.toLocaleString()} tokens (${Math.round(digest.ratio * 100)}% of raw). Generated ${digest.generatedAt} by the prompt2md pipeline.`,
   "",
@@ -24,7 +71,7 @@ const page = [
 await writeFile(join(archiveDir, `${digest.date}.md`), page, "utf8");
 
 const entries = (await readdir(archiveDir))
-  .filter((f) => /^\d{4}-\d{2}-\d{2}\.md$/.test(f))
+  .filter((f) => ISO_DAY.test(f.replace(".md", "")) && f.endsWith(".md"))
   .sort()
   .reverse();
 const index = [
@@ -38,4 +85,6 @@ const index = [
 ].join("\n");
 await writeFile(join(archiveDir, "index.md"), index, "utf8");
 
-console.log(`archived digest ${digest.date}: ${digest.rawTokens} -> ${digest.digestTokens} tokens (${entries.length} entries in archive)`);
+console.log(
+  `archived digest ${digest.date}${backfilled ? " (backfilled)" : ""}: ${digest.rawTokens} -> ${digest.digestTokens} tokens (${entries.length} entries in archive)`,
+);
