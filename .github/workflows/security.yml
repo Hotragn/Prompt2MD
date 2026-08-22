@@ -13,8 +13,11 @@ name: Security Scan
 # ...and one repository variable (Settings -> Secrets and variables -> Actions
 # -> Variables):
 #   STRIX_INSTALLER_SHA256   sha256 of the vetted https://strix.ai/install script
-# Without them this job fails at the preflight step rather than passing
-# silently. Note that it has never once run past that step, so everything below
+# With none of them set the job SKIPS and stays green -- it is an optional
+# extra, not a gate, and a weekly red run for a scan nobody enabled is noise
+# that teaches you to ignore the alerts that matter. With some but not all of
+# them set it fails, because that is a half-finished setup rather than a
+# decision. Note that it has never once run past preflight, so everything below
 # it -- the installer URL, the flag set, the run.json shape -- is unverified
 # against a real Strix release. Expect to fix something on the first green run.
 #
@@ -43,34 +46,64 @@ jobs:
         with:
           fetch-depth: 0 # full history; the scan reads the whole tree
 
-      # Fail closed, but say why. A security gate must not pass silently when
-      # it is unconfigured, and a bare "strix: command failed" would send the
-      # next person hunting through logs.
-      - name: Preflight — required secrets and installer pin
+      # Three outcomes, not two.
+      #
+      # This used to fail whenever the secrets were absent, which was right when
+      # it gated pull requests and wrong now that it runs on a schedule: the
+      # repository has never had these set, so every weekly run went red and
+      # emailed the maintainer about a scan nobody had opted into. A recurring
+      # red run for a known-unconfigured optional job is the crying-wolf failure
+      # this project avoids elsewhere -- `prompt2md doctor` draws exactly this
+      # distinction between "missing" (a real fault) and "optional" (a
+      # capability not switched on), and for the same reason.
+      #
+      #   nothing set   -> not opted in. Skip, say so, exit green.
+      #   all set       -> run the scan.
+      #   some set      -> a real misconfiguration. Fail loudly.
+      #
+      # The middle case is the one worth failing on: someone meant to enable
+      # this and left it half-done, and a silent skip would hide that.
+      - name: Preflight — is this scan configured?
+        id: preflight
         env:
           STRIX_LLM: ${{ secrets.STRIX_LLM }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           STRIX_INSTALLER_SHA256: ${{ vars.STRIX_INSTALLER_SHA256 }}
         run: |
+          set -uo pipefail
           missing=""
-          [ -z "$STRIX_LLM" ] && missing="$missing STRIX_LLM(secret)"
-          [ -z "$LLM_API_KEY" ] && missing="$missing LLM_API_KEY(secret)"
-          [ -z "$STRIX_INSTALLER_SHA256" ] && missing="$missing STRIX_INSTALLER_SHA256(variable)"
-          if [ -n "$missing" ]; then
-            echo "::error::Missing:$missing" >&2
-            echo "Add them under Settings -> Secrets and variables -> Actions." >&2
-            echo "STRIX_LLM is a model id (e.g. openai/gpt-5.4); LLM_API_KEY is that provider's key." >&2
-            echo "STRIX_INSTALLER_SHA256 is the sha256 of the installer script you vetted:" >&2
-            echo "  curl -fsSL https://strix.ai/install -o s.sh && less s.sh && sha256sum s.sh" >&2
-            echo "To turn this gate off instead, delete .github/workflows/security.yml." >&2
-            exit 1
+          [ -n "$STRIX_LLM" ]              || missing="$missing STRIX_LLM(secret)"
+          [ -n "$LLM_API_KEY" ]            || missing="$missing LLM_API_KEY(secret)"
+          [ -n "$STRIX_INSTALLER_SHA256" ] || missing="$missing STRIX_INSTALLER_SHA256(variable)"
+
+          if [ -z "$missing" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+
+          echo "configured=false" >> "$GITHUB_OUTPUT"
+
+          if [ -z "$STRIX_LLM" ] && [ -z "$LLM_API_KEY" ] && [ -z "$STRIX_INSTALLER_SHA256" ]; then
+            echo "::notice::Strix scan not configured — skipping. CodeQL (.github/workflows/codeql.yml) is the blocking security gate and runs on every pull request; this job is an optional deeper sweep."
+            echo "To enable it, set under Settings -> Secrets and variables -> Actions:"
+            echo "  STRIX_LLM (secret)              a model id, e.g. openai/gpt-5.4"
+            echo "  LLM_API_KEY (secret)            that provider's key"
+            echo "  STRIX_INSTALLER_SHA256 (var)    sha256 of the installer you vetted:"
+            echo "    curl -fsSL https://strix.ai/install -o s.sh && less s.sh && sha256sum s.sh"
+            echo "To remove it instead, delete .github/workflows/security.yml."
+            exit 0
+          fi
+
+          echo "::error::Strix scan is partially configured — missing:$missing" >&2
+          echo "Set the rest under Settings -> Secrets and variables -> Actions, or clear them all to disable the scan." >&2
+          exit 1
 
       # Download, verify, then run -- never pipe a remote script straight into a
       # shell. `set -euo pipefail` so a failed download cannot fall through to
       # executing a truncated or error-page file, and --proto '=https' so a
       # redirect cannot downgrade the transport.
       - name: Install Strix (checksum-verified)
+        if: steps.preflight.outputs.configured == 'true'
         env:
           STRIX_INSTALLER_SHA256: ${{ vars.STRIX_INSTALLER_SHA256 }}
         run: |
@@ -81,6 +114,7 @@ jobs:
           bash "${RUNNER_TEMP}/strix-install.sh"
 
       - name: Run security scan
+        if: steps.preflight.outputs.configured == 'true'
         env:
           STRIX_LLM: ${{ secrets.STRIX_LLM }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
@@ -103,7 +137,7 @@ jobs:
       # Not a complete guard (a run that wraps up on a budget *warning* still
       # records "completed" with partial coverage), so keep the budget generous.
       - name: Fail unless the scan completed
-        if: always()
+        if: always() && steps.preflight.outputs.configured == 'true'
         run: |
           run_json=$(ls -t strix_runs/*/run.json 2>/dev/null | head -1)
           if [ -z "$run_json" ]; then
@@ -119,7 +153,7 @@ jobs:
           fi
 
       - name: Upload SARIF to code scanning
-        if: always()
+        if: always() && steps.preflight.outputs.configured == 'true'
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: strix_runs
