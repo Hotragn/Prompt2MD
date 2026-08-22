@@ -1,4 +1,4 @@
-import { readFile, stat } from "node:fs/promises";
+import { open } from "node:fs/promises";
 import { basename, extname } from "node:path";
 import { maxInputBytes } from "../limits.js";
 import type { InputKind, PdfProbe, SniffReport, SourceInput, TextProbe } from "../types/engine.js";
@@ -124,9 +124,14 @@ export function sniffBuffer(data: Uint8Array, filename?: string): SniffReport {
  * Every file path in the pipeline passes through here, which makes this the one
  * place a size ceiling can be enforced once and be true everywhere.
  *
- * `stat` before `readFile` is the point: an oversized file is refused on its
+ * Measuring before reading is the point: an oversized file is refused on its
  * declared size, without a byte of it ever becoming resident. Checking after
  * the read would be an OOM guard that first performs the OOM.
+ *
+ * Both the measurement and the read go through one open handle. Measuring a
+ * path and then reading that path again are two different questions, and
+ * between them the name can be pointed at something else -- which is precisely
+ * how a size ceiling gets walked past.
  */
 export async function sniffInput(input: SourceInput): Promise<SniffReport> {
   switch (input.kind) {
@@ -136,14 +141,19 @@ export async function sniffInput(input: SourceInput): Promise<SniffReport> {
       return sniffBuffer(input.data, input.filename);
     case "file": {
       const limit = maxInputBytes();
-      const info = await stat(input.path);
-      if (info.isFile() && info.size > limit) {
-        throw new Error(
-          `file is ${Math.round(info.size / 1_000_000)}MB; the limit is ` +
-            `${Math.round(limit / 1_000_000)}MB. Raise P2MD_MAX_INPUT_BYTES if that is deliberate.`,
-        );
+      const handle = await open(input.path, "r");
+      try {
+        const info = await handle.stat();
+        if (info.isFile() && info.size > limit) {
+          throw new Error(
+            `file is ${Math.round(info.size / 1_000_000)}MB; the limit is ` +
+              `${Math.round(limit / 1_000_000)}MB. Raise P2MD_MAX_INPUT_BYTES if that is deliberate.`,
+          );
+        }
+        return sniffBuffer(await handle.readFile(), input.path);
+      } finally {
+        await handle.close();
       }
-      return sniffBuffer(await readFile(input.path), input.path);
     }
   }
 }

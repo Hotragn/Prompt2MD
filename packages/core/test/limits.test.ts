@@ -47,9 +47,9 @@ describe("sniffInput enforces the byte ceiling", () => {
   // make. (An earlier draft asserted heap growth to prove the file was never
   // read; that assertion was worthless — readFile returns a Buffer, which is
   // external memory and barely moves heapUsed, so it would have passed whether
-  // or not the guard worked. The ordering it was trying to prove is a `stat`
-  // two lines above the `readFile` in sniffInput, and is better read than
-  // measured.)
+  // or not the guard worked. The ordering it was trying to prove is the
+  // handle.stat() above the handle.readFile() in sniffInput, and is better read
+  // than measured.)
   it("allows a file exactly at the ceiling and refuses one byte over", async () => {
     const dir = await mkdtemp(join(tmpdir(), "p2md-limit-"));
     const exact = join(dir, "exact.txt");

@@ -105,8 +105,13 @@ export function createFileStore(dir: string, options: StoreOptions = {}): Origin
         ...(label !== undefined ? { label } : {}),
         ...(ttlMs !== undefined ? { expiresAt: new Date(now + ttlMs).toISOString() } : {}),
       };
-      await mkdir(dir, { recursive: true });
-      await writeFile(pathFor(sourceId), JSON.stringify(record), "utf8");
+      // Owner-only, because the default location for this store is the OS temp
+      // dir -- shared with every other process on the box. The file name is a
+      // content hash and therefore predictable, so permissions are the only
+      // thing between a stored original and any other local user. (No-op on
+      // Windows, where the ACL model ignores these bits.)
+      await mkdir(dir, { recursive: true, mode: 0o700 });
+      await writeFile(pathFor(sourceId), JSON.stringify(record), { encoding: "utf8", mode: 0o600 });
       cache.set(sourceId, record);
       return sourceId;
     },
