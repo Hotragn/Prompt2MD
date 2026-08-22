@@ -1,10 +1,11 @@
-import { mkdtemp } from "node:fs/promises";
+import { mkdir, mkdtemp, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { compressContext, createFileStore, parseAnchor } from "@prompt2md/core";
+import type { ConversionOutcome, SourceInput } from "@prompt2md/core";
 import { createHermesServer } from "../src/server.js";
 
 interface TextContent {
@@ -129,5 +130,120 @@ describe("hermes MCP server (in-memory client integration)", () => {
     });
     expect((result as { isError?: boolean }).isError).toBe(true);
     expect(contents(result)[0]!.text).toMatch(/unavailable/i);
+  });
+});
+
+/**
+ * The filesystem boundary.
+ *
+ * `convert` used to accept any `path` a model sent, which made every readable
+ * file on the host reachable from a conversion tool. These cases are the
+ * regression net for that: each asserts BOTH that the call is refused and that
+ * the pipeline was never handed the path, so a future refactor cannot satisfy
+ * them by leaking the content into an error message instead.
+ */
+describe("convert filesystem containment", () => {
+  let client: Client;
+  let root: string;
+  let outside: string;
+  let canary: string;
+  /** Every path the pipeline was actually asked to convert. */
+  let seen: string[];
+
+  beforeAll(async () => {
+    const base = await mkdtemp(join(tmpdir(), "p2md-mcp-fs-"));
+    root = join(base, "workspace");
+    outside = join(base, "secrets");
+    await mkdir(root, { recursive: true });
+    await mkdir(outside, { recursive: true });
+    await writeFile(join(root, "notes.md"), "# Notes\n\nIn the workspace.");
+    canary = join(outside, "id_rsa");
+    await writeFile(canary, "CANARY-PRIVATE-KEY-MUST-NOT-LEAK");
+
+    seen = [];
+    const store = createFileStore(await mkdtemp(join(tmpdir(), "p2md-mcp-fs-store-")));
+    const server = createHermesServer({
+      store,
+      compress: (text, options) => compressContext(text, store, options),
+      roots: [root],
+      convert: (input: SourceInput): Promise<ConversionOutcome> => {
+        if (input.kind === "file") seen.push(input.path);
+        return Promise.resolve({
+          markdown: "# converted",
+          report: { outputTokens: 2 },
+        } as unknown as ConversionOutcome);
+      },
+    });
+
+    client = new Client({ name: "fs-test-client", version: "0.0.1" });
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    await Promise.all([client.connect(clientTransport), server.connect(serverTransport)]);
+  });
+
+  it("converts a file inside the workspace", async () => {
+    const result = await client.callTool({
+      name: "convert",
+      arguments: { path: join(root, "notes.md") },
+    });
+    expect((result as { isError?: boolean }).isError).toBeFalsy();
+    expect(seen.some((p) => p.endsWith("notes.md"))).toBe(true);
+  });
+
+  it.each([
+    ["absolute path outside the workspace", () => canary],
+    ["relative traversal", () => join(root, "..", "secrets", "id_rsa")],
+    ["backslash traversal", () => `${root}\\..\\secrets\\id_rsa`],
+    ["UNC path", () => "\\\\server\\share\\id_rsa"],
+    ["cloud metadata URL", () => "http://169.254.169.254/latest/meta-data/"],
+    ["file URL", () => "file:///etc/passwd"],
+    ["data URL", () => "data:text/plain;base64,QUJD"],
+  ])("refuses %s and never reaches the pipeline", async (_label, make) => {
+    const before = seen.length;
+    const result = await client.callTool({ name: "convert", arguments: { path: make() } });
+
+    expect((result as { isError?: boolean }).isError).toBe(true);
+    expect(contents(result)[0]!.text).toMatch(/^refused:/);
+    expect(contents(result)[0]!.text).not.toContain("CANARY-PRIVATE-KEY-MUST-NOT-LEAK");
+    expect(seen.length, "the pipeline must never see a refused path").toBe(before);
+  });
+
+  it("refuses a symlink inside the workspace that points outside it", async () => {
+    const link = join(root, "innocent.txt");
+    try {
+      await symlink(canary, link);
+    } catch {
+      return; // unprivileged Windows runner
+    }
+    const before = seen.length;
+    const result = await client.callTool({ name: "convert", arguments: { path: link } });
+
+    expect((result as { isError?: boolean }).isError).toBe(true);
+    expect(seen.length).toBe(before);
+  });
+
+  it("refuses every path when no roots are configured", async () => {
+    const store = createFileStore(await mkdtemp(join(tmpdir(), "p2md-mcp-noroot-")));
+    const server = createHermesServer({
+      store,
+      compress: (text, options) => compressContext(text, store, options),
+      roots: [],
+      convert: () => Promise.reject(new Error("must not be called")),
+    });
+    const bare = new Client({ name: "noroot", version: "0.0.1" });
+    const [c, s] = InMemoryTransport.createLinkedPair();
+    await Promise.all([bare.connect(c), server.connect(s)]);
+
+    const result = await bare.callTool({
+      name: "convert",
+      arguments: { path: join(root, "notes.md") },
+    });
+    expect((result as { isError?: boolean }).isError).toBe(true);
+    expect(contents(result)[0]!.text).toMatch(/P2MD_WORKSPACE_ROOTS/);
+  });
+
+  it("still converts `text`, which touches no filesystem", async () => {
+    // Containment must not break the surface that has no path in it.
+    const result = await client.callTool({ name: "convert", arguments: { text: "hello" } });
+    expect((result as { isError?: boolean }).isError).toBeFalsy();
   });
 });

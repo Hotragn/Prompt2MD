@@ -156,6 +156,16 @@ to its MCP config — every client uses the same shape:
 
   { "mcpServers": { "prompt2md": { "command": "node", "args": [${JSON.stringify(MCP_BIN)}] } } }
 
+File access is OFF by default. The MCP caller is a model, so \`convert\` accepts
+pasted text but refuses every \`path\` until you name the directories it may
+read (\`${process.platform === "win32" ? ";" : ":"}\`-separated):
+
+  P2MD_WORKSPACE_ROOTS    e.g. ${["projects", "docs"].map((d) => join(HOME, d)).join(process.platform === "win32" ? ";" : ":")}
+
+Set it in the tool's MCP \`env\` block, not your shell profile — the client
+launches the server, so that is the environment it actually gets. The CLI is
+unaffected and reads any file you can.
+
 Model providers (independent of the tool): set these env vars and ANY
 OpenAI-compatible endpoint works — Claude, GPT, Gemini, Grok, Kimi, Ollama:
 

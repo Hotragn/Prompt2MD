@@ -1,6 +1,6 @@
 {
   "name": "@prompt2md/core",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Dual-engine processing pipeline: engine router (docling / markitdown), LiteLLM gateway factory, token-optimization primitives.",
   "license": "Apache-2.0",
   "author": "Hotragn",

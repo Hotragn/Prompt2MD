@@ -175,10 +175,21 @@ up every file it touches. Any other MCP client uses the same shape:
 ```json
 {
   "mcpServers": {
-    "prompt2md": { "command": "node", "args": ["<repo>/packages/hermes-mcp/dist/bin.js"] }
+    "prompt2md": {
+      "command": "node",
+      "args": ["<repo>/packages/hermes-mcp/dist/bin.js"],
+      "env": { "P2MD_WORKSPACE_ROOTS": "/home/me/projects:/home/me/docs" }
+    }
   }
 }
 ```
+
+**`P2MD_WORKSPACE_ROOTS` is what lets `convert` read files at all.** The MCP
+caller is a model, so file access is deny-by-default: with the variable unset,
+`convert` accepts `text` but refuses every `path`. List only the directories you
+want a model to be able to read (`;`-separated on Windows, `:` elsewhere).
+Symlinks are resolved before the check, and URLs are refused — see
+[SECURITY.md](SECURITY.md#filesystem-scope-mcp). The CLI is unaffected.
 
 Users then pick the **`optimize`** prompt in their chat box and paste raw text —
 the model receives optimized Markdown instead of the paste. Preview changes with

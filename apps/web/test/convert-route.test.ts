@@ -1,5 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { POST } from "../app/api/convert/route";
+import { resetRateLimits } from "../lib/rate-limit";
+
+// The route counts requests now. These cases are about conversion, not
+// throttling, so each starts with a clean budget rather than quietly sharing
+// one — otherwise adding a case here could fail an unrelated one.
+beforeEach(() => {
+  resetRateLimits();
+});
 
 interface ConvertResponse {
   markdown?: string;

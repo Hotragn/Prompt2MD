@@ -652,6 +652,31 @@ textarea.input[data-dragging="true"] {
   font-size: 12.5px;
 }
 
+/* An action that lives inside a sentence. A real <button> for keyboard and
+   screen-reader behaviour, styled as the link it reads as — the alternative is
+   a clickable <span>, which is neither. */
+.linklike {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.linklike:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.linklike:disabled {
+  cursor: default;
+  text-decoration: none;
+  opacity: 0.7;
+}
+
 /* Empty state: state the promise in the product's own voice, with the
    serif gesture, rather than leaving an inert grey panel. */
 .empty {

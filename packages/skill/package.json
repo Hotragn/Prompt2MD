@@ -1,6 +1,6 @@
 {
   "name": "prompt2md-skill",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Install the /prompt2md agent skill: convert messy prompts and documents into token-optimized, layout-aware Markdown with an honest token report.",
   "license": "Apache-2.0",
   "author": "Hotragn",

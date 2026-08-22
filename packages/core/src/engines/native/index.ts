@@ -80,6 +80,17 @@ export function createNativeEngine(): Engine {
 
         case "pdf": {
           const result = await pdfToMarkdown(await bytesOf(input));
+          if (result.pages < result.declaredPages) {
+            // Silent truncation would make the token report look like a
+            // triumph for the wrong reason — the same failure the
+            // content-removed warnings elsewhere exist to prevent.
+            warnings.push({
+              code: "content-removed",
+              message:
+                `read the first ${result.pages} of ${result.declaredPages} pages (page cap). ` +
+                `Raise P2MD_MAX_PDF_PAGES to convert the whole document.`,
+            });
+          }
           if (result.empty) {
             // Not an error: a scan has no text layer to read. Say so in the
             // terms the user can act on, and let the pipeline's escalation
