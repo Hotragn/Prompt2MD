@@ -12,7 +12,7 @@ import {
   RATE_LIMIT_WINDOW_MS,
   rateLimitIsPerInstance,
 } from "../../../lib/rate-limit";
-import { storeIsEphemeral } from "../../../lib/runtime";
+import { RETENTION_DAYS, storeIsEphemeral } from "../../../lib/runtime";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -86,6 +86,16 @@ export async function GET(req: Request): Promise<NextResponse> {
     documentEngine: hasDocumentEngine,
     highFidelityEngine: process.env["P2MD_DOCLING_URL"] !== undefined,
     durableStore: !storeIsEphemeral(),
+    // What this deployment does with what you send it. Surfaced next to the
+    // capabilities rather than buried in a policy page: a user deciding whether
+    // to paste a document needs it before they paste, not after.
+    retention: {
+      days: RETENTION_DAYS,
+      // Anyone holding a sourceId can read or delete that record. Stated,
+      // because the alternative is a user assuming otherwise.
+      idIsBearerToken: true,
+      deletable: true,
+    },
     // What will be refused, so the studio can say so before a request is sent.
     limits: {
       maxInputChars: MAX_INPUT_CHARS,

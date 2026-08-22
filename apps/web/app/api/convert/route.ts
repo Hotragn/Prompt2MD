@@ -64,6 +64,13 @@ async function parseRequest(req: Request): Promise<ConvertParams | { error: stri
 }
 
 export async function POST(req: Request): Promise<NextResponse> {
+  // First, before the body is read. This is the most expensive route in the
+  // app — 25MB uploads, the full pipeline, a 45s deadline — and it was the only
+  // one not counting requests, while /api/capabilities advertised a limit for
+  // it. Parsing a 25MB body to then reject it does the work anyway.
+  const limited = enforceRateLimit(req, RATE_LIMIT_EXPENSIVE);
+  if (limited !== null) return limited;
+
   const params = await parseRequest(req);
   if ("error" in params) return NextResponse.json({ error: params.error }, { status: params.status });
 

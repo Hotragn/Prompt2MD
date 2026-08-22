@@ -44,6 +44,15 @@ Thumbs.db
 data/local/
 **/data/digests/
 
+# Security audit working notes. Deliberately untracked: this repository is
+# public, and the report enumerates findings that are still OPEN against the
+# live deployment (retention/authz on the originals store, digest escaping,
+# output sanitization) along with the steps to reach them. Publishing that is
+# publishing a target list. Track open findings in private GitHub Security
+# Advisories instead, and commit the report — or the closed part of it — once
+# the findings it describes are actually fixed.
+SECURITY-AUDIT.md
+
 # Binary fixtures are generated on demand (fixtures/scripts/make_binary_fixtures.py).
 # The repo stays text-only.
 fixtures/_generated/

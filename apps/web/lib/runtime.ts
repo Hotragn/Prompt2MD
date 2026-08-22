@@ -1,8 +1,27 @@
-import { get as blobGet, put as blobPut } from "@vercel/blob";
+import { del as blobDel, get as blobGet, put as blobPut } from "@vercel/blob";
 import { createRuntimeFromEnv, type HermesRuntime } from "@prompt2md/core";
 import { createBlobStore, type BlobClient } from "./blob-store";
 
 let cached: HermesRuntime | undefined;
+
+/**
+ * How long the hosted studio keeps a submitted document.
+ *
+ * This is a public form: anyone can paste anything, and a sourceId is a bearer
+ * handle rather than an owned resource. Seven days is long enough for
+ * `retrieve_original` to be genuinely useful across a working session and short
+ * enough that a leaked id is a bounded problem rather than a permanent one.
+ *
+ * Operators running their own deployment can change it. Zero disables expiry,
+ * which is correct for a single-tenant instance and wrong for a public one.
+ */
+export const RETENTION_DAYS = (() => {
+  const raw = process.env["P2MD_STORE_TTL_DAYS"];
+  const parsed = raw === undefined ? Number.NaN : Number.parseInt(raw, 10);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 7;
+})();
+
+const RETENTION_MS = RETENTION_DAYS * 24 * 60 * 60 * 1000;
 
 /**
  * True when a durable originals store is configured.
@@ -28,8 +47,13 @@ export function hasDurableStore(): boolean {
  */
 export function getRuntime(): HermesRuntime {
   cached ??= createRuntimeFromEnv(
-    process.env,
-    hasDurableStore() ? { store: createBlobStore(blobClient()) } : {},
+    // The retention window is passed through the env the runtime reads, so the
+    // temp-dir file store used when no blob token is configured gets the same
+    // ceiling as the durable one. That path already dies with its instance;
+    // this makes the bound a stated policy rather than a side effect of
+    // serverless recycling.
+    { ...process.env, P2MD_STORE_TTL_DAYS: String(RETENTION_DAYS) },
+    hasDurableStore() ? { store: createBlobStore(blobClient(), { ttlMs: RETENTION_MS }) } : {},
   );
   return cached;
 }
@@ -48,6 +72,9 @@ function blobClient(): BlobClient {
     put: (pathname, body, options) =>
       blobPut(pathname, body, options as Parameters<typeof blobPut>[2]),
     get: (pathname, options) => blobGet(pathname, options as Parameters<typeof blobGet>[1]),
+    // Required for retention to mean anything: without a delete, an expired
+    // record stops being served but never stops existing.
+    del: (pathname) => blobDel(pathname),
   };
 }
 

@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { hashSource } from "./markdown/parse.js";
 
@@ -13,6 +13,8 @@ export interface StoredOriginal {
   readonly text: string;
   readonly label?: string;
   readonly createdAt: string;
+  /** ISO instant after which this record is treated as gone. Absent = keeps forever. */
+  readonly expiresAt?: string;
 }
 
 export interface OriginalStore {
@@ -20,19 +22,62 @@ export interface OriginalStore {
   put(text: string, label?: string): Promise<string>;
   get(sourceId: string): Promise<StoredOriginal | undefined>;
   getSpan(sourceId: string, start: number, end: number): Promise<string | undefined>;
+  /** True when a record existed and was removed. Idempotent: deleting twice is not an error. */
+  delete(sourceId: string): Promise<boolean>;
+}
+
+export interface StoreOptions {
+  /**
+   * Retention window. Omitted or <= 0 means records never expire, which is the
+   * right default for a local store: `~/.prompt2md/originals` is the operator's
+   * own data on their own disk, and having `retrieve_original` quietly stop
+   * resolving a two-week-old anchor would break the losslessness promise to the
+   * one person who is not a risk to themselves.
+   *
+   * A multi-tenant deployment is the opposite case and must set this. There the
+   * store holds documents belonging to strangers, a sourceId is a bearer handle
+   * with no owner attached, and "forever" is the wrong answer.
+   */
+  readonly ttlMs?: number;
 }
 
 const SOURCE_ID = /^[0-9a-f]{16}$/;
 
-export function createFileStore(dir: string): OriginalStore {
+/** Expired-or-not, without trusting the caller's clock more than once per call. */
+function isExpired(record: StoredOriginal, now: number): boolean {
+  if (record.expiresAt === undefined) return false;
+  const at = Date.parse(record.expiresAt);
+  // An unparseable stamp is treated as expired. A record we cannot reason about
+  // is not one to keep serving.
+  return Number.isNaN(at) || at <= now;
+}
+
+export function createFileStore(dir: string, options: StoreOptions = {}): OriginalStore {
+  const ttlMs = options.ttlMs !== undefined && options.ttlMs > 0 ? options.ttlMs : undefined;
   const cache = new Map<string, StoredOriginal>();
+
+  const pathFor = (sourceId: string): string => join(dir, `${sourceId}.json`);
 
   async function load(sourceId: string): Promise<StoredOriginal | undefined> {
     if (!SOURCE_ID.test(sourceId)) return undefined; // also blocks path traversal
+    const now = Date.now();
+
     const cached = cache.get(sourceId);
-    if (cached !== undefined) return cached;
+    if (cached !== undefined) {
+      if (!isExpired(cached, now)) return cached;
+      // Evict from the cache too, or the TTL would be enforced on disk and
+      // ignored in memory for the life of the process.
+      cache.delete(sourceId);
+      await unlink(pathFor(sourceId)).catch(() => undefined);
+      return undefined;
+    }
+
     try {
-      const record = JSON.parse(await readFile(join(dir, `${sourceId}.json`), "utf8")) as StoredOriginal;
+      const record = JSON.parse(await readFile(pathFor(sourceId), "utf8")) as StoredOriginal;
+      if (isExpired(record, now)) {
+        await unlink(pathFor(sourceId)).catch(() => undefined);
+        return undefined;
+      }
       cache.set(sourceId, record);
       return record;
     } catch {
@@ -43,15 +88,30 @@ export function createFileStore(dir: string): OriginalStore {
   return {
     async put(text: string, label?: string): Promise<string> {
       const sourceId = hashSource(text);
-      if (cache.has(sourceId)) return sourceId;
+      const now = Date.now();
+      const cached = cache.get(sourceId);
+      // A cache hit short-circuits only when there is nothing to refresh.
+      // Content-addressing means a re-submission of the same document lands on
+      // the same id, and that submission is new activity — its retention window
+      // starts now, not whenever the first copy arrived.
+      if (cached !== undefined && ttlMs === undefined && !isExpired(cached, now)) {
+        return sourceId;
+      }
+
       const record: StoredOriginal = {
         sourceId,
         text,
-        createdAt: new Date().toISOString(),
+        createdAt: new Date(now).toISOString(),
         ...(label !== undefined ? { label } : {}),
+        ...(ttlMs !== undefined ? { expiresAt: new Date(now + ttlMs).toISOString() } : {}),
       };
-      await mkdir(dir, { recursive: true });
-      await writeFile(join(dir, `${sourceId}.json`), JSON.stringify(record), "utf8");
+      // Owner-only, because the default location for this store is the OS temp
+      // dir -- shared with every other process on the box. The file name is a
+      // content hash and therefore predictable, so permissions are the only
+      // thing between a stored original and any other local user. (No-op on
+      // Windows, where the ACL model ignores these bits.)
+      await mkdir(dir, { recursive: true, mode: 0o700 });
+      await writeFile(pathFor(sourceId), JSON.stringify(record), { encoding: "utf8", mode: 0o600 });
       cache.set(sourceId, record);
       return sourceId;
     },
@@ -63,7 +123,47 @@ export function createFileStore(dir: string): OriginalStore {
       if (record === undefined || start < 0 || end < start) return undefined;
       return record.text.slice(start, Math.min(end, record.text.length));
     },
+
+    async delete(sourceId: string): Promise<boolean> {
+      if (!SOURCE_ID.test(sourceId)) return false;
+      const wasCached = cache.delete(sourceId);
+      try {
+        await unlink(pathFor(sourceId));
+        return true;
+      } catch {
+        // Already gone on disk. Report whether the caller's id meant anything
+        // at all, so a delete of a live cache-only record still reads as a hit.
+        return wasCached;
+      }
+    },
   };
+}
+
+/**
+ * Drop every expired record in `dir`. Returns the number removed.
+ *
+ * A TTL enforced only on read leaves expired documents sitting on disk
+ * indefinitely — the retention promise would be about what is *served*, not
+ * about what is *kept*, and those are different claims. Callers with a
+ * scheduler (a cron route, a maintenance command) should run this; the read
+ * path stays correct without it.
+ */
+export async function sweepExpired(dir: string, now: number = Date.now()): Promise<number> {
+  let removed = 0;
+  const entries = await readdir(dir).catch(() => [] as string[]);
+  for (const name of entries) {
+    if (!/^[0-9a-f]{16}\.json$/.test(name)) continue;
+    const full = join(dir, name);
+    try {
+      const record = JSON.parse(await readFile(full, "utf8")) as StoredOriginal;
+      if (!isExpired(record, now)) continue;
+      await unlink(full);
+      removed++;
+    } catch {
+      // Unreadable or already removed — nothing to account for.
+    }
+  }
+  return removed;
 }
 
 /** Anchor written into compressed sections and accepted by retrieve_original. */

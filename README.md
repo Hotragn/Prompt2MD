@@ -11,7 +11,7 @@
   <a href="https://github.com/Hotragn/Prompt2MD/actions/workflows/ci.yml"><img src="https://github.com/Hotragn/Prompt2MD/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License: Apache-2.0"></a>
   <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg" alt="Node >= 20">
-  <img src="https://img.shields.io/badge/tests-238%20unit%20%2B%2015%20e2e-success.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-304%20unit%20%2B%2015%20e2e-success.svg" alt="Tests">
   <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-server%20%2B%20skill-7C5CFF.svg" alt="MCP server and skill"></a>
 </p>
 
@@ -175,10 +175,21 @@ up every file it touches. Any other MCP client uses the same shape:
 ```json
 {
   "mcpServers": {
-    "prompt2md": { "command": "node", "args": ["<repo>/packages/hermes-mcp/dist/bin.js"] }
+    "prompt2md": {
+      "command": "node",
+      "args": ["<repo>/packages/hermes-mcp/dist/bin.js"],
+      "env": { "P2MD_WORKSPACE_ROOTS": "/home/me/projects:/home/me/docs" }
+    }
   }
 }
 ```
+
+**`P2MD_WORKSPACE_ROOTS` is what lets `convert` read files at all.** The MCP
+caller is a model, so file access is deny-by-default: with the variable unset,
+`convert` accepts `text` but refuses every `path`. List only the directories you
+want a model to be able to read (`;`-separated on Windows, `:` elsewhere).
+Symlinks are resolved before the check, and URLs are refused — see
+[SECURITY.md](SECURITY.md#filesystem-scope-mcp). The CLI is unaffected.
 
 Users then pick the **`optimize`** prompt in their chat box and paste raw text —
 the model receives optimized Markdown instead of the paste. Preview changes with
@@ -271,7 +282,7 @@ exactly.
 
 ```bash
 pnpm build         # core → hermes-mcp → cli → web + docs
-pnpm test          # 238 unit/integration tests
+pnpm test          # 304 unit/integration tests
 pnpm test:e2e      # 13 Selenium scenarios (landing + studio)
 pnpm test:install  # installer against a sandboxed HOME (your configs untouched)
 pnpm test:fresh    # full new-user simulation in a throwaway clone

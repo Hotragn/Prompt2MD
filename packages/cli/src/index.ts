@@ -10,6 +10,7 @@ import { BAD, GLYPH, OK, OPTIONAL, amber, bold, dim, green, lockup, pad, red, sl
 import {
   createRuntimeFromEnv,
   parseAnchor,
+  workspaceRoots,
   type CompressResult,
   type ConvertOptions,
   type Fidelity,
@@ -30,7 +31,7 @@ const defaultIo: CliIo = {
 
 // Kept in step with packages/cli/package.json by hand. `prompt2md --version`
 // reads this, so a stale value here makes the CLI lie about itself.
-const VERSION = "0.1.1";
+const VERSION = "0.2.0";
 
 const PROVIDERS = ["anthropic", "openai", "gemini", "kimi"] as const;
 type Provider = (typeof PROVIDERS)[number];
@@ -490,6 +491,20 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
       // doctor exists to answer is "what works right now", and the answer
       // being "most of it, with nothing installed" is the useful headline.
       check("ok", "documents", "HTML, CSV, JSON, PDF, DOCX, XLSX, PPTX — built in, no setup");
+
+      // Scoped to the MCP server on purpose. This CLI reads whatever its
+      // operator can read and always has; the roots exist because the MCP
+      // caller is a model. Reported here because doctor is where people look
+      // when `convert` refuses a path and they want to know why.
+      const roots = workspaceRoots(env);
+      check(
+        "optional",
+        "MCP file access",
+        roots.length === 0
+          ? "off — the MCP `convert` tool takes pasted text but refuses file paths"
+          : `${roots.length} workspace root(s): ${roots.join(", ")}`,
+        roots.length === 0 ? "set P2MD_WORKSPACE_ROOTS to the dirs a model may read" : undefined,
+      );
 
       // markitdown is an extension, not a prerequisite. It used to be reported
       // as `missing` — a red mark for a machine that converts every common

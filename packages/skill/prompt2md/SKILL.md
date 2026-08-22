@@ -36,6 +36,12 @@ preserved. Present the cleaned version; never re-add removed filler.
 complex tables). Only override with `fidelity: "high"` when the user insists on
 maximum table/scan fidelity, or `"fast"` for speed on bulk text.
 
+Over MCP, `path` reads only inside the directories the operator listed in
+`P2MD_WORKSPACE_ROOTS`, and reads nothing at all when that is unset. A refusal
+there is configuration, not a bad path: report it and suggest either setting the
+variable or passing the content as `text`. Do not retry other paths hoping one
+is permitted, and do not treat the CLI as a way around it.
+
 **3. Fitting a context budget.** Use `tokenBudget`. Head and tail stay
 verbatim; middle prose is summarized; tables/code/headings are never
 summarized. The output may exceed a very small budget — check the
