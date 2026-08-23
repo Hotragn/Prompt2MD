@@ -1,6 +1,6 @@
 {
   "name": "prompt2md",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Turn messy prompts and documents (PDF, Office, HTML, CSV) into token-optimized, layout-aware Markdown, with an honest token report and byte-exact retrieval of anything a summary replaced.",
   "license": "Apache-2.0",
   "author": "Hotragn",

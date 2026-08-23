@@ -1,6 +1,14 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { approxCounter, buildOutline, parseAnchor } from "@prompt2md/core";
+import {
+  approxCounter,
+  assertReadable,
+  buildOutline,
+  maxInputBytes,
+  parseAnchor,
+  workspaceRoots,
+  FilePolicyError,
+} from "@prompt2md/core";
 import type {
   CacheProvider,
   CompressOptions,
@@ -16,6 +24,15 @@ export interface HermesDeps {
   readonly compress: (text: string, options: CompressOptions) => Promise<CompressResult>;
   /** Optional: full document conversion (requires engine sidecars). */
   readonly convert?: (input: SourceInput, options: ConvertOptions) => Promise<ConversionOutcome>;
+  /**
+   * Directories `convert` may read from. Defaults to P2MD_WORKSPACE_ROOTS.
+   *
+   * Empty means no file access at all — the correct default for a server whose
+   * caller is a language model. An unconfigured deployment must refuse to read
+   * files, not read every file: the whole point of the boundary is that the
+   * agent asking is not the operator who decided what it may see.
+   */
+  readonly roots?: readonly string[];
 }
 
 interface ToolText {
@@ -29,28 +46,59 @@ const fail = (message: string): ToolText => ({ content: [text(message)], isError
 
 export function createHermesServer(deps: HermesDeps): McpServer {
   const server = new McpServer({ name: "prompt2md-hermes", version: "0.1.0" });
+  const roots = deps.roots ?? workspaceRoots();
 
   server.tool(
     "convert",
-    "Convert a file or raw text into token-optimized, layout-aware Markdown. Returns the Markdown followed by a JSON TokenReport (input/output tokens, compression ratio, engine used). The pre-compression conversion is stored; compressed sections carry p2md:src anchors resolvable with retrieve_original. Provide exactly one of `text` or `path`.",
+    "Convert a file or raw text into token-optimized, layout-aware Markdown. Returns the Markdown followed by a JSON TokenReport (input/output tokens, compression ratio, engine used). The pre-compression conversion is stored; compressed sections carry p2md:src anchors resolvable with retrieve_original. Provide exactly one of `text` or `path`. `path` reads the local disk and is restricted to the operator's configured workspace directories; it is not a URL fetcher and there is no way to widen its scope from here.",
     {
       text: z.string().optional().describe("Raw text / messy prompt / pasted document"),
-      path: z.string().optional().describe("Absolute path to a local file (pdf, docx, html, csv, ...)"),
+      path: z
+        .string()
+        .optional()
+        .describe(
+          "Path to a local file (pdf, docx, html, csv, ...) inside an approved workspace directory. Not a URL.",
+        ),
       tokenBudget: z.number().int().positive().optional().describe("Compress the result to fit this many tokens"),
       fidelity: z.enum(["auto", "fast", "high"]).optional().describe("Engine routing override (default auto)"),
       provider: z.enum(["anthropic", "openai", "gemini", "kimi"]).optional().describe("Cache-layout profile (default anthropic)"),
     },
     async (args): Promise<ToolText> => {
-      if (deps.convert === undefined) {
+      // Captured rather than re-read below: the containment check between here
+      // and the call site awaits, and a local const keeps the narrowing plain
+      // rather than relying on how TS treats an optional property across it.
+      const convert = deps.convert;
+      if (convert === undefined) {
         return fail("convert is unavailable: engine sidecars are not configured (set P2MD_* env vars — see README)");
       }
       if ((args.text === undefined) === (args.path === undefined)) {
         return fail("provide exactly one of `text` or `path`");
       }
-      const input: SourceInput =
-        args.text !== undefined ? { kind: "text", text: args.text } : { kind: "file", path: args.path! };
+
+      // The filesystem boundary. `SourceInput` is shared with the CLI, where a
+      // path the operator typed grants nothing new — here the caller is a
+      // model, so containment is checked before the pipeline sees the path.
+      // Symlinks are resolved first: a link inside a root pointing outside it
+      // is the case a prefix match would wave through.
+      let input: SourceInput;
+      if (args.text !== undefined) {
+        input = { kind: "text", text: args.text };
+      } else {
+        try {
+          input = { kind: "file", path: await assertReadable(args.path!, roots, maxInputBytes()) };
+        } catch (err) {
+          // Stable and non-sensitive: the resolved path, and whether it exists,
+          // are exactly what an unauthorized caller is probing for.
+          return fail(
+            err instanceof FilePolicyError
+              ? `refused: ${err.message}`
+              : "refused: path could not be resolved",
+          );
+        }
+      }
+
       try {
-        const outcome = await deps.convert(input, {
+        const outcome = await convert(input, {
           ...(args.fidelity !== undefined ? { fidelity: args.fidelity } : {}),
           ...(args.tokenBudget !== undefined ? { tokenBudget: args.tokenBudget } : {}),
         });

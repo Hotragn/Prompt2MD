@@ -21,8 +21,14 @@ function fakeBlob(): BlobClient & { written: Map<string, string>; puts: Record<s
       if (body === undefined) return Promise.resolve(null);
       return Promise.resolve({ stream: new Response(body).body });
     },
+    del(pathname) {
+      written.delete(pathname);
+      return Promise.resolve({});
+    },
   };
 }
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 describe("durable originals store (Vercel Blob)", () => {
   it("round-trips an original byte-exactly", async () => {
@@ -80,6 +86,71 @@ describe("durable originals store (Vercel Blob)", () => {
     const store = createBlobStore(fakeBlob());
     expect(await store.get("ffffffffffffffff")).toBeUndefined();
     expect(await store.getSpan("ffffffffffffffff", 0, 10)).toBeUndefined();
+  });
+
+  it("bounds spans instead of letting a negative index return a tail", async () => {
+    // slice(-5, 2) would quietly hand back the wrong five characters. The file
+    // store rejected this; this one used to not, and the two must agree.
+    const store = createBlobStore(fakeBlob());
+    const id = await store.put("abcdefghij");
+    expect(await store.getSpan(id, -5, 2)).toBeUndefined();
+    expect(await store.getSpan(id, 5, 2)).toBeUndefined();
+    expect(await store.getSpan(id, 0, 999)).toBe("abcdefghij");
+  });
+
+  describe("retention", () => {
+    it("stamps an expiry when a TTL is set, and none when it is not", async () => {
+      const bounded = createBlobStore(fakeBlob(), { ttlMs: 7 * DAY_MS });
+      expect((await bounded.get(await bounded.put("x")))?.expiresAt).toBeDefined();
+
+      const forever = createBlobStore(fakeBlob());
+      expect((await forever.get(await forever.put("x")))?.expiresAt).toBeUndefined();
+    });
+
+    it("stops serving an expired record and deletes it on read", async () => {
+      const blob = fakeBlob();
+      const store = createBlobStore(blob, { ttlMs: 1 });
+      const id = await store.put("short-lived");
+      await new Promise((r) => setTimeout(r, 20));
+
+      expect(await store.get(id)).toBeUndefined();
+      // Object storage has no TTL of its own here, so the read path is where an
+      // expired document actually stops existing.
+      expect(blob.written.has(`prompt2md/originals/${id}.json`)).toBe(false);
+    });
+
+    it("restarts the window when the same content is resubmitted", async () => {
+      const store = createBlobStore(fakeBlob(), { ttlMs: 60_000 });
+      const first = await store.get(await store.put("same text"));
+      await new Promise((r) => setTimeout(r, 10));
+      const second = await store.get(await store.put("same text"));
+      expect(Date.parse(second!.expiresAt!)).toBeGreaterThan(Date.parse(first!.expiresAt!));
+    });
+  });
+
+  describe("deletion", () => {
+    it("removes the object and reports whether one existed", async () => {
+      const blob = fakeBlob();
+      const store = createBlobStore(blob);
+      const id = await store.put("withdraw me");
+
+      expect(await store.delete(id)).toBe(true);
+      expect(blob.written.size).toBe(0);
+      expect(await store.get(id)).toBeUndefined();
+      expect(await store.delete(id)).toBe(false);
+    });
+
+    it("refuses malformed ids without touching the backend", async () => {
+      const blob = fakeBlob();
+      const store = createBlobStore(blob);
+      await store.put("real");
+      const before = blob.written.size;
+
+      for (const evil of ["../../etc/passwd", "nope", "0000000000000000/../x"]) {
+        expect(await store.delete(evil)).toBe(false);
+      }
+      expect(blob.written.size).toBe(before);
+    });
   });
 
   it("rejects ids that could escape the key prefix", async () => {

@@ -8,6 +8,104 @@ tagged release.
 Every performance or savings figure quoted here comes from a real run and is
 reproducible from the repository.
 
+## [0.2.0] — 2026-08-21
+
+Security release. One **breaking** change to the MCP server, described first
+because it will stop a working setup until one variable is set.
+
+### Breaking
+
+- **The MCP `convert` tool no longer reads files unless you say which ones.**
+  `path` accepted any absolute path, so any model connected to the server could
+  read any file the process could — SSH keys, `.env`, cloud credentials — by
+  calling a document converter. It needed no sidecar: the in-process engine
+  handles PDF/Office/HTML/CSV, and plain text falls through to the deterministic
+  path essentially verbatim.
+
+  File access is now **denied by default** and opt-in per directory:
+
+  ```jsonc
+  { "env": { "P2MD_WORKSPACE_ROOTS": "/home/me/projects:/home/me/docs" } }
+  ```
+
+  (`;`-separated on Windows.) Unset means `convert` refuses every `path` and
+  says so; the `text` argument is unaffected. The server prints its filesystem
+  posture at startup so an unconfigured deployment is obvious immediately rather
+  than at the first refusal.
+
+  Paths are canonicalized with `realpath` **before** the containment test, so a
+  symlink inside an approved root that points outside it is refused — the case a
+  string-prefix check waves through. URL schemes, UNC paths and null bytes are
+  rejected as a matter of policy, not as a side effect of a failing `readFile`.
+
+  The CLI is deliberately unchanged: a path typed at your own shell grants no
+  authority you did not already have. The boundary exists because the MCP caller
+  is a model, not the operator.
+
+### Fixed
+
+- **`/api/convert` was the only route not counting requests.** It imported the
+  rate limiter and never called it, while `/api/capabilities` advertised a
+  20/minute limit for it — so the API described a ceiling that did not exist on
+  the most expensive endpoint in the app (25MB uploads, full pipeline, 45s
+  deadline). The limiter now runs before the body is read, because parsing 25MB
+  in order to reject it does the work anyway. A route-parity test now asserts
+  every API route calls it, so the next route added cannot repeat this.
+- **Input size is bounded outside the web app.** The CLI, library and MCP server
+  had no ceiling — only the web app did. Files are now checked with `stat`
+  before the first `readFile` (`P2MD_MAX_INPUT_BYTES`, default 100MB), at the
+  single point every file path passes through. Checking after the read would be
+  an OOM guard that first performs the OOM.
+- **PDF page counts are capped separately.** Page count is declared inside the
+  file and each page builds its own text-item list, so a small file can declare
+  enough pages to hang the process; a byte ceiling cannot bound that. The
+  in-process reader now stops at `P2MD_MAX_PDF_PAGES` (default 2000) and reports
+  truncation as a `content-removed` warning rather than silently returning a
+  partial document with a flattering token report.
+- **CI no longer pipes a remote script into a shell.** The weekly scan installed
+  its scanner with `curl -sSL … | bash` in a job holding an LLM API key and
+  `security-events: write`, which handed whoever controls that domain, its DNS
+  or its CDN a shell on the runner. The script is now downloaded, verified
+  against a checksum a human vetted (`STRIX_INSTALLER_SHA256`), and only then
+  run. A missing pin fails the preflight rather than passing silently.
+
+### Added
+
+- **Retention and deletion for stored originals.** Compression stores the
+  original first so nothing is ever destroyed — which on a public deployment
+  meant strangers' documents kept forever under a handle that is a content hash,
+  not an access token. A sourceId travels: it is returned in JSON, printed by
+  the CLI, and embedded in `p2md:src` anchors inside Markdown people share.
+
+  Stores now take a TTL. The hosted studio sets **7 days**
+  (`P2MD_STORE_TTL_DAYS`); expired records stop resolving and are deleted on
+  read, and `sweepExpired()` clears them from disk for deployments with a
+  scheduler. `DELETE /api/retrieve?ref=…` withdraws one immediately, and the
+  studio offers it next to the sourceId rather than in a policy page.
+
+  A local store has **no TTL by default** and is unchanged: `~/.prompt2md` is
+  the operator's own data on their own disk, and having `retrieve_original`
+  quietly stop resolving a two-week-old anchor would break losslessness for the
+  one person who is not a risk to themselves.
+
+  `/api/capabilities` now reports the window, that an id is a bearer handle, and
+  that deletion is available — so the studio can say all three before you paste,
+  which is when it matters. **This bounds exposure; it is not per-user
+  authorization.** Anyone with an id can still read or delete that record, and
+  the UI says so in those words.
+
+- `OriginalStore` gains a required `delete(sourceId)`. Breaking for anyone who
+  implemented the interface themselves; both bundled stores implement it.
+
+### Known open
+
+Digest output still interpolates remote API titles and URLs into Markdown links
+without escaping, and converted Markdown is not sanitized by default — a `.md`
+input carrying `<script>` or `[x](javascript:…)` converts through unchanged
+while the HTML path strips scripts, so the two disagree. Neither is a live
+exploit against the hosted studio (its preview runs DOMPurify), and both are
+tracked for the next release.
+
 ## [0.1.1] — 2026-08-08
 
 ### Fixed

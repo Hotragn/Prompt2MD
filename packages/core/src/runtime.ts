@@ -32,6 +32,13 @@ import type { LlmGateway } from "./types/gateway.js";
  *   P2MD_DOCLING_URL       — docling-serve base URL (enables high-fidelity engine)
  *   P2MD_PYTHON_BIN        — python for the markitdown worker (default: python)
  *   P2MD_STORE_DIR         — originals store (default: ~/.prompt2md/originals)
+ *   P2MD_WORKSPACE_ROOTS   — directories the MCP `convert` tool may read
+ *                            (path-delimiter separated). UNSET MEANS NO FILE
+ *                            ACCESS: the MCP caller is a model, so this fails
+ *                            closed. The CLI ignores it — a path its operator
+ *                            typed grants nothing they did not already have.
+ *   P2MD_MAX_INPUT_BYTES   — refuse files larger than this (default 100MB)
+ *   P2MD_MAX_PDF_PAGES     — in-process PDF page ceiling (default 2000)
  */
 
 export interface HermesRuntime {
@@ -227,7 +234,17 @@ export function createRuntimeFromEnv(
   const gateway = buildGateway(env);
   const doclingUrl = env["P2MD_DOCLING_URL"];
   const pythonBin = env["P2MD_PYTHON_BIN"];
-  const store = overrides.store ?? createFileStore(env["P2MD_STORE_DIR"] ?? resolveDefaultStoreDir());
+  // Retention is opt-in and unset by default, so a local CLI store keeps
+  // originals for as long as the operator's disk does. A shared deployment is
+  // the case that needs a ceiling, and it sets this.
+  const ttlDays = Number.parseInt(env["P2MD_STORE_TTL_DAYS"] ?? "", 10);
+  const ttlMs = Number.isFinite(ttlDays) && ttlDays > 0 ? ttlDays * 24 * 60 * 60 * 1000 : undefined;
+  const store =
+    overrides.store ??
+    createFileStore(
+      env["P2MD_STORE_DIR"] ?? resolveDefaultStoreDir(),
+      ttlMs !== undefined ? { ttlMs } : {},
+    );
   const summarizer = gateway !== undefined ? createLlmSummarizer(gateway) : undefined;
 
   const markitdown = createMarkitdownEngine(pythonBin !== undefined ? { pythonBin } : {});

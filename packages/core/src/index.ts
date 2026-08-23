@@ -8,6 +8,20 @@ export type * from "./types/gateway.js";
 export { renderMarkdown } from "./types/document.js";
 export { parseMarkdown, hashSource } from "./markdown/parse.js";
 
+// Filesystem containment for untrusted callers (the MCP server). The CLI does
+// not use it: a path its operator typed grants no authority they lacked.
+export {
+  assertInWorkspace,
+  assertReadable,
+  workspaceRoots,
+  FilePolicyError,
+  InputTooLargeError,
+  PathOutsideWorkspaceError,
+} from "./fs-policy.js";
+
+// Resource ceilings shared by every surface.
+export { maxInputBytes, maxPdfPages } from "./limits.js";
+
 // Router
 export { route, THRESHOLDS } from "./router/router.js";
 export { sniffText, sniffBuffer, sniffInput, probeText, probePdf } from "./router/sniffer.js";
@@ -69,9 +83,11 @@ export {
   createFileStore,
   formatAnchor,
   parseAnchor,
+  sweepExpired,
   type OriginalStore,
   type SourceAnchor,
   type StoredOriginal,
+  type StoreOptions,
 } from "./store.js";
 
 // Composition root: builds a configured pipeline from the environment. Shared by

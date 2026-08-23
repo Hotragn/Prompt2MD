@@ -48,6 +48,7 @@ interface Capabilities {
   highFidelityEngine: boolean;
   durableStore: boolean;
   limits: { maxInputChars: number; maxUploadBytes: number; requestTimeoutMs: number };
+  retention?: { days: number; idIsBearerToken: boolean; deletable: boolean };
 }
 
 interface DigestData {
@@ -105,6 +106,8 @@ export default function Studio() {
   const [speaking, setSpeaking] = useState(false);
   const [copyState, setCopyState] = useState<"idle" | "ok" | "blocked">("idle");
   const [caps, setCaps] = useState<Capabilities | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleted, setDeleted] = useState(false);
   const fileInput = useRef<HTMLInputElement | null>(null);
   const recognition = useRef<SpeechRecognitionLike | null>(null);
   const outputRef = useRef<HTMLPreElement | null>(null);
@@ -129,6 +132,31 @@ export default function Studio() {
       cancelled = true;
     };
   }, []);
+
+  /**
+   * Withdraw a stored original.
+   *
+   * Retention bounds how long a document sits here; this is how someone who
+   * pasted the wrong thing takes it back without waiting out the window. A
+   * failure is reported rather than swallowed — claiming a deletion that did not
+   * happen is the one outcome worse than not offering the button.
+   */
+  async function deleteOriginal(sourceId: string) {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/retrieve?ref=${encodeURIComponent(sourceId)}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setDeleted(true);
+    } catch {
+      setResult((r) =>
+        r === null ? r : { ...r, error: "could not delete the stored original — please retry" },
+      );
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   /** The whole point is pasting the result into a chat box: make that one click. */
   async function copyOutput(markdown: string) {
@@ -171,6 +199,10 @@ export default function Studio() {
   async function run() {
     setBusy(true);
     setResult(null);
+    // A new conversion gets a new sourceId, so the previous one's delete state
+    // must not carry over — the button would otherwise report "deleted" for a
+    // record that is very much still there.
+    setDeleted(false);
     try {
       const endpoint = tab === "convert" ? "/api/convert" : "/api/compress";
       const budgetNum = budget.trim() === "" ? undefined : Number.parseInt(budget, 10);
@@ -231,6 +263,7 @@ export default function Studio() {
   async function convertBinary(file: File) {
     setBusy(true);
     setResult(null);
+    setDeleted(false);
     try {
       const form = new FormData();
       form.set("file", file);
@@ -518,6 +551,35 @@ export default function Studio() {
                         <strong>this deployment stores originals temporarily</strong>, so retrieval
                         works for now but not after the server restarts. Run it locally for
                         retrieval you can rely on.
+                      </>
+                    )}
+                    {/* Retention and the reach of an id are stated at the point
+                        the id appears, which is where a user forms their idea of
+                        what it is. A policy page nobody opens is not disclosure. */}
+                    {caps?.retention !== undefined && caps.retention.days > 0 && (
+                      <>
+                        {" · "}
+                        kept {caps.retention.days} days
+                        {caps.retention.idIsBearerToken && (
+                          <>
+                            {" · "}
+                            <strong>anyone with this sourceId can read it</strong> — treat it like a
+                            link to the document, not a reference number
+                          </>
+                        )}
+                      </>
+                    )}
+                    {caps?.retention?.deletable === true && (
+                      <>
+                        {" · "}
+                        <button
+                          type="button"
+                          className="linklike"
+                          disabled={deleting}
+                          onClick={() => void deleteOriginal(result.sourceId!)}
+                        >
+                          {deleted ? "deleted" : deleting ? "deleting…" : "delete it now"}
+                        </button>
                       </>
                     )}
                   </p>

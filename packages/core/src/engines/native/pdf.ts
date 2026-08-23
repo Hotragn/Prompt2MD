@@ -1,3 +1,4 @@
+import { maxPdfPages } from "../../limits.js";
 import { layoutToMarkdown, type PositionedItem } from "./pdf-layout.js";
 
 /**
@@ -14,7 +15,10 @@ import { layoutToMarkdown, type PositionedItem } from "./pdf-layout.js";
 
 export interface PdfExtraction {
   readonly markdown: string;
+  /** Pages actually read. Below `declaredPages` when the page cap truncated. */
   readonly pages: number;
+  /** Pages the file claims to have. */
+  readonly declaredPages: number;
   /** True when the text layer produced almost nothing — the scan signature. */
   readonly empty: boolean;
 }
@@ -36,7 +40,14 @@ export async function pdfToMarkdown(data: Uint8Array): Promise<PdfExtraction> {
   const pdf = await getDocumentProxy(Uint8Array.from(data));
   const pages: string[] = [];
 
-  for (let n = 1; n <= pdf.numPages; n++) {
+  // Page count is declared in the file, and each page builds its own text-item
+  // list, so a small file can declare a page count large enough to hang the
+  // process. The byte ceiling upstream does not bound this — only a page cap
+  // does. Truncating and saying so beats both hanging and refusing outright.
+  const declaredPages = pdf.numPages;
+  const readable = Math.min(declaredPages, maxPdfPages());
+
+  for (let n = 1; n <= readable; n++) {
     const page = await pdf.getPage(n);
     const content = (await page.getTextContent()) as { items?: RawTextItem[] };
     pages.push(layoutToMarkdown(toPositioned(content.items ?? [])));
@@ -45,10 +56,12 @@ export async function pdfToMarkdown(data: Uint8Array): Promise<PdfExtraction> {
   const markdown = pages.filter((p) => p.trim() !== "").join("\n\n");
   return {
     markdown,
-    pages: pdf.numPages,
+    pages: readable,
+    declaredPages,
     // Measured per page rather than in total: one text page in a 200-page scan
-    // should still read as a scan.
-    empty: markdown.replace(/\s/g, "").length < Math.max(20, pdf.numPages * 10),
+    // should still read as a scan. Scored against the pages actually read, so a
+    // truncated document is not judged against pages nobody looked at.
+    empty: markdown.replace(/\s/g, "").length < Math.max(20, readable * 10),
   };
 }
 
