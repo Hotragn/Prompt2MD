@@ -6,6 +6,15 @@ on:
   pull_request:
     branches: [main]
 
+# Least privilege. This was the only workflow without a permissions block, so
+# it inherited the repository default for GITHUB_TOKEN -- which can be
+# read/write -- while codeql, digest, health and security all declared their
+# scopes. It runs on `pull_request`, and `pnpm install` executes dependency
+# lifecycle scripts, so the token it hands them should be the smallest one that
+# still works. Nothing here writes to the repository.
+permissions:
+  contents: read
+
 env:
   # Telemetry writes a config file under the user profile on first run. CI has
   # no use for it, and touching the profile is pure risk on Windows runners.
