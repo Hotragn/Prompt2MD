@@ -65,14 +65,33 @@ const HOSTILE_SNAPI = {
   ],
 };
 
+/**
+ * Route a stub by exact hostname, not by substring.
+ *
+ * `String(url).includes("hn.algolia.com")` also matches
+ * `https://evil.example/?ref=hn.algolia.com`, because a host can appear
+ * anywhere in a URL with arbitrary hosts either side of it. Nothing is at risk
+ * in a test stub — but a test that models "is this the HN endpoint?" wrongly is
+ * a bad model to keep next to code whose whole subject is URL trust, and it is
+ * the same mistake `safeUrl` exists to avoid in the module under test.
+ */
+function hostOf(url: RequestInfo | URL): string {
+  try {
+    return new URL(String(url)).hostname;
+  } catch {
+    return "";
+  }
+}
+
 function hostileFetch(): typeof fetch {
   return (async (url: RequestInfo | URL) => {
-    const u = String(url);
-    const body = u.includes("hn.algolia.com")
-      ? HOSTILE_HN
-      : u.includes("spaceflightnewsapi")
-        ? HOSTILE_SNAPI
-        : HOSTILE_WIKI;
+    const host = hostOf(url);
+    const body =
+      host === "hn.algolia.com"
+        ? HOSTILE_HN
+        : host === "api.spaceflightnewsapi.net"
+          ? HOSTILE_SNAPI
+          : HOSTILE_WIKI;
     return new Response(JSON.stringify(body), { status: 200 });
   }) as typeof fetch;
 }
@@ -141,7 +160,7 @@ describe("digest treats remote content as untrusted", () => {
       ],
     };
     const fetchImpl = (async (url: RequestInfo | URL) =>
-      String(url).includes("hn.algolia.com")
+      hostOf(url) === "hn.algolia.com"
         ? new Response(JSON.stringify(benign), { status: 200 })
         : new Response("{}", { status: 500 })) as typeof fetch;
 
