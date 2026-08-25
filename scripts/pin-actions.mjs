@@ -31,8 +31,17 @@ const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
 const WORKFLOWS = join(REPO, ".github", "workflows");
 const WRITE = process.argv.includes("--write");
 
-/** owner/repo[/subpath]@ref, plus any existing "# tag" comment to replace. */
-const USES = /^(\s*(?:-\s+)?uses:\s*)([\w.-]+\/[\w.-]+(?:\/[\w./-]+)?)@([^\s#]+)(\s*#.*)?$/;
+/**
+ * owner/repo, then an optional subpath, then the ref.
+ *
+ * The subpath is captured SEPARATELY because it is not part of the repository.
+ * `github/codeql-action/init@v3` lives in the repo `github/codeql-action`; the
+ * `init` is a directory inside it holding that action's own action.yml. Sending
+ * the whole string to the commits API asks about a repository named
+ * "codeql-action/init", which does not exist — so every codeql reference failed
+ * to resolve until these were split.
+ */
+const USES = /^(\s*(?:-\s+)?uses:\s*)([\w.-]+\/[\w.-]+)((?:\/[\w.-]+)*)@([^\s#]+)(\s*#.*)?$/;
 const ALREADY_PINNED = /^[0-9a-f]{40}$/;
 
 const cache = new Map();
@@ -77,10 +86,10 @@ for (const name of readdirSync(WORKFLOWS).filter((f) => f.endsWith(".yml") || f.
     const match = USES.exec(line);
     if (match === null) continue;
 
-    const [, prefix, repo, ref] = match;
+    const [, prefix, ownerRepo, subpath = "", ref] = match;
 
     // Local composite actions (./.github/actions/x) have nothing to pin.
-    if (repo.startsWith(".")) continue;
+    if (ownerRepo.startsWith(".")) continue;
 
     if (ALREADY_PINNED.test(ref)) {
       pinned += 1;
@@ -88,11 +97,12 @@ for (const name of readdirSync(WORKFLOWS).filter((f) => f.endsWith(".yml") || f.
     }
 
     try {
-      const sha = resolveSha(repo, ref);
-      lines[i] = `${prefix}${repo}@${sha} # ${ref}`;
+      // Resolve against the repository; rewrite the full path including subpath.
+      const sha = resolveSha(ownerRepo, ref);
+      lines[i] = `${prefix}${ownerRepo}${subpath}@${sha} # ${ref}`;
       touched = true;
       changed += 1;
-      console.log(`  ${name}: ${repo}@${ref} -> ${sha.slice(0, 12)}…`);
+      console.log(`  ${name}: ${ownerRepo}${subpath}@${ref} -> ${sha.slice(0, 12)}…`);
     } catch (err) {
       failed += 1;
       console.error(`  ${name}: FAILED ${err instanceof Error ? err.message : String(err)}`);
