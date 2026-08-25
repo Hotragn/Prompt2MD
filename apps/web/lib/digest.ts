@@ -159,13 +159,65 @@ function stripHtml(html: string): string {
     .trim();
 }
 
+/**
+ * Remote text, made safe to drop inside a Markdown link label or list item.
+ *
+ * Everything rendered below is a title, summary or story sentence chosen by a
+ * third party — Hacker News, Wikipedia, Spaceflight News. That is content this
+ * project does not control appearing in a document it publishes: the digest is
+ * committed to docs/digests/ by a scheduled job with `contents: write` and
+ * served from the site, so a title containing `](javascript:…)` would close the
+ * link early and rewrite where it points.
+ *
+ * Two things have to go, and neither is cosmetic:
+ *
+ *   - Brackets and parens, which are the link syntax itself.
+ *   - Newlines, which end the list item. A title carrying "\n\n# Heading"
+ *     injects a whole new section into the digest, and no amount of bracket
+ *     escaping stops that.
+ *
+ * Deliberately narrow: escaping every Markdown metacharacter would backslash
+ * the hyphens and asterisks that appear in ordinary headlines and make the
+ * digest look broken. These are the characters that change *structure*.
+ */
+function mdText(raw: string): string {
+  return raw
+    .replace(/\\/g, "\\\\")
+    .replace(/([[\]()<>])/g, "\\$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * A URL safe to use as a Markdown link target, or the fallback.
+ *
+ * Scheme is an allowlist, not a denylist: `javascript:`, `data:` and `vbscript:`
+ * are the ones anyone thinks to block, and the next renderer will support one
+ * nobody listed. Parens and whitespace are percent-encoded because they
+ * terminate the `](…)` construct even in a perfectly ordinary URL.
+ */
+function safeUrl(raw: unknown, fallback: string): string {
+  if (typeof raw !== "string" || raw === "") return fallback;
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    return fallback; // relative or malformed — not something to link to
+  }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return fallback;
+  return parsed
+    .toString()
+    .replace(/[()\s<>]/g, (ch) => encodeURIComponent(ch));
+}
+
 function hnSection(payload: unknown, backfilled: boolean): string {
   const hits = ((payload as { hits?: readonly HnHit[] }).hits ?? []).filter((h) => h.title);
   if (hits.length === 0) throw new Error("empty front page");
   const lines = hits.slice(0, 10).map((h) => {
-    const link = h.url ?? `https://news.ycombinator.com/item?id=${h.objectID ?? ""}`;
-    const discussion = `https://news.ycombinator.com/item?id=${h.objectID ?? ""}`;
-    return `- [${h.title}](${link}) — ${h.points ?? 0} points, ${h.num_comments ?? 0} comments ([discussion](${discussion}))`;
+    // objectID lands in a URL we build, so it is encoded rather than trusted.
+    const discussion = `https://news.ycombinator.com/item?id=${encodeURIComponent(h.objectID ?? "")}`;
+    const link = safeUrl(h.url, discussion);
+    return `- [${mdText(h.title ?? "")}](${link}) — ${h.points ?? 0} points, ${h.num_comments ?? 0} comments ([discussion](${discussion}))`;
   });
   // The heading has to describe what was actually fetched. A backfill never
   // saw a front page, so it must not call itself one.
@@ -179,12 +231,15 @@ function snapiSection(payload: unknown): string {
   );
   if (articles.length === 0) throw new Error("no articles returned");
   const lines = articles.slice(0, 5).map((a) => {
-    const summary =
-      a.summary !== undefined && a.summary.length > 0
-        ? ` — ${a.summary.length > 180 ? `${a.summary.slice(0, 180).trimEnd()}…` : a.summary}`
-        : "";
-    const site = a.news_site !== undefined ? ` *(${a.news_site})*` : "";
-    return `- [${a.title}](${a.url})${summary}${site}`;
+    // Clip first, escape second: escaping adds backslashes, and clipping after
+    // could cut one off its character and leave a dangling escape.
+    const clipped =
+      a.summary !== undefined && a.summary.length > 180
+        ? `${a.summary.slice(0, 180).trimEnd()}…`
+        : a.summary;
+    const summary = clipped !== undefined && clipped.length > 0 ? ` — ${mdText(clipped)}` : "";
+    const site = a.news_site !== undefined ? ` *(${mdText(a.news_site)})*` : "";
+    return `- [${mdText(a.title ?? "")}](${safeUrl(a.url, "https://spaceflightnewsapi.net")})${summary}${site}`;
   });
   return `## Space & science\n\n${lines.join("\n")}`;
 }
@@ -195,10 +250,13 @@ function wikiSections(payload: unknown): string {
 
   const tfa = feed.tfa;
   if (tfa?.titles?.normalized !== undefined && tfa.extract !== undefined) {
-    const extract = tfa.extract.length > 420 ? `${tfa.extract.slice(0, 420).trimEnd()}…` : tfa.extract;
+    const clipped = tfa.extract.length > 420 ? `${tfa.extract.slice(0, 420).trimEnd()}…` : tfa.extract;
+    const extract = mdText(clipped);
     const page = tfa.content_urls?.desktop?.page;
+    const readMore =
+      page === undefined ? "" : ` ([read more](${safeUrl(page, "https://en.wikipedia.org")}))`;
     parts.push(
-      `## Wikipedia — today's featured article\n\n**${tfa.titles.normalized}** — ${extract}${page !== undefined ? ` ([read more](${page}))` : ""}`,
+      `## Wikipedia — today's featured article\n\n**${mdText(tfa.titles.normalized)}** — ${extract}${readMore}`,
     );
   }
 
@@ -206,9 +264,14 @@ function wikiSections(payload: unknown): string {
     .filter((n) => n.story !== undefined)
     .slice(0, 5)
     .map((n) => {
-      const text = stripHtml(n.story ?? "");
+      // stripHtml removes the tags Wikipedia wraps its stories in; mdText then
+      // handles what is left, which is still third-party prose going into a
+      // list item.
+      const text = mdText(stripHtml(n.story ?? ""));
       const link = n.links?.[0]?.content_urls?.desktop?.page;
-      return `- ${text}${link !== undefined ? ` ([context](${link}))` : ""}`;
+      const context =
+        link === undefined ? "" : ` ([context](${safeUrl(link, "https://en.wikipedia.org")}))`;
+      return `- ${text}${context}`;
     });
   if (news.length > 0) {
     parts.push(`## In the news\n\n${news.join("\n")}`);

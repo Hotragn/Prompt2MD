@@ -68,9 +68,40 @@ because it will stop a working setup until one variable is set.
   or its CDN a shell on the runner. The script is now downloaded, verified
   against a checksum a human vetted (`STRIX_INSTALLER_SHA256`), and only then
   run. A missing pin fails the preflight rather than passing silently.
+- **`-o` no longer overwrites without asking.** `convert notes.md -o notes.md`
+  read the source, converted it, and replaced the source with the result —
+  unrecoverable, from a plausible typo. `batch` had guarded this since it
+  shipped; the single-file path had not. An existing output now needs `--force`,
+  and an output equal to the input is refused outright, `--force` included:
+  there is no reading of that command which does what the author wanted.
+- **The daily digest escapes the content it republishes.** Titles, summaries and
+  URLs come from Hacker News, Wikipedia and Spaceflight News, and went into
+  Markdown link syntax unescaped — so a title containing `](javascript:…)` would
+  close the link early and rewrite where it pointed, in a document a scheduled
+  job commits to `docs/digests/` and the site serves. Link targets are now
+  scheme-allowlisted (`http`/`https` only, with a fallback), and remote text has
+  its brackets and newlines neutralised. Newlines mattered as much as brackets:
+  a title carrying `\n\n## Heading` injected a section, which no amount of
+  bracket escaping would have stopped.
+- **`ci.yml` runs with least privilege.** It was the only workflow without a
+  `permissions:` block, so it inherited the repository default for
+  `GITHUB_TOKEN` while every other workflow declared its scopes. Now
+  `contents: read`, which is all it needs.
 
 ### Added
 
+- **`pnpm pin:actions`** resolves every workflow's `uses:` tag to a commit SHA,
+  keeping the tag as a trailing comment so the pin stays reviewable and
+  Dependabot can still bump it. A tag is a mutable pointer: whoever can move
+  `actions/checkout@v4` runs code in every job that uses it. This is a script
+  rather than a one-off edit because each accepted Dependabot bump reintroduces
+  a tag to resolve.
+- **A Content-Security-Policy on the web app**, plus `nosniff`,
+  `Referrer-Policy`, `X-Frame-Options` and a `Permissions-Policy` that denies
+  everything except the microphone the studio's dictation needs. The studio
+  already sanitizes rendered Markdown with DOMPurify and that remains the
+  primary control; this is the layer that still holds if that call is removed in
+  a refactor, because the failure mode of a sanitizer is total.
 - **Retention and deletion for stored originals.** Compression stores the
   original first so nothing is ever destroyed — which on a public deployment
   meant strangers' documents kept forever under a handle that is a content hash,
@@ -99,12 +130,20 @@ because it will stop a working setup until one variable is set.
 
 ### Known open
 
-Digest output still interpolates remote API titles and URLs into Markdown links
-without escaping, and converted Markdown is not sanitized by default — a `.md`
-input carrying `<script>` or `[x](javascript:…)` converts through unchanged
-while the HTML path strips scripts, so the two disagree. Neither is a live
-exploit against the hosted studio (its preview runs DOMPurify), and both are
-tracked for the next release.
+Converted Markdown is not sanitized by default: a `.md` input carrying
+`<script>` or `[x](javascript:…)` converts through unchanged, while the HTML
+path strips scripts — so the two paths disagree, and neither behaviour is
+documented. Preserving input is the right default for a fidelity tool, but the
+inconsistency invites the assumption that conversion sanitizes. An opt-in
+`--safe-output` and the documentation to go with it are the next release.
+
+The token report also still presents a `chars/4` estimate as a hard
+`withinBudget` boolean, with no tokenizer version and no accuracy field. On
+tokenizer-hostile content (CJK, dense code) a document reported within budget
+can exceed a real `cl100k_base` budget by around 10%.
+
+Neither is a live exploit against the hosted studio, whose preview runs
+DOMPurify behind a Content-Security-Policy.
 
 ## [0.1.1] — 2026-08-08
 

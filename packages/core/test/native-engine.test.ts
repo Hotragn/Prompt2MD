@@ -34,7 +34,13 @@ describe("refusing a decompression bomb", () => {
     await expect(
       engine.convert({ kind: "buffer", data: bomb, filename: "bomb.xlsx" }, sniff("office", bomb.length), {}),
     ).rejects.toThrow(/refusing to expand|over the .*limit/i);
-  });
+    // Building the bomb is the expensive part, not refusing it: a 120MB string,
+    // widened to bytes, then DEFLATE-compressed — all inside the case, so it
+    // counts against the timeout. That fits in vitest's 5s default on a fast
+    // x64 runner and does not on slower hardware, which made this pass in CI
+    // and fail on an ARM64 laptop. The work is real, so the budget is raised
+    // rather than the fixture shrunk: a smaller bomb tests a smaller claim.
+  }, 30_000);
 
   it("still opens an ordinary workbook", async () => {
     // The ceiling must sit far above any honest document.

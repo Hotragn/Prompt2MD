@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { realpathSync, watch } from "node:fs";
+import { existsSync, realpathSync, watch } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -46,6 +46,45 @@ function parseNonNegativeInt(value: string): number {
   const n = Number.parseInt(value, 10);
   if (!Number.isFinite(n) || n < 0) throw new InvalidArgumentError("must be a non-negative integer");
   return n;
+}
+
+/**
+ * Write to `-o`, refusing to destroy something first.
+ *
+ * `batch` has been careful about this since it shipped — `deriveBatchOutPaths`
+ * disambiguates colliding basenames precisely because silent overwrites are
+ * data loss. The single-file path never got the same treatment and would
+ * happily flatten anything.
+ *
+ * Two different refusals, because they are two different mistakes:
+ *
+ *   - Output equals input. There is no reading of `convert notes.md -o
+ *     notes.md` that does what the author wanted: the source is consumed and
+ *     replaced by its own conversion, unrecoverably. `--force` does not
+ *     override this one, because "yes I meant to destroy my input" is not a
+ *     thing anyone means.
+ *   - Output exists but is some other file. That may well be intended on a
+ *     re-run, so it is a stop rather than a ban: `--force` proceeds.
+ */
+async function writeOut(
+  target: string,
+  content: string,
+  options: { readonly force?: boolean; readonly input?: string },
+): Promise<void> {
+  const out = resolve(target);
+
+  if (options.input !== undefined && out === resolve(options.input)) {
+    throw new Error(
+      `refusing to overwrite the input file (${target}) with its own conversion — ` +
+        `choose a different -o path, or drop -o to write to stdout`,
+    );
+  }
+
+  if (options.force !== true && existsSync(out)) {
+    throw new Error(`${target} already exists — pass --force to overwrite it`);
+  }
+
+  await writeFile(out, content, "utf8");
 }
 
 /**
@@ -155,6 +194,7 @@ interface DoctorRow {
 interface ConvertFlags {
   readonly text?: string;
   readonly out?: string;
+  readonly force?: boolean;
   readonly tokenBudget?: number;
   readonly fidelity: Fidelity;
   readonly provider?: Provider;
@@ -223,6 +263,7 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
     .description("convert a file (or --text) to Markdown; compresses when --token-budget is exceeded")
     .option("--text <text>", "convert raw text instead of a file")
     .option("-o, --out <file>", "write Markdown to a file instead of stdout")
+    .option("--force", "overwrite --out if it already exists")
     .option("-b, --token-budget <n>", "compress the result to fit this many tokens", parsePositiveInt)
     .addOption(fidelityOption)
     .addOption(providerOption)
@@ -267,7 +308,10 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
           ),
         );
       } else if (flags.out !== undefined) {
-        await writeFile(resolve(flags.out), markdown, "utf8");
+        await writeOut(flags.out, markdown, {
+          ...(flags.force === true ? { force: true } : {}),
+          ...(input !== undefined ? { input } : {}),
+        });
         io.err(wroteLine(flags.out));
         io.err(summarizeReport(outcome.report, outcome.escalated));
         if (compressed !== undefined) io.err(summarizeSavings(compressed));
@@ -413,11 +457,19 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
     .requiredOption("-b, --token-budget <n>", "target maximum tokens", parsePositiveInt)
     .addOption(providerOption)
     .option("-o, --out <file>", "write compressed Markdown to a file instead of stdout")
+    .option("--force", "overwrite --out if it already exists")
     .option("--json", "emit one JSON object: { markdown, savings, sourceId }")
     .action(
       async (
         file: string | undefined,
-        flags: { text?: string; tokenBudget: number; provider?: Provider; out?: string; json?: boolean },
+        flags: {
+          text?: string;
+          tokenBudget: number;
+          provider?: Provider;
+          out?: string;
+          force?: boolean;
+          json?: boolean;
+        },
       ) => {
         if ((file === undefined) === (flags.text === undefined)) {
           program.error("provide a file path or --text (exactly one)");
@@ -437,7 +489,10 @@ export function buildProgram(runtime?: HermesRuntime, io: CliIo = defaultIo): Co
             ),
           );
         } else if (flags.out !== undefined) {
-          await writeFile(resolve(flags.out), result.markdown, "utf8");
+          await writeOut(flags.out, result.markdown, {
+            ...(flags.force === true ? { force: true } : {}),
+            ...(file !== undefined ? { input: file } : {}),
+          });
           io.err(wroteLine(flags.out));
           io.err(summarizeSavings(result));
         } else {
