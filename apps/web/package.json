@@ -27,7 +27,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@types/selenium-webdriver": "^4.1.27",
-    "selenium-webdriver": "^4.47.0",
+    "selenium-webdriver": "^4.48.0",
     "typescript": "^5.7.2",
     "vitest": "^3.2.6"
   }
