@@ -66,3 +66,9 @@ eval/artifacts/
 # commit the lockfile.
 .agents/
 .claude/skills/
+
+# Launch/marketing media lives outside git (large binaries, third-party audio)
+videos/
+brag-output/
+# pnpm is the package manager; a stray npm lockfile confuses Dependabot and Vercel
+package-lock.json
