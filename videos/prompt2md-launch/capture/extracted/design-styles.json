@@ -1,0 +1,319 @@
+{
+  "typography": [
+    {
+      "role": "display",
+      "fontFamily": "ui-sans-serif",
+      "fontSize": "68px",
+      "fontWeight": "780",
+      "lineHeight": "72.08px",
+      "letterSpacing": "-2.38px",
+      "color": "#17151A",
+      "sampleText": "Fold any text into token‑optimized Markdown"
+    },
+    {
+      "role": "heading",
+      "fontFamily": "ui-sans-serif",
+      "fontSize": "38px",
+      "fontWeight": "760",
+      "lineHeight": "43.7px",
+      "letterSpacing": "-1.064px",
+      "color": "#17151A",
+      "sampleText": "Everything else cuts. This folds."
+    },
+    {
+      "role": "heading-3",
+      "fontFamily": "ui-sans-serif",
+      "fontSize": "18px",
+      "fontWeight": "700",
+      "lineHeight": "27.9px",
+      "letterSpacing": "-0.27px",
+      "color": "#17151A",
+      "sampleText": "Sniff"
+    },
+    {
+      "role": "body",
+      "fontFamily": "ui-sans-serif",
+      "fontSize": "17px",
+      "fontWeight": "400",
+      "lineHeight": "28.05px",
+      "letterSpacing": "normal",
+      "color": "#5F5B66",
+      "sampleText": "Other tools cut and hope. prompt2md folds: smaller Markdown,"
+    },
+    {
+      "role": "code",
+      "fontFamily": "ui-monospace",
+      "fontSize": "16.4px",
+      "fontWeight": "400",
+      "lineHeight": "25.42px",
+      "letterSpacing": "normal",
+      "color": "#17151A",
+      "sampleText": "retrieve_original"
+    },
+    {
+      "role": "heading-3",
+      "fontFamily": "ui-sans-serif",
+      "fontSize": "15px",
+      "fontWeight": "700",
+      "lineHeight": "23.25px",
+      "letterSpacing": "0.9px",
+      "color": "#8B8794",
+      "sampleText": "Cutting"
+    },
+    {
+      "role": "body-small",
+      "fontFamily": "ui-sans-serif",
+      "fontSize": "15px",
+      "fontWeight": "400",
+      "lineHeight": "23.25px",
+      "letterSpacing": "normal",
+      "color": "#17151A",
+      "sampleText": "Scroll ↓ — this is your pasted text.Fold. Structure and dupl"
+    },
+    {
+      "role": "link",
+      "fontFamily": "ui-sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "lineHeight": "21.7px",
+      "letterSpacing": "normal",
+      "color": "#5F5B66",
+      "sampleText": "How it works"
+    },
+    {
+      "role": "label",
+      "fontFamily": "ui-serif",
+      "fontSize": "13.5px",
+      "fontWeight": "400",
+      "lineHeight": "20.925px",
+      "letterSpacing": "0.27px",
+      "color": "#5F5B66",
+      "sampleText": "A Markdown Magic"
+    }
+  ],
+  "spacing": {
+    "observed": [
+      3,
+      5,
+      6,
+      8,
+      9,
+      10,
+      11,
+      12,
+      14,
+      15,
+      16,
+      18,
+      20,
+      22,
+      24
+    ],
+    "baseUnit": 4
+  },
+  "radius": [
+    "999px"
+  ],
+  "shadows": [
+    {
+      "value": "rgba(23, 21, 26, 0.16) 0px 10px 30px -16px",
+      "count": 1
+    }
+  ],
+  "buttons": [
+    {
+      "label": "Open studio",
+      "background": "#F4F2ED",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#17151A",
+      "padding": "7px 16px",
+      "borderRadius": "999px",
+      "border": "1px solid rgb(207, 202, 192)",
+      "boxShadow": "none",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "height": "37.6875px"
+    },
+    {
+      "label": "Open the studioInstall in your tools",
+      "background": "transparent",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#17151A",
+      "padding": "0px",
+      "borderRadius": "0px",
+      "border": "0px none rgb(23, 21, 26)",
+      "boxShadow": "none",
+      "fontSize": "15px",
+      "fontWeight": "400",
+      "height": "43.25px"
+    },
+    {
+      "label": "Open the studio",
+      "background": "#17151A",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#FFFFFF",
+      "padding": "10px 22px",
+      "borderRadius": "999px",
+      "border": "0px none rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "fontSize": "15px",
+      "fontWeight": "650",
+      "height": "43.25px"
+    },
+    {
+      "label": "Install in your tools",
+      "background": "#FFFFFF",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#5F5B66",
+      "padding": "8px 14px",
+      "borderRadius": "999px",
+      "border": "1px solid rgb(207, 202, 192)",
+      "boxShadow": "none",
+      "fontSize": "15px",
+      "fontWeight": "600",
+      "height": "43.25px"
+    },
+    {
+      "label": "reset",
+      "background": "transparent",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#8B8794",
+      "padding": "0px",
+      "borderRadius": "0px",
+      "border": "0px none rgb(139, 135, 148)",
+      "boxShadow": "none",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "height": "18.5938px"
+    },
+    {
+      "label": "[ 06 / 06 ]The InvitationSee it fold som",
+      "background": "#FAF9F6",
+      "backgroundImage": "radial-gradient(60% 130% at 50% 0px, color(srgb 0.356863 0.239216 0.960784 / 0.06), rgba(0, 0, 0, 0) 70%), none",
+      "backdropFilter": "",
+      "color": "#17151A",
+      "padding": "84px 0px",
+      "borderRadius": "0px",
+      "border": "",
+      "boxShadow": "none",
+      "fontSize": "15px",
+      "fontWeight": "400",
+      "height": "427px"
+    }
+  ],
+  "cards": [
+    {
+      "label": "card",
+      "background": "#FFFFFF",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#17151A",
+      "padding": "22px 24px",
+      "borderRadius": "16px",
+      "border": "1px solid rgb(231, 228, 220)",
+      "boxShadow": "none",
+      "fontSize": "15px",
+      "fontWeight": "400",
+      "height": "174.094px"
+    }
+  ],
+  "nav": {
+    "label": "navigation",
+    "background": "color(srgb 0.980392 0.976471 0.964706 / 0.82)",
+    "backgroundImage": "",
+    "backdropFilter": "saturate(1.5) blur(12px)",
+    "color": "#17151A",
+    "padding": "0px",
+    "borderRadius": "0px",
+    "border": "",
+    "boxShadow": "none",
+    "fontSize": "15px",
+    "fontWeight": "400",
+    "height": "72.2188px"
+  },
+  "chips": [
+    {
+      "label": "A Markdown Magic",
+      "background": "transparent",
+      "color": "#5F5B66",
+      "padding": "0px",
+      "borderRadius": "0px",
+      "border": "0px none rgb(95, 91, 102)",
+      "boxShadow": "none",
+      "fontSize": "13.5px",
+      "fontWeight": "400",
+      "height": "20.9219px"
+    },
+    {
+      "label": "#",
+      "background": "#FFFFFF",
+      "color": "#5B3DF5",
+      "padding": "0px",
+      "borderRadius": "999px",
+      "border": "1px solid rgb(207, 202, 192)",
+      "boxShadow": "rgba(23, 21, 26, 0.28) 0px 4px 14px -6px",
+      "fontSize": "13px",
+      "fontWeight": "700",
+      "height": "30px"
+    },
+    {
+      "label": "Open the studio",
+      "background": "#17151A",
+      "color": "#FFFFFF",
+      "padding": "10px 22px",
+      "borderRadius": "999px",
+      "border": "0px none rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "fontSize": "15px",
+      "fontWeight": "650",
+      "height": "43.25px"
+    },
+    {
+      "label": "Claude Code",
+      "background": "#FFFFFF",
+      "color": "#5F5B66",
+      "padding": "6px 15px",
+      "borderRadius": "999px",
+      "border": "1px solid rgb(231, 228, 220)",
+      "boxShadow": "none",
+      "fontSize": "13px",
+      "fontWeight": "600",
+      "height": "34.1406px"
+    }
+  ],
+  "statCells": [],
+  "tabs": [],
+  "backgrounds": [
+    {
+      "value": "linear-gradient(to right, color(srgb 0.905882 0.894118 0.862745 / 0.55) 1px, rgba(0, 0, 0, 0) 1px), linear-gradient(color(srgb 0.905882 0.894118 0.862745 / 0.55) 1px, rgba(0, 0, 0, 0) 1px)",
+      "area": 1889490
+    },
+    {
+      "value": "linear-gradient(135deg, rgba(0, 0, 0, 0) 50%, rgb(207, 202, 192) 50%)",
+      "area": 1026462
+    },
+    {
+      "value": "radial-gradient(60% 130% at 50% 0px, color(srgb 0.356863 0.239216 0.960784 / 0.06), rgba(0, 0, 0, 0) 70%), none",
+      "area": 819840
+    },
+    {
+      "value": "radial-gradient(110% 130% at 0px 0px, color(srgb 0.0823529 0.501961 0.239216 / 0.07), rgba(0, 0, 0, 0) 62%), none",
+      "area": 131537
+    }
+  ],
+  "glass": [
+    {
+      "backdropFilter": "saturate(1.5) blur(12px)",
+      "background": "color(srgb 0.980392 0.976471 0.964706 / 0.82)",
+      "border": "",
+      "borderRadius": "0px",
+      "boxShadow": "",
+      "area": 138660
+    }
+  ]
+}

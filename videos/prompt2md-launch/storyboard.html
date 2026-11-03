@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>prompt2md launch film · storyboard v1</title>
+<style>
+  @font-face { font-family: "EB Garamond"; src: url("fonts/EBGaramond-400.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+  @font-face { font-family: "EB Garamond"; src: url("fonts/EBGaramond-700.woff2") format("woff2"); font-weight: 700; font-style: normal; }
+  @font-face { font-family: "Inter"; src: url("fonts/Inter-400.woff2") format("woff2"); font-weight: 400; }
+  @font-face { font-family: "Inter"; src: url("fonts/Inter-700.woff2") format("woff2"); font-weight: 700; }
+  @font-face { font-family: "JetBrains Mono"; src: url("fonts/JetBrainsMono-400.woff2") format("woff2"); font-weight: 400; }
+  @font-face { font-family: "JetBrains Mono"; src: url("fonts/JetBrainsMono-700.woff2") format("woff2"); font-weight: 700; }
+
+  :root {
+    --paper: #faf9f6; --panel: #ffffff; --tile: #f4f2ed; --tile-2: #ece9e2;
+    --line: #e7e4dc; --line-lit: #cfcac0;
+    --ink: #17151a; --muted: #5f5b66; --faint: #8b8794;
+    --deep: #0f0e11; --deep-elev: #211e25;
+    --violet: #5b3df5; --green: #15803d;
+    --cli-violet: #7c5cff; --cli-paper: #f2efea; --cli-slate: #78748a; --cli-green: #22a05a;
+    --serif: "EB Garamond", Georgia, serif;
+    --sans: "Inter", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); }
+  .page { max-width: 1480px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  header.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--line); padding-bottom: 22px; margin-bottom: 30px; }
+  .title { font-family: var(--serif); font-size: 46px; line-height: 1.05; letter-spacing: -0.02em; margin: 0; }
+  .title em { color: var(--violet); }
+  .ver { font-family: var(--mono); font-size: 13px; color: var(--violet); border: 1px solid color-mix(in srgb, var(--violet) 40%, var(--line)); border-radius: 999px; padding: 3px 10px; margin-left: 10px; vertical-align: middle; }
+  .dek { color: var(--muted); font-size: 16px; margin: 10px 0 0; max-width: 60ch; }
+  .tag { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); white-space: nowrap; }
+  .act { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--violet); margin: 34px 0 12px; display: flex; align-items: center; gap: 12px; }
+  .act::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; }
+  .cell { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .shot { position: relative; aspect-ratio: 9 / 16; container-type: inline-size; overflow: hidden; background: var(--paper); }
+  .meta { padding: 14px 16px 16px; border-top: 1px solid var(--line); }
+  .label { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.06em; color: var(--faint); }
+  .label b { color: var(--ink); font-weight: 700; letter-spacing: 0.1em; }
+  .note { font-size: 13.5px; line-height: 1.5; color: var(--muted); margin: 8px 0 10px; }
+  .note b { color: var(--ink); }
+  .chip { display: inline-block; font-family: var(--mono); font-size: 11px; color: var(--violet); border: 1px solid color-mix(in srgb, var(--violet) 35%, var(--line)); border-radius: 999px; padding: 2px 9px; }
+
+  /* ---- shared frame atoms (all in cqw: 100cqw = 1080px) ---- */
+  .ink { background: var(--deep); }
+  .kicker { position: absolute; left: 9cqw; top: 13cqw; font-family: var(--mono); font-size: 2.7cqw; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint); }
+  .kicker i { font-style: normal; color: var(--violet); margin-right: 1.4cqw; }
+  .cap { position: absolute; left: 8cqw; right: 8cqw; bottom: 9cqw; background: var(--paper); border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent); border-radius: 1.4cqw; box-shadow: 0 0.2cqw 0.6cqw rgb(23 21 26 / 0.08), 0 0.8cqw 2.4cqw rgb(23 21 26 / 0.05); padding: 2.4cqw 3.6cqw 2.8cqw; font-family: var(--serif); font-size: 4.9cqw; line-height: 1.18; text-align: center; color: color-mix(in srgb, var(--ink) 40%, var(--paper)); }
+  .cap span { color: var(--ink); }
+  .cap span.now { border-bottom: 0.35cqw solid var(--violet); }
+  .keepout { position: absolute; left: 0; right: 0; top: 83%; border-top: 1px dashed rgb(91 61 245 / 0.35); }
+  .serif { font-family: var(--serif); letter-spacing: -0.02em; line-height: 1.02; }
+  .mono { font-family: var(--mono); }
+  .card { position: absolute; background: var(--panel); border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent); border-radius: 1.6cqw; box-shadow: 0 0.2cqw 0.6cqw rgb(23 21 26 / 0.08), 0 0.8cqw 2.4cqw rgb(23 21 26 / 0.05); }
+  .md { font-family: var(--mono); font-size: 3.05cqw; line-height: 1.55; color: var(--ink); }
+  .md .h { color: var(--violet); }
+  .md .gap { height: 1.2cqw; }
+
+  /* 01 */
+  .f01 .counter { position: absolute; right: 9cqw; top: 12cqw; text-align: right; font-family: var(--mono); }
+  .f01 .counter small { display: block; font-size: 2.4cqw; letter-spacing: 0.16em; text-transform: uppercase; color: var(--cli-slate); }
+  .f01 .counter b { font-size: 9cqw; color: var(--cli-paper); font-weight: 400; }
+  .f01 .typed { position: absolute; left: 8cqw; right: 8cqw; top: 36cqw; font-family: var(--mono); color: var(--cli-paper); }
+  .f01 .hero { font-size: 6.4cqw; line-height: 1.32; }
+  .f01 .rest { font-size: 3.4cqw; line-height: 1.5; color: rgb(242 239 234 / 0.55); margin-top: 3cqw; -webkit-mask-image: linear-gradient(#000 40%, transparent); mask-image: linear-gradient(#000 40%, transparent); }
+  .f01 .fill { color: color-mix(in srgb, var(--cli-violet) 72%, var(--deep)); }
+  .f01 .caret { display: inline-block; width: 0.6cqw; height: 6.6cqw; background: var(--cli-violet); vertical-align: -1.2cqw; margin-left: 0.6cqw; }
+
+  /* 02 */
+  .lockup { position: absolute; left: 0; right: 0; display: flex; align-items: center; justify-content: center; gap: 3.2cqw; }
+  .lockup svg { width: 14cqw; height: 14cqw; display: block; }
+  .wordmark { font-family: var(--sans); font-weight: 700; font-size: 9.6cqw; letter-spacing: -0.035em; color: var(--ink); line-height: 1; }
+  .wordmark b { color: var(--violet); }
+  .tagline { position: absolute; left: 0; right: 0; text-align: center; font-family: var(--serif); font-style: italic; color: var(--muted); letter-spacing: 0.22em; }
+  .f02 .fold-edge { position: absolute; left: 0; right: 0; top: 0; height: 7cqw; background: repeating-linear-gradient(180deg, #1b191f 0 1.75cqw, #0f0e11 1.75cqw 3.5cqw); opacity: 0.9; }
+
+  /* 03 */
+  .phone { position: absolute; left: 17cqw; width: 66cqw; top: 25cqw; aspect-ratio: 9 / 16; border-radius: 5.5cqw; background: var(--panel); border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); box-shadow: 0 1.2cqw 4cqw rgb(23 21 26 / 0.16); overflow: hidden; transform: perspective(160cqw) rotateY(-9deg) rotateX(3deg); }
+  .phone img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .realtag { position: absolute; right: 9cqw; top: 13cqw; font-family: var(--mono); font-size: 2.4cqw; letter-spacing: 0.12em; color: var(--green); border: 1px solid rgb(21 128 61 / 0.35); background: #f0faf3; border-radius: 999px; padding: 0.6cqw 2cqw; }
+
+  /* 04 */
+  .lockrow { position: absolute; left: 0; right: 0; display: flex; align-items: baseline; justify-content: center; gap: 2.4cqw; }
+  .fig { font-family: var(--serif); letter-spacing: -0.03em; line-height: 0.9; }
+  .unit { font-family: var(--mono); font-size: 3.6cqw; color: var(--muted); }
+  .arrow { font-family: var(--sans); color: var(--faint); font-size: 10cqw; line-height: 1; align-self: center; }
+  .ghost { opacity: 0.35; }
+  .pill { display: inline-block; font-family: var(--mono); border: 1px solid var(--line-lit); background: var(--panel); border-radius: 999px; color: var(--muted); }
+
+  /* 05 */
+  .doc { left: 7cqw; right: 7cqw; padding: 4cqw 4.4cqw; }
+  .doc h4 { margin: 0 0 2cqw; font-family: var(--mono); font-size: 3.3cqw; font-weight: 700; color: var(--ink); }
+  .doc .row { font-family: var(--mono); font-size: 2.55cqw; line-height: 1.45; color: var(--ink); padding: 1.3cqw 0; border-top: 1px solid var(--line); }
+  .doc .row .a { display: block; color: var(--faint); font-size: 2.2cqw; }
+  .doc .row.full { color: var(--muted); }
+
+  /* 06 */
+  .half { position: absolute; left: 0; right: 0; height: 50%; overflow: hidden; }
+  .half.top { top: 0; background: #f1efea; }
+  .half.bottom { bottom: 0; background: var(--paper); border-top: 1px solid var(--line); }
+  .sheet { position: absolute; left: 22cqw; right: 22cqw; background: var(--panel); border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent); border-radius: 1.4cqw; padding: 3cqw; }
+  .sheet .l { height: 1.6cqw; border-radius: 1cqw; background: var(--line-lit); margin: 1.6cqw 0; }
+  .sheet .l.v { background: color-mix(in srgb, var(--violet) 55%, var(--panel)); height: 1.2cqw; }
+
+  /* 07 */
+  .term { position: absolute; left: 6cqw; right: 6cqw; background: var(--deep); border: 1px solid #2b2830; border-radius: 2cqw; overflow: hidden; box-shadow: 0 1.6cqw 4.4cqw -1.6cqw rgb(23 21 26 / 0.5); }
+  .term .bar { display: flex; justify-content: space-between; align-items: center; background: var(--deep-elev); border-bottom: 1px solid #2b2830; padding: 2cqw 3cqw; font-family: var(--mono); font-size: 2.3cqw; letter-spacing: 0.1em; color: var(--cli-slate); text-transform: uppercase; }
+  .stamp { font-family: var(--mono); font-size: 2.4cqw; letter-spacing: 0.04em; text-transform: none; color: var(--green); background: #f0faf3; border: 1px solid #bbe3c8; border-radius: 999px; padding: 0.5cqw 2cqw; }
+  .term .body { padding: 3.2cqw 3.4cqw 3.6cqw; font-family: var(--mono); font-size: 2.75cqw; line-height: 1.6; color: var(--cli-paper); white-space: pre-wrap; word-break: break-word; }
+  .term .p { color: var(--cli-violet); }
+  .term .out { color: #cfcac0; }
+  .term .hit { color: #f2efea; background: rgb(34 160 90 / 0.34); box-shadow: 0 0 0 1px rgb(34 160 90 / 0.6); border-radius: 0.6cqw; }
+
+  /* 08 */
+  .ring { position: absolute; left: 50%; top: 66cqw; width: 0; height: 0; }
+  .ring .badge { position: absolute; width: 22cqw; height: 22cqw; left: -11cqw; top: -11cqw; }
+  .ring .badge svg { width: 100%; height: 100%; }
+  .orbit { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font-family: var(--sans); font-weight: 700; font-size: 3.2cqw; color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 1.5cqw 3.2cqw; box-shadow: 0 0.4cqw 1.4cqw rgb(23 21 26 / 0.06); }
+  .halo { position: absolute; left: -30cqw; top: -30cqw; width: 60cqw; height: 60cqw; border-radius: 50%; border: 1px dashed var(--line-lit); }
+
+  /* 09 */
+  .f09 .bloom { position: absolute; inset: 0; background: radial-gradient(60% 40% at 50% 26%, rgb(91 61 245 / 0.06), transparent 70%); }
+  .f09 .crane { position: absolute; left: 16cqw; width: 68cqw; top: 14cqw; mix-blend-mode: multiply; }
+  .cmd { position: absolute; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 3.6cqw; color: var(--cli-paper); background: var(--deep); border-radius: 1.6cqw; padding: 2cqw 3.4cqw; white-space: nowrap; }
+  .cmd .p { color: var(--cli-violet); margin-right: 1.4cqw; }
+  .url { position: absolute; left: 50%; transform: translateX(-50%); font-family: var(--sans); font-weight: 700; font-size: 4.3cqw; letter-spacing: -0.01em; color: var(--panel); background: var(--ink); border-radius: 999px; padding: 2.4cqw 5.4cqw; white-space: nowrap; }
+  .oss { position: absolute; left: 50%; transform: translateX(-50%); font-family: var(--sans); font-size: 2.9cqw; color: var(--muted); border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 1.2cqw 3.2cqw; white-space: nowrap; }
+
+  /* closing cells */
+  .closing { padding: 22px 22px 24px; }
+  .closing h3 { margin: 0 0 14px; font-family: var(--serif); font-weight: 400; font-size: 26px; letter-spacing: -0.01em; }
+  .seams { display: grid; grid-template-columns: 1fr; gap: 8px; }
+  .seam { display: grid; grid-template-columns: 82px 1fr; gap: 10px; align-items: baseline; font-size: 13.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+  .seam b { font-family: var(--mono); font-size: 12px; color: var(--ink); letter-spacing: 0.04em; }
+  .sw { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .sw div { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .sw i { display: block; height: 46px; }
+  .sw span { display: block; padding: 6px 8px; }
+  .roles p { margin: 6px 0; font-size: 14px; color: var(--muted); }
+  .roles .r1 { font-family: var(--serif); font-size: 24px; color: var(--ink); }
+  .roles .r2 { font-family: var(--sans); font-weight: 700; color: var(--ink); }
+  .roles .r3 { font-family: var(--mono); color: var(--ink); }
+  .bans { margin: 14px 0 0; padding-left: 18px; font-size: 13.5px; color: var(--muted); line-height: 1.55; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <div>
+      <h1 class="title">prompt2md <em>launch film</em><span class="ver">v1</span></h1>
+      <p class="dek">Everything else cuts. This folds. Ink to paper in about 31 seconds: the mess, the fold, three proofs, the unfold, the command.</p>
+    </div>
+    <div class="tag">1080×1920 · ~31 s · 9 beats · VO af_heart · captions on</div>
+  </header>
+
+  <div class="act">Act I · the mess, the fold</div>
+  <div class="grid">
+
+    <!-- 01 -->
+    <div class="cell" id="frame-01">
+      <div class="shot ink f01">
+        <div class="kicker" style="color: var(--cli-slate)"><i>◣</i>your prompt</div>
+        <div class="counter"><small>tokens</small><b>150</b></div>
+        <div class="typed">
+          <div class="hero"><span class="fill">ok so </span>what i need is <span class="fill">basically </span>a python script that takes a folder of csv files<span class="caret"></span></div>
+          <div class="rest">and merges them but ONLY the ones that have a "date" column, and also it should skip empty files. <span class="fill">oh and </span>the output should be a single parquet file. <span class="fill">also </span>please use pandas. <span class="fill">actually </span>it also needs to handle dates in different formats, some are MM/DD/YYYY and some are ISO. <span class="fill">like i said </span>merge them all into one parquet…</div>
+        </div>
+        <div class="keepout"></div>
+        <div class="cap"><span class="now">You</span> <span>write</span> prompts like this.</div>
+      </div>
+      <div class="meta">
+        <div class="label"><b>01 · TYPED</b><span>hook · 0.0–2.6 s</span></div>
+        <p class="note"><b>Typing starts at 0.1 s,</b> fast and human with one backspace on "basically"; the counter climbs to 150; slow push-in. Hard cut into the fold.</p>
+        <span class="chip">→ cut (fold happens in 02)</span>
+      </div>
+    </div>
+
+    <!-- 02 -->
+    <div class="cell" id="frame-02">
+      <div class="shot f02">
+        <div class="fold-edge"></div>
+        <div class="lockup" style="top: 15cqw">
+          <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="15" fill="#5B3DF5"/><g stroke="#5B3DF5" stroke-width="1.2" stroke-linejoin="round"><polygon points="20,44 26,36 40,36 46,44 33,50" fill="#FFFFFF"/><polygon points="26,36 40,36 35,14" fill="#FFFFFF"/><polygon points="20,44 26,36 16,19" fill="#FFFFFF"/><polygon points="46,44 40,36 56,32" fill="#FFFFFF"/></g><polygon points="16,19 9,23 17,24" fill="#17151A"/></svg>
+          <span class="wordmark">prompt<b>2md</b></span>
+        </div>
+        <div class="tagline" style="top: 33cqw; font-size: 4.2cqw">A Markdown Magic</div>
+        <div class="card md" style="left: 8cqw; right: 8cqw; top: 46cqw; padding: 4cqw 4.4cqw">
+          <div><span class="h">##</span> Goal</div>
+          <div class="gap"></div>
+          <div>what i need is a python script that takes a folder of csv files and merges them but ONLY the ones that have a "date" column, and also it should skip empty files</div>
+          <div class="gap"></div>
+          <div><span class="h">##</span> Requirements</div>
+          <div class="gap"></div>
+          <div>- the output should be a single parquet file</div>
+          <div>- please use pandas</div>
+          <div class="gap"></div>
+          <div><span class="h">##</span> Constraints</div>
+          <div>- python 3.11</div>
+          <div class="gap"></div>
+          <div><span class="h">##</span> Notes</div>
+          <div>- merge them all into one parquet</div>
+        </div>
+        <div class="keepout"></div>
+        <div class="cap"><span>prompt2md</span> <span class="now">folds</span> it into clean Markdown.</div>
+      </div>
+      <div class="meta">
+        <div class="label"><b>02 · FOLDED</b><span>intro · 2.6–6.2 s</span></div>
+        <p class="note"><b>The ink sheet accordion-folds at 2.6 s,</b> creases catching light; the ground turns to paper; the card opens out; facets fly in and lock into the badge; the wordmark slides up.</p>
+        <span class="chip">← crossfade, leftward drift</span>
+      </div>
+    </div>
+
+    <!-- 03 -->
+    <div class="cell" id="frame-03">
+      <div class="shot f03">
+        <div class="kicker"><i>◣</i>live on prompt2md.vercel.app</div>
+        <div class="phone"><img src="sketch-assets/demo-result.jpg" alt="Real recording of the landing demo" /></div>
+        <div class="keepout"></div>
+        <div class="cap"><span>Paste</span> <span>the</span> <span>mess.</span> <span class="now">Hit</span> Fold it.</div>
+      </div>
+      <div class="meta">
+        <div class="label"><b>03 · LIVE</b><span>feature · 6.2–9.8 s</span></div>
+        <p class="note"><b>The recorded phone enters from the right</b> with a 3D tilt that flattens; real tap at ~1.2 s, real result at ~2.3 s; the camera pushes into the output. Cut on the ledger.</p>
+        <span class="chip">→ cut</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="act">Act II · the proof</div>
+  <div class="grid">
+
+    <!-- 04 -->
+    <div class="cell" id="frame-04">
+      <div class="shot f04">
+        <div class="kicker"><i>◣</i>the ledger</div>
+        <div class="card md ghost" style="left: 14cqw; right: 14cqw; top: 22cqw; height: 26cqw; padding: 3.6cqw"><div><span class="h">##</span> Goal</div><div class="gap"></div><div>what i need is a python script…</div></div>
+        <div class="lockrow" style="top: 64cqw">
+          <span class="fig" style="font-size: 22cqw">150</span>
+          <span class="arrow">→</span>
+          <span class="fig" style="font-size: 22cqw">127</span>
+        </div>
+        <div style="position:absolute;left:0;right:0;top:88cqw;text-align:center" class="unit">tokens</div>
+        <div style="position:absolute;left:0;right:0;top:99cqw;text-align:center"><span class="fig" style="font-size:11cqw;color:var(--green)">85%</span> <span class="unit" style="color:var(--green)">of original</span></div>
+        <div style="position:absolute;left:0;right:0;top:118cqw;text-align:center"><span class="pill" style="font-size:3.2cqw;padding:1.4cqw 3.4cqw">no API key</span></div>
+        <div class="keepout"></div>
+        <div class="cap"><span>Structured</span> <span>Markdown,</span> <span>an</span> <span>honest</span> <span class="now">token</span> count, and no API key.</div>
+      </div>
+      <div class="meta">
+        <div class="label"><b>04 · LEDGER</b><span>benefit · 9.8–12.6 s</span></div>
+        <p class="note"><b>127 counts in beside 150 on "count",</b> "85% of original" pops in green, "no API key" types on. The unit is always named.</p>
+        <span class="chip">→ zoom-through</span>
+      </div>
+    </div>
+
+    <!-- 05 -->
+    <div class="cell" id="frame-05">
+      <div class="shot f05">
+        <div class="kicker"><i>◣</i>long context</div>
+        <div class="lockrow" style="top: 21cqw">
+          <span class="fig" style="font-size: 15cqw">1,449</span><span class="arrow" style="font-size:7cqw">→</span><span class="fig" style="font-size: 15cqw">475</span>
+        </div>
+        <div style="position:absolute;left:0;right:0;top:39cqw;text-align:center"><span class="unit">tokens</span> &nbsp; <span class="unit" style="color:var(--green)">33% of input</span></div>
+        <div class="card doc" style="top: 50cqw">
+          <h4># Incident 4417, full timeline</h4>
+          <div class="row">Update 5: engineers investigated subsystem 5 and recorded observations. […]<span class="a">&lt;!-- p2md:src=c6199e0698ecc214#2062-2466 --&gt;</span></div>
+          <div class="row">Update 6: engineers investigated subsystem 6 and recorded observations. […]<span class="a">&lt;!-- p2md:src=c6199e0698ecc214#2468-2872 --&gt;</span></div>
+          <div class="row">Update 7: engineers investigated subsystem 7 and recorded observations. […]<span class="a">&lt;!-- p2md:src=c6199e0698ecc214#2874-3278 --&gt;</span></div>
+          <div class="row full">Update 8: engineers investigated subsystem 8 and recorded observations. Extended narrative describing dashboards, hypotheses, and dead ends…</div>
+        </div>
+        <div class="keepout"></div>
+        <div class="cap"><span>Too</span> <span>long?</span> <span class="now">Fold</span> fourteen hundred tokens to under five hundred.</div>
+      </div>
+      <div class="meta">
+        <div class="label"><b>05 · FIT</b><span>benefit · 12.6–16.2 s</span></div>
+        <p class="note"><b>Paragraphs fold one by one</b> (0.1 s stagger) into their real summary lines and anchors; the list accumulates; the figure counts down on "under five hundred".</p>
+        <span class="chip">← push-slide left</span>
+      </div>
+    </div>
+
+    <!-- 06 -->
+    <div class="cell" id="frame-06">
+      <div class="shot f06">
+        <div class="half top">
+          <div class="serif" style="position:absolute;left:9cqw;top:13cqw;font-size:9.5cqw;color:var(--ink)">Everything else cuts.</div>
+          <div class="sheet" style="top: 32cqw; height: 38cqw; transform: rotate(-1.5deg)">
+            <div class="l"></div><div class="l"></div><div class="l" style="width:70%"></div>
+          </div>
+          <div style="position:absolute;left:14cqw;right:14cqw;top:58cqw;border-top:0.5cqw solid var(--ink)"></div>
+          <div class="sheet" style="top: 64cqw; height: 18cqw; opacity:0.35; transform: translateY(6cqw) rotate(5deg); filter: grayscale(1)"><div class="l"></div><div class="l" style="width:60%"></div></div>
+        </div>
+        <div class="half bottom">
+          <div class="serif" style="position:absolute;left:9cqw;top:8cqw;font-size:9.5cqw;color:var(--violet)">This folds.</div>
+          <div class="sheet" style="top: 22cqw; height: 30cqw">
+            <div class="l" style="width:90%"></div><div class="l v" style="width:60%"></div>
+            <div class="l" style="width:85%"></div><div class="l v" style="width:60%"></div>
+            </div>
+        </div>
+        <div class="keepout"></div>
+        <div class="cap"><span>Other</span> <span>tools</span> <span class="now">cut</span> and hope. This folds.</div>
+      </div>
+      <div class="meta">
+        <div class="label"><b>06 · CUTS VS FOLDS</b><span>contrast · 16.2–19.0 s</span></div>
+        <p class="note"><b>The halves open like a book,</b> mirrored tilts; the cut line snaps across in one stroke and the lower part drops to grey; below, the same page folds with anchors lit violet.</p>
+        <span class="chip">→ cut</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="act">Act III · the guarantee, the reach, the command</div>
+  <div class="grid">
+
+    <!-- 07 -->
+    <div class="cell" id="frame-07">
+      <div class="shot f07">
+        <div class="kicker"><i>◣</i>unfold</div>
+        <div class="serif" style="position:absolute;left:9cqw;right:9cqw;top:20cqw;font-size:10cqw">Unfold any summary.</div>
+        <div class="term" style="top: 44cqw">
+          <div class="bar"><span>command line</span><span class="stamp">✓ byte-exact</span></div>
+          <div class="body"><span class="p">$ </span>prompt2md retrieve "p2md:src=c6199e0698ecc214#2874-3278"
+<span class="out">Update 7: engineers investigated subsystem 7 and recorded observations. Extended narrative describing dashboards, hypotheses, and dead ends in detail. Extended narrative describing dashboards, hypotheses, and dead ends in detail. Extended narrative describing dashboards, hypotheses, and dead ends in detail. Extended narrative describing dashboards, hypotheses, and dead ends in detail. </span><span class="hit">Key finding f-7.</span></div>
+        </div>
+        <div class="keepout"></div>
+        <div class="cap"><span>Unfold</span> <span>any</span> <span>summary.</span> <span>The</span> <span class="now">exact</span> original comes back.</div>
+      </div>
+      <div class="meta">
+        <div class="label"><b>07 · UNFOLD</b><span>feature · 19.0–23.4 s · held frame</span></div>
+        <p class="note"><b>The command types at a human pace,</b> Enter, the output opens out line by line; "Key finding f-7." lights; the stamp lands; then nothing moves for about a second.</p>
+        <span class="chip">← crossfade</span>
+      </div>
+    </div>
+
+    <!-- 08 -->
+    <div class="cell" id="frame-08">
+      <div class="shot f08">
+        <div class="kicker"><i>◣</i>one command wires every tool</div>
+        <div class="ring">
+          <div class="halo"></div>
+          <div class="badge"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="15" fill="#5B3DF5"/><g stroke="#5B3DF5" stroke-width="1.2" stroke-linejoin="round"><polygon points="20,44 26,36 40,36 46,44 33,50" fill="#FFFFFF"/><polygon points="26,36 40,36 35,14" fill="#FFFFFF"/><polygon points="20,44 26,36 16,19" fill="#FFFFFF"/><polygon points="46,44 40,36 56,32" fill="#FFFFFF"/></g><polygon points="16,19 9,23 17,24" fill="#17151A"/></svg></div>
+          <div class="orbit" style="left: 0cqw; top: -36cqw">Claude Code</div>
+          <div class="orbit" style="left: 28cqw; top: -22cqw">Cursor</div>
+          <div class="orbit" style="left: 31cqw; top: 8cqw">Windsurf</div>
+          <div class="orbit" style="left: 17cqw; top: 33cqw">Gemini CLI</div>
+          <div class="orbit" style="left: -17cqw; top: 33cqw">Codex CLI</div>
+          <div class="orbit" style="left: -29cqw; top: 8cqw">Claude Desktop</div>
+          <div class="orbit" style="left: -27cqw; top: -22cqw">any MCP client</div>
+        </div>
+        <div class="keepout"></div>
+        <div class="cap"><span>It</span> <span>plugs</span> <span>into</span> <span class="now">Claude</span> Code, Cursor, and any MCP client.</div>
+      </div>
+      <div class="meta">
+        <div class="label"><b>08 · EVERYWHERE</b><span>reach · 23.4–26.4 s</span></div>
+        <p class="note"><b>Chips spring into the ring</b> on the voice cues, one soft pluck each; slow push-in on the badge. Text chips only, no third-party logos.</p>
+        <span class="chip">→ zoom-through</span>
+      </div>
+    </div>
+
+    <!-- 09 -->
+    <div class="cell" id="frame-09">
+      <div class="shot f09">
+        <div class="bloom"></div>
+        <img class="crane" src="sketch-assets/crane.jpg" alt="The 3D crane" />
+        <div class="lockup" style="top: 82cqw">
+          <span class="wordmark" style="font-size: 11cqw">prompt<b>2md</b></span>
+        </div>
+        <div class="tagline" style="top: 97cqw; font-size: 4.4cqw">A Markdown Magic</div>
+        <div class="cmd" style="top: 110cqw"><span class="p">$</span>npx prompt2md-skill</div>
+        <div class="url" style="top: 124cqw">prompt2md.vercel.app</div>
+        <div class="oss" style="top: 139cqw">Open source, Apache-2.0</div>
+        <div class="keepout"></div>
+        <div class="cap"><span>Open</span> <span>source.</span> <span>Try</span> <span>it</span> <span class="now">at</span> prompt2md.vercel.app.</div>
+      </div>
+      <div class="meta">
+        <div class="label"><b>09 · COMMAND</b><span>CTA · 26.4–31.0 s</span></div>
+        <p class="note"><b>The crane rises in and never stops swinging;</b> the lockup slides up; the command types; the URL lands on "vercel dot app". The film ends on moving footage.</p>
+        <span class="chip">end (no static card)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="act">Map and tokens</div>
+  <div class="grid">
+    <div class="cell closing" style="grid-column: span 2">
+      <h3>Seam map: one direction, leftward</h3>
+      <div class="seams">
+        <div class="seam"><b>01 → 02</b><span>Hard cut onto the same ink; the fold itself is the transition into paper.</span></div>
+        <div class="seam"><b>02 → 03</b><span>Crossfade with a leftward drift; the phone arrives from the right.</span></div>
+        <div class="seam"><b>03 → 04</b><span>Cut on the ledger; its numbers become the hero.</span></div>
+        <div class="seam"><b>04 → 05</b><span>Zoom-through into the long document.</span></div>
+        <div class="seam"><b>05 → 06</b><span>Push-slide left into the split.</span></div>
+        <div class="seam"><b>06 → 07</b><span>Cut to the terminal.</span></div>
+        <div class="seam"><b>07 → 08</b><span>Crossfade out of the held frame.</span></div>
+        <div class="seam"><b>08 → 09</b><span>Zoom-through into the close; the crane is still moving at the last frame.</span></div>
+      </div>
+    </div>
+    <div class="cell closing">
+      <h3>Tokens and bans</h3>
+      <div class="sw">
+        <div><i style="background:#FAF9F6"></i><span>paper #FAF9F6</span></div>
+        <div><i style="background:#17151A"></i><span>ink #17151A</span></div>
+        <div><i style="background:#0F0E11"></i><span>deep ink #0F0E11</span></div>
+        <div><i style="background:#5B3DF5"></i><span>violet #5B3DF5</span></div>
+        <div><i style="background:#15803D"></i><span>green (measured)</span></div>
+        <div><i style="background:#F4F2ED"></i><span>tile #F4F2ED</span></div>
+      </div>
+      <div class="roles">
+        <p class="r1">EB Garamond: display, numbers</p>
+        <p class="r2">Inter: wordmark, UI, chips</p>
+        <p class="r3">JetBrains Mono: code, kickers, units</p>
+      </div>
+      <ul class="bans">
+        <li>No glow, flares or sparkles; no fake product UI.</li>
+        <li>No invented numbers; units always named.</li>
+        <li>No competitor names; no em dashes on screen.</li>
+        <li>No slideshow, no screensaver, no static end card.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</body>
+</html>

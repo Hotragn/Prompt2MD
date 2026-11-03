@@ -1,0 +1,32 @@
+{
+  "ok": true,
+  "projectDir": "C:\\Users\\hotra\\OneDrive\\Documents\\Claude Code\\Prompt2MD\\videos\\prompt2md-launch\\capture",
+  "url": "https://prompt2md.vercel.app",
+  "httpStatus": 200,
+  "title": "prompt2md: token-optimized Markdown, and proof of what it saved",
+  "screenshots": 12,
+  "assets": 6,
+  "dropped": {
+    "size-floor": 0,
+    "budget-exhausted": 0,
+    "cap-reached": 0,
+    "unavailable": 0
+  },
+  "detectedSections": 7,
+  "fonts": [],
+  "fontsDetailed": [],
+  "animations": {
+    "webAnimations": 2,
+    "cssDeclarations": 54,
+    "scrollTargets": 35,
+    "cdpAnimations": 72,
+    "canvases": 0
+  },
+  "warnings": [],
+  "lastPhase": {
+    "schema": "hyperframes.capture.phase.v1",
+    "phase": "complete",
+    "status": "completed",
+    "remainingMs": 61780
+  }
+}

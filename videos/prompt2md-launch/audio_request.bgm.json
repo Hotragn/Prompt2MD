@@ -1,0 +1,50 @@
+{
+  "provider": "kokoro",
+  "speed": 1,
+  "lines": [
+    {
+      "id": "01",
+      "text": "You write prompts like this."
+    },
+    {
+      "id": "02",
+      "text": "Prompt-to-M-D folds it into clean Markdown."
+    },
+    {
+      "id": "03",
+      "text": "Paste the mess. Hit Fold it."
+    },
+    {
+      "id": "04",
+      "text": "Structured Markdown, an honest token count, and no API key."
+    },
+    {
+      "id": "05",
+      "text": "Too long? Fold fourteen hundred tokens to under five hundred."
+    },
+    {
+      "id": "06",
+      "text": "Other tools cut and hope. This folds."
+    },
+    {
+      "id": "07",
+      "text": "Unfold any summary. The exact original comes back."
+    },
+    {
+      "id": "08",
+      "text": "It plugs into Claude Code, Cursor, and any M-C-P client."
+    },
+    {
+      "id": "09",
+      "text": "Open source. Try it at prompt-to-M-D dot vercel dot app."
+    }
+  ],
+  "bgm": {
+    "mode": "generate",
+    "query": "warm minimal cinematic electronic underscore, soft pulsing synth bass, glassy plucks, confident and premium, opens up when the fold happens, resolves at the end",
+    "blob": "Paste any messy prompt: prompt2md folds it into token-optimized Markdown with honest token numbers, and unfolds anything it summarized back to the byte-exact original.",
+    "arc": "Hook (the mess, in ink) → Turn (the fold, into paper) → Proof (live demo, the ledger, long context) → Difference (cut vs fold, the unfold) → Reach → Command",
+    "prompt": "warm minimal cinematic electronic underscore for a premium tech product launch, soft pulsing synth bass, glassy plucked arpeggio, airy pads, light clean percussion, confident and optimistic, polished modern production, 112 bpm, no vocals"
+  },
+  "voice": "af_heart"
+}

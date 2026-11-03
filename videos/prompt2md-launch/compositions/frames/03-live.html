@@ -1,0 +1,255 @@
+<template id="03-live-template" data-composition-id="03-live" data-width="1080" data-height="1920">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+
+<style>
+@font-face{font-family:"EB Garamond";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/EBGaramond-400.woff2") format("woff2");}
+@font-face{font-family:"EB Garamond";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/EBGaramond-700.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/Inter-400.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/Inter-700.woff2") format("woff2");}
+@font-face{font-family:"JetBrains Mono";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/JetBrainsMono-400.woff2") format("woff2");}
+@font-face{font-family:"JetBrains Mono";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/JetBrainsMono-700.woff2") format("woff2");}
+</style>
+
+<style>
+  /* Frame 03 · Live. Sketch: storyboard.html #frame-03 (1 cqw = 10.8 px).
+     Ids start with a digit, so CSS targets them with attribute selectors. */
+  #root {
+    position: relative;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+
+  /* Full-bleed paper ground (frame.md cream). */
+  [id="03-live-bg"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1080px;
+    height: 1920px;
+    background: #FAF9F6;
+  }
+
+  [id="03-live-stage"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+
+  /* Virtual camera: outer scales about the frame centre, inner counter-translates
+     (coordinate-target-zoom, nested form). Both are full-frame boxes. */
+  [id="03-live-cam"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1080px;
+    height: 1920px;
+    transform-origin: 50% 50%;
+    will-change: transform;
+  }
+  [id="03-live-cam-inner"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1080px;
+    height: 1920px;
+    will-change: transform;
+  }
+
+  /* Kicker-spike: sketch .kicker (left 9cqw, top 13cqw, 2.7cqw mono, 0.16em, upper). */
+  [id="03-live-kicker"] {
+    position: absolute;
+    left: 97px;
+    top: 140px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 29px;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: #8B8794;
+  }
+  /* The brand's folded corner (U+25E3). No shipped face carries the glyph, so it is
+     drawn as the same lower-left triangle, cap-height tall, in violet. */
+  [id="03-live-mark"] {
+    display: inline-block;
+    width: 0.72em;
+    height: 0.72em;
+    margin-right: 15px;
+    vertical-align: baseline;
+    background: #5B3DF5;
+    clip-path: polygon(0 0, 0 100%, 100% 100%);
+  }
+
+  /* The phone-shaped window: sketch .phone placement (left 17cqw, top 25cqw, width 66cqw,
+     9:16), 44 px corners, hairline, one soft warm shadow (x offset matches the -9deg tiltY).
+     Its 3D tilt is set by GSAP (transformPerspective 1728 = 160cqw, rotY -9, rotX 3). */
+  [id="03-live-phone"] {
+    position: absolute;
+    left: 183.5px;
+    top: 270px;
+    width: 713px;
+    height: 1266px;
+    box-sizing: border-box;
+    border: 1px solid rgba(23, 21, 26, 0.14);
+    border-radius: 44px;
+    overflow: hidden;
+    background: #FAF9F6;
+    box-shadow: 10px 8px 24px rgba(23, 21, 26, 0.13);
+    transform-origin: 50% 50%;
+  }
+
+  /* The screen: one 9:16 box (711 x 1264) holding the 9 real recorded frames, stacked. */
+  [id="03-live-screen"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 711px;
+    height: 1264px;
+    overflow: hidden;
+  }
+  [id="03-live-screen"] > img {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0;
+  }
+  [id="03-live-screen"] > img:first-child {
+    opacity: 1;
+  }
+</style>
+
+<div data-hf-id="hf-7297" id="root" data-composition-id="03-live" data-start="0" data-duration="2.8" data-width="1080" data-height="1920">
+  <div data-hf-id="hf-z5za" id="03-live-bg" class="clip" data-start="0" data-duration="2.8" data-track-index="0"></div>
+
+  <div data-hf-id="hf-hijk" id="03-live-stage" class="clip" data-start="0" data-duration="2.8" data-track-index="1">
+    <div data-hf-id="hf-htuo" id="03-live-cam" data-layout-allow-overflow="">
+      <div data-hf-id="hf-vigz" id="03-live-cam-inner" data-layout-allow-overflow="">
+        <div data-hf-id="hf-932j" id="03-live-kicker"><span data-hf-id="hf-xkzj" id="03-live-mark" aria-hidden="true"></span>live on prompt2md.vercel.app</div>
+
+        <div data-hf-id="hf-of95" id="03-live-phone" data-layout-allow-overflow="">
+          <div data-hf-id="hf-4zcm" id="03-live-screen">
+            <img data-hf-id="hf-79ir" id="03-live-s01" src="assets/fold-demo-seq/s01.png" decoding="sync" alt="Real recording of the prompt2md landing demo">
+            <img data-hf-id="hf-wo8h" id="03-live-s02" src="assets/fold-demo-seq/s02.png" decoding="sync" alt="">
+            <img data-hf-id="hf-q5s7" id="03-live-s03" src="assets/fold-demo-seq/s03.png" decoding="sync" alt="">
+            <img data-hf-id="hf-khx9" id="03-live-s04" src="assets/fold-demo-seq/s04.png" decoding="sync" alt="">
+            <img data-hf-id="hf-lflb" id="03-live-s05" src="assets/fold-demo-seq/s05.png" decoding="sync" alt="">
+            <img data-hf-id="hf-z9zl" id="03-live-s06" src="assets/fold-demo-seq/s06.png" decoding="sync" alt="">
+            <img data-hf-id="hf-2t4f" id="03-live-s07" src="assets/fold-demo-seq/s07.png" decoding="sync" alt="">
+            <img data-hf-id="hf-d9lx" id="03-live-s08" src="assets/fold-demo-seq/s08.png" decoding="sync" alt="">
+            <img data-hf-id="hf-3ubb" id="03-live-s09" src="assets/fold-demo-seq/s09.png" decoding="sync" alt="">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var byId = function (id) { return document.getElementById(id); };
+
+    var phone = byId("03-live-phone");
+    var kicker = byId("03-live-kicker");
+    var camOuter = byId("03-live-cam");
+    var camInner = byId("03-live-cam-inner");
+
+    // ---- Phone geometry (mirrors the CSS above) --------------------------------
+    var PH = { left: 183.5, top: 270, w: 713, h: 1266, border: 1 };
+    var PERSP = 1728;            // 160cqw, the sketch's perspective
+    var TILT_Y = -9, TILT_X = 3; // landed tilt (sketch); static after Scene 1
+    var SRC_W = 1080;            // recorded frames are 1080 x 1920
+    var SCREEN_W = 711;          // screen box width (9:16 with 1264)
+    var K = SCREEN_W / SRC_W;
+    var RAD = Math.PI / 180;
+
+    // Project a point of the recording (source px) through the landed phone
+    // transform: perspective(P) rotateY(TILT_Y) rotateX(TILT_X) about the phone centre.
+    // Pure math, deterministic, no DOM reads.
+    function project(sx, sy) {
+      var x = PH.border + sx * K - PH.w / 2;
+      var y = PH.border + sy * K - PH.h / 2;
+      var ax = TILT_X * RAD, ay = TILT_Y * RAD;
+      var y1 = y * Math.cos(ax), z1 = y * Math.sin(ax);
+      var x2 = x * Math.cos(ay) + z1 * Math.sin(ay);
+      var z2 = -x * Math.sin(ay) + z1 * Math.cos(ay);
+      var k = PERSP / (PERSP - z2);
+      return { x: PH.left + PH.w / 2 + x2 * k, y: PH.top + PH.h / 2 + y1 * k };
+    }
+
+    // ---- Push-in target: the output pane, measured on s09.png ---------------------
+    // TOKEN-OPTIMIZED MARKDOWN header top y 905 -> card bottom y 1730 (ledger row
+    // BEFORE 150 -> AFTER 127 · OF ORIGINAL 85% sits at y 1595-1685), x 57-1023.
+    var corners = [[57, 905], [1023, 905], [57, 1730], [1023, 1730]].map(function (p) {
+      return project(p[0], p[1]);
+    });
+    var xs = corners.map(function (p) { return p.x; });
+    var ys = corners.map(function (p) { return p.y; });
+    var paneX = (Math.min.apply(null, xs) + Math.max.apply(null, xs)) / 2;
+    var paneY = (Math.min.apply(null, ys) + Math.max.apply(null, ys)) / 2;
+
+    // Scale capped so the 1080-px source is never upscaled (0.658 x 1.42 x 1.05 < 1).
+    var ZOOM = 1.42;
+    var CX = 540, CY = 960;          // outer transform-origin (frame centre)
+    var LAND_X = 540, LAND_Y = 820;  // pane centre lands centred in the caption-free area
+    // Nested wrappers: final = C + S * (p + T - C)  =>  T = (L - C) / S - (p - C).
+    // Result: pane spans ~y 420-1220, ledger row ~y 1055-1170, all above the 1594 cutoff.
+    var CAM_X = (LAND_X - CX) / ZOOM - (paneX - CX);
+    var CAM_Y = (LAND_Y - CY) / ZOOM - (paneY - CY);
+
+    window.__timelines = window.__timelines || {};
+    var tl = gsap.timeline({ paused: true });
+
+    // ---- Scene 1 (0.00-0.55): "Paste the mess" -----------------------------------
+    // The window arrives from the right; its 3D tilt flattens to the sketch's few degrees.
+    tl.fromTo(
+      phone,
+      { x: 600, rotationY: -18, rotationX: 3, transformPerspective: PERSP },
+      { x: 0, rotationY: TILT_Y, rotationX: TILT_X, transformPerspective: PERSP, duration: 0.55, ease: "power3.out" },
+      0
+    );
+    tl.fromTo(phone, { opacity: 0 }, { opacity: 1, duration: 0.22, ease: "power2.out" }, 0);
+
+    // Kicker sits above it from 0.1 s.
+    tl.fromTo(kicker, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.1);
+
+    // ---- The real recording: 9 frames, exactly one visible at a time -------------
+    // manifest.json local_s; s01 is visible from t = 0, s09 holds to the end.
+    var SEQ = [
+      ["03-live-s01", 0.000],
+      ["03-live-s02", 1.217], // the real tap: Folding...
+      ["03-live-s03", 1.350],
+      ["03-live-s04", 1.383],
+      ["03-live-s05", 1.417],
+      ["03-live-s06", 2.283], // the live result lands
+      ["03-live-s07", 2.317],
+      ["03-live-s08", 2.350],
+      ["03-live-s09", 2.383]
+    ];
+    for (var i = 1; i < SEQ.length; i++) {
+      tl.set(byId(SEQ[i][0]), { opacity: 1 }, SEQ[i][1]);
+      tl.set(byId(SEQ[i - 1][0]), { opacity: 0 }, SEQ[i][1]);
+    }
+
+    // ---- Scene 2 (0.55-1.65): the window holds; the tap happens inside the recording.
+
+    // ---- Scene 3 (1.65-2.80): ONE eased push-in onto the output pane --------------
+    // Window and screen move as one unit; the move lands as the result lands (2.28 s)
+    // and is settled by 2.65 s. Scale and counter-translate share start, duration, ease.
+    var PUSH_AT = 1.65, PUSH_DUR = 1.0, PUSH_EASE = "power3.inOut";
+    tl.fromTo(camOuter, { scale: 1 }, { scale: ZOOM, duration: PUSH_DUR, ease: PUSH_EASE }, PUSH_AT);
+    tl.fromTo(camInner, { x: 0, y: 0 }, { x: CAM_X, y: CAM_Y, duration: PUSH_DUR, ease: PUSH_EASE }, PUSH_AT);
+
+    // Hard cut on the ledger at 2.8 s is the root's; no exit here.
+    window.__timelines["03-live"] = tl;
+  })();
+</script>
+</template>

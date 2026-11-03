@@ -1,0 +1,60 @@
+{
+  "source": "assets/fold-demo-mobile.mp4 — real 30 fps phone recording of the live landing demo on prompt2md.vercel.app (1080x1920)",
+  "note": "The recording's 9 distinct frames; every frame left out duplicates the kept frame before it. Show each image from its time until the next; frame 03 plays the clip from its 0.05 s mark, so local_s = clip_s - 0.05.",
+  "frames": [
+    {
+      "file": "assets/fold-demo-seq/s01.png",
+      "clip_s": 0.0,
+      "local_s": 0.0,
+      "state": "pasted prompt, dark Fold it button"
+    },
+    {
+      "file": "assets/fold-demo-seq/s02.png",
+      "clip_s": 1.267,
+      "local_s": 1.217,
+      "state": "the real tap: Folding… on the pressed (blue) button"
+    },
+    {
+      "file": "assets/fold-demo-seq/s03.png",
+      "clip_s": 1.4,
+      "local_s": 1.35,
+      "state": "Folding…, pressed"
+    },
+    {
+      "file": "assets/fold-demo-seq/s04.png",
+      "clip_s": 1.433,
+      "local_s": 1.383,
+      "state": "Folding…, grey"
+    },
+    {
+      "file": "assets/fold-demo-seq/s05.png",
+      "clip_s": 1.467,
+      "local_s": 1.417,
+      "state": "Folding…, grey (settled)"
+    },
+    {
+      "file": "assets/fold-demo-seq/s06.png",
+      "clip_s": 2.333,
+      "local_s": 2.283,
+      "state": "the live result lands: ## Goal / ## Requirements, ledger BEFORE 150 -> AFTER 127, OF ORIGINAL 85%"
+    },
+    {
+      "file": "assets/fold-demo-seq/s07.png",
+      "clip_s": 2.367,
+      "local_s": 2.317,
+      "state": "result settling"
+    },
+    {
+      "file": "assets/fold-demo-seq/s08.png",
+      "clip_s": 2.4,
+      "local_s": 2.35,
+      "state": "result settling"
+    },
+    {
+      "file": "assets/fold-demo-seq/s09.png",
+      "clip_s": 2.433,
+      "local_s": 2.383,
+      "state": "result settled; holds to the end of the frame"
+    }
+  ]
+}

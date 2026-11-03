@@ -1,0 +1,101 @@
+{
+  "summary": {
+    "webAnimations": 2,
+    "cssDeclarations": 54,
+    "scrollTargets": 35,
+    "cdpAnimations": 72,
+    "canvases": 0
+  },
+  "namedAnimations": [
+    "masthead-edge",
+    "scroll-cue-bob"
+  ],
+  "scrollTriggeredElements": 35,
+  "representativeAnimations": [
+    {
+      "type": "CSSAnimation",
+      "playState": "running",
+      "animationName": "masthead-edge",
+      "targetSelector": "header.masthead",
+      "targetRect": {
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 72.21875,
+        "top": 0,
+        "right": 1920,
+        "bottom": 72.21875,
+        "left": 0
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "linear",
+          "composite": "replace",
+          "borderBottomColor": "rgba(0, 0, 0, 0)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "linear",
+          "composite": "auto",
+          "borderBottomColor": "rgb(231, 228, 220)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": {},
+        "delay": 0,
+        "iterations": 1,
+        "easing": "linear",
+        "direction": "normal"
+      }
+    },
+    {
+      "type": "CSSAnimation",
+      "playState": "running",
+      "animationName": "scroll-cue-bob",
+      "targetSelector": "span",
+      "targetRect": {
+        "x": 402,
+        "y": 971.1135864257812,
+        "width": 7.890625,
+        "height": 17.8125,
+        "top": 971.1135864257812,
+        "right": 409.890625,
+        "bottom": 988.9260864257812,
+        "left": 402
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translateY(0px)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 0.5,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translateY(4px)",
+          "computedOffset": 0.5
+        },
+        {
+          "offset": 1,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translateY(0px)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 1800,
+        "delay": 0,
+        "iterations": null,
+        "easing": "linear",
+        "direction": "normal"
+      }
+    }
+  ]
+}

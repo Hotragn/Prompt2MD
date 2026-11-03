@@ -1,0 +1,197 @@
+/* Video layer over the site's real CSS (globals.css + product.css, copied
+   verbatim). Only what a video needs and a web page must not have lives here. */
+
+/* Frames are stepped by the renderer, so nothing may animate on its own. */
+*,
+*::before,
+*::after {
+  transition: none !important;
+  animation: none !important;
+  caret-color: transparent;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--surface-0);
+}
+
+/* Cascadia Code (the mono this machine resolves to) draws "<!--" and "-->" as
+   arrow ligatures. That misquotes real output, so every glyph renders as typed. */
+* {
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+.stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--surface-0);
+}
+
+/* The hero's blueprint grid (product.css .hero::before), as a stage layer. */
+.grid-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(70% 60% at 50% 22%, #000 20%, transparent 78%);
+  -webkit-mask-image: radial-gradient(70% 60% at 50% 22%, #000 20%, transparent 78%);
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+}
+
+/* --- paper fold ---------------------------------------------------------- */
+
+.acc-host {
+  position: relative;
+  perspective: 900px;
+  perspective-origin: 50% 0%;
+  transform-style: preserve-3d;
+}
+
+.acc-strip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  transform-origin: 50% 0;
+  transform-style: preserve-3d;
+}
+
+.acc-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  backface-visibility: hidden;
+}
+
+.acc-inner {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+.acc-shade {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgb(23 21 26 / 0.85), rgb(23 21 26 / 0.55));
+}
+
+.acc-shade[data-up="1"] {
+  background: linear-gradient(to bottom, rgb(23 21 26 / 0.2), rgb(23 21 26 / 0.7));
+}
+
+/* --- the prompt, and what the pipeline dropped from it ------------------- */
+
+.fill {
+  color: color-mix(in srgb, var(--text) calc((1 - var(--dim)) * 100%), #bdb8c4);
+  text-decoration-line: line-through;
+  text-decoration-thickness: 1px;
+  text-decoration-color: rgb(139 135 148 / calc(var(--dim) * 0.9));
+}
+
+.caret {
+  display: inline-block;
+  width: 1.5px;
+  height: 1.15em;
+  margin-left: 1px;
+  vertical-align: -0.2em;
+  background: var(--text);
+}
+
+/* Output lines: the raw Markdown exactly as the pane shows it, one block per
+   source line so blank lines can be a touch shorter than a full line. */
+.md-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.md-gap {
+  height: 0.7em;
+}
+
+/* --- the site's "#" cursor (MdCursor.tsx), driven by t instead of the pointer */
+.md-cursor-dot {
+  opacity: 0;
+}
+
+/* --- CLI, in its own palette (packages/cli/src/brand.ts) ----------------- */
+
+.term {
+  --t-paper: #f2efea;
+  --t-violet: #7c5cff;
+  --t-slate: #78748a;
+  --t-green: #22a05a;
+  background: #17151a;
+  border: 1px solid #2b2830;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  box-shadow: 0 18px 40px -22px rgb(23 21 26 / 0.55);
+}
+
+.term-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: #211e25;
+  border-bottom: 1px solid #2b2830;
+}
+
+.term-name {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--t-slate);
+}
+
+.term-body {
+  margin: 0;
+  padding: 14px 16px 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--t-paper);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.term-prompt {
+  color: var(--t-violet);
+}
+
+.term-out {
+  color: #cfcac0;
+}
+
+.hit {
+  border-radius: 4px;
+  padding: 0 2px;
+  margin: 0 -2px;
+}
+
+/* The fold-story tag from FoldStory.tsx, as HTML. */
+.exact-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-radius: var(--r-full);
+  background: #f0faf3;
+  border: 1px solid #bbe3c8;
+  color: var(--ok);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}

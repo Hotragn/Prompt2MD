@@ -1,0 +1,854 @@
+/* ==========================================================================
+   prompt2md design system — see docs/BRAND.md for the story and the rules.
+
+   Story: The Fold. Folding makes something smaller without removing anything
+   from it; unfold and you have the original exactly. Competitors cut. We fold.
+
+   The substrate is PAPER: a warm off-white page with ink text and hairline
+   borders. Folding happens on paper, and paper is light — the story and the
+   surface are the same thing. One accent (violet), used sparingly for
+   identity and primary action; the old violet→cyan gradient is retired.
+   ========================================================================== */
+
+:root {
+  /* --- substrate: warm paper, never clinical white ----------------------- */
+  --surface-0: #faf9f6;
+  --surface-1: #ffffff;
+  --surface-2: #f4f2ed;
+  --surface-3: #ece9e2;
+  --border: #e7e4dc;
+  --border-lit: #cfcac0;
+
+  /* --- ink: warm near-black, never pure black ---------------------------- */
+  --text: #17151a;
+  --text-muted: #5f5b66;
+  --text-faint: #8b8794;
+
+  /* --- brand: one accent, identity only, never status -------------------- */
+  --brand: #5b3df5;
+  --brand-2: #5b3df5;
+  /* Kept as a name for compatibility; it is now the solid accent. */
+  --brand-grad: linear-gradient(100deg, var(--brand), var(--brand));
+
+  /* --- semantic: status only, never decoration -------------------------- */
+  --ok: #15803d;
+  --warn: #b45309;
+  --err: #dc2626;
+
+  /* --- type ------------------------------------------------------------- */
+  --font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
+  --font-display: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+  /* legacy alias — older rules referenced --mono */
+  --mono: var(--font-mono);
+
+  /* --- shape ------------------------------------------------------------ */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-full: 999px;
+  --radius: var(--r-md);
+  --shadow-lift: 0 10px 30px -16px rgb(23 21 26 / 0.16);
+
+  /* --- motion: explains change, never decorates ------------------------- */
+  --t-fast: 120ms;
+  --t-base: 220ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-fast: 0.01ms;
+    --t-base: 0.01ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Anchor targets (#how, #install, #why) land clear of the sticky masthead. */
+section[id] {
+  scroll-margin-top: 84px;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--surface-0);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Paper grain — the fold story made tactile. Fixed so it reads as the
+   substrate the interface sits on rather than as texture on the content.
+   On light paper it must stay whisper-quiet or it reads as dirt. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 24px 20px 64px;
+}
+
+/* --- masthead ----------------------------------------------------------- */
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 8px 0 22px;
+}
+
+.header .mark {
+  display: block;
+  border-radius: 11px;
+}
+
+.brand-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.brand {
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--text);
+}
+
+.brand-accent {
+  background: var(--brand-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Serif, italic, sentence case — the one deliberate typographic gesture. */
+.tagline {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13.5px;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}
+
+.header-nav {
+  display: flex;
+  gap: 18px;
+  margin-left: auto;
+}
+
+.header-nav a {
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color var(--t-fast) var(--ease);
+}
+
+.header-nav a:hover {
+  color: var(--text);
+}
+
+/* --- tabs --------------------------------------------------------------- */
+
+.tabs {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  padding: 4px;
+  margin-bottom: 18px;
+}
+
+.tab {
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-weight: 600;
+  padding: 7px 18px;
+  border-radius: var(--r-full);
+  cursor: pointer;
+  transition:
+    color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
+}
+
+.tab:active {
+  transform: scale(0.97);
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+/* Active tab is an ink pill — the quiet segmented-control read. */
+.tab[data-active="true"] {
+  background: var(--text);
+  color: var(--surface-1);
+}
+
+/* --- layout ------------------------------------------------------------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+@media (max-width: 940px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* --- fields ------------------------------------------------------------- */
+
+textarea.input {
+  width: 100%;
+  min-height: 320px;
+  resize: vertical;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.55;
+  transition: border-color var(--t-fast) var(--ease);
+}
+
+textarea.input:hover {
+  border-color: var(--border-lit);
+}
+
+textarea.input[data-dragging="true"] {
+  outline: 2px dashed var(--brand-2);
+  outline-offset: -3px;
+  background: color-mix(in srgb, var(--brand-2) 6%, var(--surface-2));
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.controls label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.controls input[type="number"],
+.controls select {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 13.5px;
+  width: 110px;
+  transition: border-color var(--t-fast) var(--ease);
+}
+
+.controls select {
+  width: auto;
+}
+
+.controls input[type="number"]:hover,
+.controls select:hover {
+  border-color: var(--border-lit);
+}
+
+/* One focus treatment, applied once, for every interactive element. */
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--brand-2);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* --- actions ------------------------------------------------------------ */
+
+/* Primary action is an ink pill: high contrast, zero decoration. */
+.btn {
+  border: 0;
+  border-radius: var(--r-full);
+  padding: 10px 22px;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+  color: var(--surface-1);
+  background: var(--text);
+  transition:
+    transform var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
+}
+
+.btn:hover:not(:disabled):not(.ghost) {
+  background: #2b2830;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.btn.ghost {
+  background: var(--surface-1);
+  color: var(--text-muted);
+  border: 1px solid var(--border-lit);
+  font-weight: 600;
+  padding: 8px 14px;
+}
+
+.btn.ghost:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--border-lit);
+  filter: none;
+}
+
+.btn.ghost[data-live="true"] {
+  color: var(--err);
+  border-color: var(--err);
+}
+
+.view-toggle {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.chip {
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  border-radius: var(--r-full);
+  padding: 4px 12px;
+  cursor: pointer;
+  transition:
+    color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
+}
+
+.chip:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--border-lit);
+}
+
+.chip[data-active="true"] {
+  color: var(--brand);
+  border-color: color-mix(in srgb, var(--brand) 45%, var(--border));
+  background: color-mix(in srgb, var(--brand) 8%, transparent);
+}
+
+.chip[data-done="true"] {
+  color: var(--ok);
+  border-color: var(--ok);
+}
+
+.chip:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+/* Keyboard affordance — power users should see the shortcut, not discover it. */
+.kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-faint);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 1px 5px;
+  background: var(--surface-2);
+  white-space: nowrap;
+}
+
+/* --- output ------------------------------------------------------------- */
+
+.output {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+  min-height: 320px;
+  max-height: 560px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* --- the ledger: numbers are the product's claim, so they lead ---------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 10px;
+}
+
+.stat {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 11px 13px;
+}
+
+/* Bento: the savings tile is the claim, so it carries more weight. */
+.stat[data-hero="true"] {
+  grid-column: span 2;
+  border-color: color-mix(in srgb, var(--ok) 35%, var(--border));
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--ok) 9%, transparent), transparent 60%),
+    var(--surface-2);
+}
+
+@media (max-width: 520px) {
+  .stat[data-hero="true"] {
+    grid-column: span 1;
+  }
+}
+
+.stat .k {
+  color: var(--text-muted);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.stat .v {
+  font-size: 19px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+.stat[data-hero="true"] .v {
+  font-size: 24px;
+}
+
+.stat .v.ok {
+  color: var(--ok);
+}
+
+.meter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.meter .row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.meter .bar {
+  height: 10px;
+  border-radius: var(--r-full);
+  min-width: 6px;
+  /* Width animates on value change so a savings drop is seen, not just read. */
+  transition: width var(--t-base) var(--ease);
+}
+
+.meter .bar.in {
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+}
+
+.meter .bar.out {
+  background: var(--brand-grad);
+}
+
+/* --- rendered markdown -------------------------------------------------- */
+
+.prose {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  white-space: normal;
+}
+
+.prose h1,
+.prose h2,
+.prose h3 {
+  line-height: 1.3;
+  margin: 0.9em 0 0.45em;
+}
+
+.prose h1 {
+  font-size: 20px;
+}
+
+.prose h2 {
+  font-size: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 5px;
+}
+
+.prose a {
+  color: var(--brand-2);
+  text-decoration: none;
+}
+
+.prose a:hover {
+  text-decoration: underline;
+}
+
+.prose ul {
+  padding-left: 20px;
+}
+
+.prose li {
+  margin: 5px 0;
+}
+
+.prose table {
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid var(--border);
+  padding: 5px 10px;
+  text-align: left;
+}
+
+.prose blockquote {
+  border-left: 3px solid var(--border);
+  margin: 10px 0;
+  padding: 2px 12px;
+  color: var(--text-muted);
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  background: color-mix(in srgb, var(--brand) 14%, transparent);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+
+.digest .output {
+  max-height: none;
+}
+
+/* --- status ------------------------------------------------------------- */
+
+.warning {
+  border-left: 3px solid var(--warn);
+  background: color-mix(in srgb, var(--warn) 8%, transparent);
+  color: #92400e;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.error {
+  border-left: 3px solid var(--err);
+  background: color-mix(in srgb, var(--err) 9%, transparent);
+  color: #b91c1c;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.hint {
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
+
+/* An action that lives inside a sentence. A real <button> for keyboard and
+   screen-reader behaviour, styled as the link it reads as — the alternative is
+   a clickable <span>, which is neither. */
+.linklike {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.linklike:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.linklike:disabled {
+  cursor: default;
+  text-decoration: none;
+  opacity: 0.7;
+}
+
+/* Empty state: state the promise in the product's own voice, with the
+   serif gesture, rather than leaving an inert grey panel. */
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 320px;
+  border: 1px dashed var(--border);
+  border-radius: var(--r-md);
+  padding: 22px 24px;
+  background: var(--surface-2);
+}
+
+.empty .lead {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--text);
+  margin: 0;
+  max-width: 34ch;
+}
+
+.empty .sub {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 0;
+  max-width: 46ch;
+}
+
+.footer {
+  margin-top: 34px;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+/* Capability strip: what this particular deployment can do, stated before a
+   user discovers it from an error. */
+.caps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.caps-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-right: 2px;
+}
+
+.cap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  padding: 3px 10px;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.cap::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+
+.cap[data-on="true"]::before {
+  background: var(--ok);
+}
+
+/* --- scrollbars: quiet, ink-toned, never the OS-chrome white ------------- */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-lit) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--border-lit);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--text-faint);
+  background-clip: content-box;
+  border: 3px solid transparent;
+}
+
+/* --- custom cursor: a markdown heading mark stands in for the arrow ----- */
+
+html.md-cursor,
+html.md-cursor * {
+  cursor: none;
+}
+
+html.md-cursor input,
+html.md-cursor textarea,
+html.md-cursor select,
+html.md-cursor [contenteditable] {
+  cursor: text;
+}
+
+/* Position (JS-driven translate3d) and scale/colour (CSS, keyed off
+   data-state) live on separate elements — a single element can't take a
+   per-frame JS transform and a CSS hover transform without one clobbering
+   the other every frame. */
+.md-cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  width: 30px;
+  height: 30px;
+  /* Without this the tracking div sits directly over whatever it's
+     following and eats the click meant for the element underneath —
+     the actual cause of "clicking buttons doesn't work". */
+  pointer-events: none;
+  will-change: transform;
+  transition: opacity 0.15s var(--ease);
+}
+
+.md-cursor-dot-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-full);
+  background: var(--surface-1);
+  border: 1px solid var(--border-lit);
+  color: var(--brand);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 4px 14px -6px rgb(23 21 26 / 0.28);
+  transition:
+    transform 0.18s var(--ease),
+    background 0.18s var(--ease),
+    color 0.18s var(--ease);
+}
+
+.md-cursor-dot[data-state="active"] .md-cursor-dot-inner {
+  transform: scale(1.32);
+  background: var(--text);
+  color: var(--surface-1);
+  border-color: var(--text);
+}
+
+.md-cursor-dot[data-state="text"] {
+  opacity: 0 !important;
+}

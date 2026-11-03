@@ -1,0 +1,16 @@
+[
+  {
+    "index": 0,
+    "url": "https://prompt2md.vercel.app/crane-turntable.mp4",
+    "filename": "crane-turntable.mp4",
+    "width": 380,
+    "height": 380,
+    "sourceWidth": 720,
+    "sourceHeight": 720,
+    "heading": "Fold any text into token‑optimized Markdown",
+    "caption": "Open source, Apache-2.0",
+    "ariaLabel": "",
+    "preview": "assets/videos/previews/video-0-preview.png",
+    "localPath": "assets/videos/crane-turntable.mp4"
+  }
+]

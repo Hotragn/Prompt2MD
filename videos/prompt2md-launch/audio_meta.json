@@ -1,0 +1,638 @@
+{
+  "bgm": {
+    "path": "assets/bgm/track.wav",
+    "volume": 0.22,
+    "mode": "generate",
+    "provider": "musicgen",
+    "duration_s": 33
+  },
+  "bgm_pending": false,
+  "voices": [
+    {
+      "frame": 1,
+      "path": "assets/voice/01.wav",
+      "duration_s": 2.4,
+      "words": [
+        {
+          "id": "w1-0",
+          "text": "You",
+          "start": 0.066,
+          "end": 0.302
+        },
+        {
+          "id": "w1-1",
+          "text": "write",
+          "start": 0.302,
+          "end": 0.538
+        },
+        {
+          "id": "w1-2",
+          "text": "prompts",
+          "start": 0.538,
+          "end": 0.775
+        },
+        {
+          "id": "w1-3",
+          "text": "like",
+          "start": 0.775,
+          "end": 1.011
+        },
+        {
+          "id": "w1-4",
+          "text": "this.",
+          "start": 1.011,
+          "end": 1.247
+        }
+      ],
+      "take_s": 1.365,
+      "words_source": "heuristic-silencedetect (no ASR available); written forms, spoken timing"
+    },
+    {
+      "frame": 2,
+      "path": "assets/voice/02.wav",
+      "duration_s": 3.2,
+      "words": [
+        {
+          "id": "w2-0",
+          "text": "prompt2md",
+          "start": 0,
+          "end": 0.995
+        },
+        {
+          "id": "w2-1",
+          "text": "folds",
+          "start": 0.995,
+          "end": 1.194
+        },
+        {
+          "id": "w2-2",
+          "text": "it",
+          "start": 1.194,
+          "end": 1.393
+        },
+        {
+          "id": "w2-3",
+          "text": "into",
+          "start": 1.393,
+          "end": 1.791
+        },
+        {
+          "id": "w2-4",
+          "text": "clean",
+          "start": 1.791,
+          "end": 1.99
+        },
+        {
+          "id": "w2-5",
+          "text": "Markdown.",
+          "start": 1.99,
+          "end": 2.388
+        }
+      ],
+      "take_s": 2.517,
+      "words_source": "heuristic-silencedetect (no ASR available); written forms, spoken timing"
+    },
+    {
+      "frame": 3,
+      "path": "assets/voice/03.wav",
+      "duration_s": 2.8,
+      "words": [
+        {
+          "id": "w3-0",
+          "text": "Paste",
+          "start": 0,
+          "end": 0.278
+        },
+        {
+          "id": "w3-1",
+          "text": "the",
+          "start": 0.278,
+          "end": 0.556
+        },
+        {
+          "id": "w3-2",
+          "text": "mess.",
+          "start": 0.556,
+          "end": 0.834
+        },
+        {
+          "id": "w3-3",
+          "text": "Hit",
+          "start": 1.004,
+          "end": 1.22
+        },
+        {
+          "id": "w3-4",
+          "text": "Fold",
+          "start": 1.22,
+          "end": 1.437
+        },
+        {
+          "id": "w3-5",
+          "text": "it.",
+          "start": 1.437,
+          "end": 1.653
+        }
+      ],
+      "take_s": 1.771,
+      "words_source": "heuristic-silencedetect (no ASR available); written forms, spoken timing"
+    },
+    {
+      "frame": 4,
+      "path": "assets/voice/04.wav",
+      "duration_s": 4.3,
+      "words": [
+        {
+          "id": "w4-0",
+          "text": "Structured",
+          "start": 0,
+          "end": 0.562
+        },
+        {
+          "id": "w4-1",
+          "text": "Markdown,",
+          "start": 0.562,
+          "end": 1.123
+        },
+        {
+          "id": "w4-2",
+          "text": "an",
+          "start": 1.34,
+          "end": 1.537
+        },
+        {
+          "id": "w4-3",
+          "text": "honest",
+          "start": 1.537,
+          "end": 1.932
+        },
+        {
+          "id": "w4-4",
+          "text": "token",
+          "start": 1.932,
+          "end": 2.326
+        },
+        {
+          "id": "w4-5",
+          "text": "count,",
+          "start": 2.326,
+          "end": 2.523
+        },
+        {
+          "id": "w4-6",
+          "text": "and",
+          "start": 2.82,
+          "end": 3.026
+        },
+        {
+          "id": "w4-7",
+          "text": "no",
+          "start": 3.026,
+          "end": 3.231
+        },
+        {
+          "id": "w4-8",
+          "text": "API",
+          "start": 3.231,
+          "end": 3.847
+        },
+        {
+          "id": "w4-9",
+          "text": "key.",
+          "start": 3.847,
+          "end": 4.053
+        }
+      ],
+      "take_s": 4.16,
+      "words_source": "heuristic-silencedetect (no ASR available); written forms, spoken timing"
+    },
+    {
+      "frame": 5,
+      "path": "assets/voice/05.wav",
+      "duration_s": 3.7,
+      "words": [
+        {
+          "id": "w5-0",
+          "text": "Too",
+          "start": 0,
+          "end": 0.287
+        },
+        {
+          "id": "w5-1",
+          "text": "long?",
+          "start": 0.287,
+          "end": 0.573
+        },
+        {
+          "id": "w5-2",
+          "text": "Fold",
+          "start": 0.822,
+          "end": 1.016
+        },
+        {
+          "id": "w5-3",
+          "text": "fourteen",
+          "start": 1.016,
+          "end": 1.404
+        },
+        {
+          "id": "w5-4",
+          "text": "hundred",
+          "start": 1.404,
+          "end": 1.792
+        },
+        {
+          "id": "w5-5",
+          "text": "tokens",
+          "start": 1.792,
+          "end": 2.18
+        },
+        {
+          "id": "w5-6",
+          "text": "to",
+          "start": 2.18,
+          "end": 2.374
+        },
+        {
+          "id": "w5-7",
+          "text": "under",
+          "start": 2.374,
+          "end": 2.763
+        },
+        {
+          "id": "w5-8",
+          "text": "five",
+          "start": 2.763,
+          "end": 2.957
+        },
+        {
+          "id": "w5-9",
+          "text": "hundred.",
+          "start": 2.957,
+          "end": 3.345
+        }
+      ],
+      "take_s": 3.456,
+      "words_source": "heuristic-silencedetect (no ASR available); written forms, spoken timing"
+    },
+    {
+      "frame": 6,
+      "path": "assets/voice/06.wav",
+      "duration_s": 2.6,
+      "words": [
+        {
+          "id": "w6-0",
+          "text": "Other",
+          "start": 0,
+          "end": 0.411
+        },
+        {
+          "id": "w6-1",
+          "text": "tools",
+          "start": 0.411,
+          "end": 0.616
+        },
+        {
+          "id": "w6-2",
+          "text": "cut",
+          "start": 0.616,
+          "end": 0.822
+        },
+        {
+          "id": "w6-3",
+          "text": "and",
+          "start": 0.822,
+          "end": 1.027
+        },
+        {
+          "id": "w6-4",
+          "text": "hope.",
+          "start": 1.027,
+          "end": 1.232
+        },
+        {
+          "id": "w6-5",
+          "text": "This",
+          "start": 1.485,
+          "end": 1.819
+        },
+        {
+          "id": "w6-6",
+          "text": "folds.",
+          "start": 1.819,
+          "end": 2.154
+        }
+      ],
+      "take_s": 2.24,
+      "words_source": "heuristic-silencedetect (no ASR available); written forms, spoken timing"
+    },
+    {
+      "frame": 7,
+      "path": "assets/voice/07.wav",
+      "duration_s": 4.4,
+      "words": [
+        {
+          "id": "w7-0",
+          "text": "Unfold",
+          "start": 0,
+          "end": 0.352
+        },
+        {
+          "id": "w7-1",
+          "text": "any",
+          "start": 0.352,
+          "end": 0.704
+        },
+        {
+          "id": "w7-2",
+          "text": "summary.",
+          "start": 0.704,
+          "end": 1.231
+        },
+        {
+          "id": "w7-3",
+          "text": "The",
+          "start": 1.613,
+          "end": 1.8
+        },
+        {
+          "id": "w7-4",
+          "text": "exact",
+          "start": 1.8,
+          "end": 2.173
+        },
+        {
+          "id": "w7-5",
+          "text": "original",
+          "start": 2.173,
+          "end": 2.918
+        },
+        {
+          "id": "w7-6",
+          "text": "comes",
+          "start": 2.918,
+          "end": 3.105
+        },
+        {
+          "id": "w7-7",
+          "text": "back.",
+          "start": 3.105,
+          "end": 3.291
+        }
+      ],
+      "take_s": 3.392,
+      "words_source": "heuristic-silencedetect (no ASR available); written forms, spoken timing"
+    },
+    {
+      "frame": 8,
+      "path": "assets/voice/08.wav",
+      "duration_s": 4,
+      "words": [
+        {
+          "id": "w8-0",
+          "text": "It",
+          "start": 0,
+          "end": 0.224
+        },
+        {
+          "id": "w8-1",
+          "text": "plugs",
+          "start": 0.224,
+          "end": 0.448
+        },
+        {
+          "id": "w8-2",
+          "text": "into",
+          "start": 0.448,
+          "end": 0.897
+        },
+        {
+          "id": "w8-3",
+          "text": "Claude",
+          "start": 0.897,
+          "end": 1.121
+        },
+        {
+          "id": "w8-4",
+          "text": "Code,",
+          "start": 1.121,
+          "end": 1.345
+        },
+        {
+          "id": "w8-5",
+          "text": "Cursor,",
+          "start": 1.607,
+          "end": 2.078
+        },
+        {
+          "id": "w8-6",
+          "text": "and",
+          "start": 2.38,
+          "end": 2.56
+        },
+        {
+          "id": "w8-7",
+          "text": "any",
+          "start": 2.56,
+          "end": 2.919
+        },
+        {
+          "id": "w8-8",
+          "text": "MCP",
+          "start": 2.919,
+          "end": 3.458
+        },
+        {
+          "id": "w8-9",
+          "text": "client.",
+          "start": 3.458,
+          "end": 3.817
+        }
+      ],
+      "take_s": 3.904,
+      "words_source": "heuristic-silencedetect (no ASR available); written forms, spoken timing"
+    },
+    {
+      "frame": 9,
+      "path": "assets/voice/09.wav",
+      "duration_s": 4.6,
+      "words": [
+        {
+          "id": "w9-0",
+          "text": "Open",
+          "start": 0,
+          "end": 0.587
+        },
+        {
+          "id": "w9-1",
+          "text": "source.",
+          "start": 0.587,
+          "end": 0.88
+        },
+        {
+          "id": "w9-2",
+          "text": "Try",
+          "start": 1.225,
+          "end": 1.412
+        },
+        {
+          "id": "w9-3",
+          "text": "it",
+          "start": 1.412,
+          "end": 1.599
+        },
+        {
+          "id": "w9-4",
+          "text": "at",
+          "start": 1.599,
+          "end": 1.787
+        },
+        {
+          "id": "w9-5",
+          "text": "prompt2md.vercel.app.",
+          "start": 1.787,
+          "end": 3.66
+        }
+      ],
+      "take_s": 3.755,
+      "words_source": "heuristic-silencedetect (no ASR available); written forms, spoken timing"
+    }
+  ],
+  "sfx": [
+    {
+      "frame": 1,
+      "file": "assets/sfx/typing.mp3",
+      "offset_s": 0.05,
+      "duration_s": 1.5,
+      "volume": 0.2
+    },
+    {
+      "frame": 2,
+      "file": "assets/sfx/whoosh-cinematic.mp3",
+      "offset_s": 0,
+      "duration_s": 5.544,
+      "volume": 0.28
+    },
+    {
+      "frame": 2,
+      "file": "assets/sfx/chime.mp3",
+      "offset_s": 0.95,
+      "duration_s": 2.5,
+      "volume": 0.24
+    },
+    {
+      "frame": 3,
+      "file": "assets/sfx/click-soft.mp3",
+      "offset_s": 1.15,
+      "duration_s": 0.366,
+      "volume": 0.34
+    },
+    {
+      "frame": 3,
+      "file": "assets/sfx/whoosh-short.mp3",
+      "offset_s": 2.2,
+      "duration_s": 0.575,
+      "volume": 0.22
+    },
+    {
+      "frame": 4,
+      "file": "assets/sfx/ping.mp3",
+      "offset_s": 2.5,
+      "duration_s": 1.32,
+      "volume": 0.24
+    },
+    {
+      "frame": 5,
+      "file": "assets/sfx/whoosh-short.mp3",
+      "offset_s": 0.82,
+      "duration_s": 0.575,
+      "volume": 0.22
+    },
+    {
+      "frame": 5,
+      "file": "assets/sfx/ping.mp3",
+      "offset_s": 3,
+      "duration_s": 1.32,
+      "volume": 0.2
+    },
+    {
+      "frame": 6,
+      "file": "assets/sfx/click.mp3",
+      "offset_s": 0.62,
+      "duration_s": 0.366,
+      "volume": 0.28
+    },
+    {
+      "frame": 6,
+      "file": "assets/sfx/whoosh-short.mp3",
+      "offset_s": 1.5,
+      "duration_s": 0.575,
+      "volume": 0.22
+    },
+    {
+      "frame": 7,
+      "file": "assets/sfx/typing.mp3",
+      "offset_s": 0.3,
+      "duration_s": 1.5,
+      "volume": 0.2
+    },
+    {
+      "frame": 7,
+      "file": "assets/sfx/key-press.mp3",
+      "offset_s": 1.45,
+      "duration_s": 0.4,
+      "volume": 0.34
+    },
+    {
+      "frame": 7,
+      "file": "assets/sfx/chime.mp3",
+      "offset_s": 3.1,
+      "duration_s": 2.5,
+      "volume": 0.3
+    },
+    {
+      "frame": 8,
+      "file": "assets/sfx/pop.mp3",
+      "offset_s": 0.95,
+      "duration_s": 0.72,
+      "volume": 0.18
+    },
+    {
+      "frame": 8,
+      "file": "assets/sfx/pop.mp3",
+      "offset_s": 1.65,
+      "duration_s": 0.72,
+      "volume": 0.18
+    },
+    {
+      "frame": 8,
+      "file": "assets/sfx/pop.mp3",
+      "offset_s": 2.3,
+      "duration_s": 0.72,
+      "volume": 0.16
+    },
+    {
+      "frame": 8,
+      "file": "assets/sfx/pop.mp3",
+      "offset_s": 2.95,
+      "duration_s": 0.72,
+      "volume": 0.18
+    },
+    {
+      "frame": 9,
+      "file": "assets/sfx/whoosh-cinematic.mp3",
+      "offset_s": 0,
+      "duration_s": 5.544,
+      "volume": 0.2
+    },
+    {
+      "frame": 9,
+      "file": "assets/sfx/chime.mp3",
+      "offset_s": 1.85,
+      "duration_s": 2.5,
+      "volume": 0.3
+    }
+  ],
+  "total_duration_s": 32,
+  "bgm_provider": "musicgen"
+}

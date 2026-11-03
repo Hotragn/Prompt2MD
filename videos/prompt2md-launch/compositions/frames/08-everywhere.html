@@ -1,0 +1,190 @@
+<template>
+  <style>
+@font-face{font-family:"EB Garamond";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/EBGaramond-400.woff2") format("woff2");}
+@font-face{font-family:"EB Garamond";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/EBGaramond-700.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/Inter-400.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/Inter-700.woff2") format("woff2");}
+@font-face{font-family:"JetBrains Mono";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/JetBrainsMono-400.woff2") format("woff2");}
+@font-face{font-family:"JetBrains Mono";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/JetBrainsMono-700.woff2") format("woff2");}
+  </style>
+  <style>
+    /* Frame 08 · Everywhere. Canvas 1080x1920; sketch cqw x 10.8 = px.
+       Hub centre = (540, 712.8). Caption keep-out below y 1594: lowest content ~1107. */
+    #root {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      color: #17151A;
+    }
+    #root [class~="08-everywhere-bg"] {
+      position: absolute;
+      inset: 0;
+      background: #FAF9F6;
+    }
+    #root [class~="08-everywhere-stage"] {
+      position: absolute;
+      inset: 0;
+      transform-origin: 540px 712.8px;
+    }
+    /* kicker-spike: JetBrains Mono, uppercase, 0.16em, violet folded corner */
+    #root [class~="08-everywhere-kicker"] {
+      position: absolute;
+      left: 97px;
+      top: 140px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 29px;
+      line-height: 1.2;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #8B8794;
+      white-space: nowrap;
+    }
+    #root [class~="08-everywhere-spike"] {
+      display: inline-block;
+      color: #5B3DF5;
+      margin-right: 15px;
+      transform-origin: 50% 50%;
+    }
+    #root [class~="08-everywhere-kicker-text"] {
+      display: inline-block;
+    }
+    /* hairline dashed orbit ring, r = 30cqw = 324px */
+    #root [class~="08-everywhere-ring"] {
+      position: absolute;
+      left: 190px;
+      top: 362.8px;
+      width: 700px;
+      height: 700px;
+      overflow: visible;
+    }
+    /* the hub: brand badge, 22cqw = 237.6px, shown as-is */
+    #root [class~="08-everywhere-hub"] {
+      position: absolute;
+      left: 421.2px;
+      top: 594px;
+      width: 237.6px;
+      height: 237.6px;
+      perspective: 1200px;
+    }
+    #root [class~="08-everywhere-badge"] {
+      display: block;
+      width: 100%;
+      height: 100%;
+      transform-origin: 50% 50%;
+    }
+    /* tool chips: the site's tool-list pill (hairline, white fill, muted ink) */
+    #root [class~="08-everywhere-chip"] {
+      position: absolute;
+      white-space: nowrap;
+      font-family: "Inter", sans-serif;
+      font-weight: 700;
+      font-size: 34.5px;
+      line-height: 1.2;
+      letter-spacing: -0.005em;
+      color: #5F5B66;
+      background: #FFFFFF;
+      border: 1px solid rgba(23, 21, 26, 0.12);
+      border-radius: 9999px;
+      padding: 16px 35px;
+      box-shadow: 0 1px 3px rgba(23, 21, 26, 0.08), 0 4px 16px rgba(23, 21, 26, 0.04);
+      transform-origin: 50% 50%;
+    }
+  </style>
+
+  <div data-hf-id="hf-kchc" id="root" data-composition-id="08-everywhere" data-start="0" data-duration="4.4" data-width="1080" data-height="1920">
+    <div data-hf-id="hf-fxl1" class="clip 08-everywhere-bg" data-start="0" data-duration="4.4" data-track-index="0"></div>
+
+    <div data-hf-id="hf-2rb7" class="clip 08-everywhere-stage" data-start="0" data-duration="4.4" data-track-index="1">
+      <svg data-hf-id="hf-23rh" class="08-everywhere-ring" viewBox="-350 -350 700 700" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs data-hf-id="hf-mh0t">
+          <mask data-hf-id="hf-em8f" id="08-everywhere-ringmask" maskUnits="userSpaceOnUse" x="-350" y="-350" width="700" height="700">
+            <circle data-hf-id="hf-yz5c" class="08-everywhere-ringdraw" cx="0" cy="0" r="324" fill="none" stroke="#FFFFFF" stroke-width="10" transform="rotate(-90)" />
+          </mask>
+        </defs>
+        <circle data-hf-id="hf-t9hq" cx="0" cy="0" r="324" fill="none" stroke="#CFCAC0" stroke-width="1.5" stroke-dasharray="7 8.9043" transform="rotate(-90)" mask="url(#08-everywhere-ringmask)" />
+      </svg>
+
+      <div data-hf-id="hf-o35t" class="08-everywhere-hub">
+        <img data-hf-id="hf-xhfs" class="08-everywhere-badge" src="assets/brand-icon.svg" alt="prompt2md">
+      </div>
+
+      <div data-hf-id="hf-nuz0" class="08-everywhere-chip" data-at="0.95" data-dx="0" data-dy="-388.8" style="left: 540px; top: 324px">Claude Code</div>
+      <div data-hf-id="hf-qdep" class="08-everywhere-chip" data-at="1.65" data-dx="302.4" data-dy="-237.6" style="left: 842.4px; top: 475.2px">Cursor</div>
+      <div data-hf-id="hf-ko3f" class="08-everywhere-chip" data-at="2.30" data-dx="-313.2" data-dy="86.4" style="left: 226.8px; top: 799.2px">Claude Desktop</div>
+      <div data-hf-id="hf-pyil" class="08-everywhere-chip" data-at="2.42" data-dx="334.8" data-dy="86.4" style="left: 874.8px; top: 799.2px">Windsurf</div>
+      <div data-hf-id="hf-cbc5" class="08-everywhere-chip" data-at="2.54" data-dx="183.6" data-dy="356.4" style="left: 723.6px; top: 1069.2px">Gemini CLI</div>
+      <div data-hf-id="hf-ed71" class="08-everywhere-chip" data-at="2.66" data-dx="-183.6" data-dy="356.4" style="left: 356.4px; top: 1069.2px">Codex CLI</div>
+      <div data-hf-id="hf-e69k" class="08-everywhere-chip" data-at="2.95" data-dx="-291.6" data-dy="-237.6" style="left: 248.4px; top: 475.2px">any MCP client</div>
+
+      <div data-hf-id="hf-uzl3" class="08-everywhere-kicker"><span data-hf-id="hf-8cuu" class="08-everywhere-spike">◣</span><span data-hf-id="hf-4cl4" class="08-everywhere-kicker-text">One command wires every tool</span></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      var scope = document.querySelector('[data-composition-id="08-everywhere"]') || document;
+      function one(c) { return scope.querySelector('[class~="' + c + '"]'); }
+      function all(c) { return Array.prototype.slice.call(scope.querySelectorAll('[class~="' + c + '"]')); }
+
+      var stage = one("08-everywhere-stage");
+      var badge = one("08-everywhere-badge");
+      var ringDraw = one("08-everywhere-ringdraw");
+      var spike = one("08-everywhere-spike");
+      var kickerText = one("08-everywhere-kicker-text");
+      var chips = all("08-everywhere-chip");
+
+      var tl = gsap.timeline({ paused: true });
+
+      // Scene 1 (0.00-0.90): "It plugs into"
+      // Camera: a short push-in on the hub, settled before the frame's midpoint (back half stays still).
+      tl.fromTo(stage, { scale: 0.95 }, { scale: 1, duration: 2.0, ease: "power2.out" }, 0);
+
+      // orbit-3d-entry (entry form): the badge snaps in from depth with a quick 3D rotate that
+      // decelerates and settles flat. It never rotates after it settles.
+      tl.fromTo(
+        badge,
+        { rotationY: -78, rotationX: 22, z: -320, scale: 0.55 },
+        { rotationY: 0, rotationX: 0, z: 0, scale: 1, duration: 0.7, ease: "expo.out" },
+        0.04
+      );
+      tl.fromTo(badge, { opacity: 0 }, { opacity: 1, duration: 0.24, ease: "power1.out" }, 0.04);
+
+      // Kicker at 0.1 s: the folded-corner glyph fades and scales 0.92 -> 1, the words follow.
+      tl.fromTo(spike, { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.45, ease: "power3.out" }, 0.1);
+      tl.fromTo(kickerText, { opacity: 0, x: -14 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 0.14);
+
+      // svg-path-draw: the dashed orbit ring draws clockwise from 12 o'clock (a solid mask stroke
+      // reveals the dashed hairline, so the dash pattern survives the draw).
+      var len = Math.ceil(2 * Math.PI * 324) + 2;
+      ringDraw.style.strokeDasharray = len + " " + len;
+      tl.fromTo(ringDraw, { strokeDashoffset: len }, { strokeDashoffset: 0, duration: 0.75, ease: "power2.out" }, 0.18);
+
+      // Scene 2 (0.90-3.50): spring-pop-entrance (smooth, power3.out, no overshoot). Each chip
+      // pops in place on its word cue, rising a short way out from the hub onto the ring.
+      chips.forEach(function (el) {
+        var at = Number(el.getAttribute("data-at"));
+        var dx = Number(el.getAttribute("data-dx"));
+        var dy = Number(el.getAttribute("data-dy"));
+        var d = Math.sqrt(dx * dx + dy * dy) || 1;
+        var ox = (-dx / d) * 30;
+        var oy = (-dy / d) * 30;
+        tl.fromTo(
+          el,
+          { xPercent: -50, yPercent: -50, x: ox, y: oy, scale: 0, opacity: 0 },
+          { xPercent: -50, yPercent: -50, x: 0, y: 0, scale: 1, opacity: 1, duration: 0.5, ease: "power3.out" },
+          at
+        );
+      });
+
+      // Scene 3 (3.50-4.00): the completed ring holds. No exit; the root transition is the exit.
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["08-everywhere"] = tl;
+    })();
+  </script>
+</template>

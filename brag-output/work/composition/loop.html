@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en" class="js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>prompt2md loop</title>
+    <link rel="stylesheet" href="globals.css" />
+    <link rel="stylesheet" href="product.css" />
+    <link rel="stylesheet" href="comp.css" />
+    <style>
+      /* 1200x675 CSS px. Rendered at device scale 1.6 (1920x1080) for the MP4
+         and downscaled to 1200x675 for the GIF. The demo card is the landing
+         page's desktop hero demo, zoomed so its text survives being shown at
+         article-column width (about 0.6x). */
+
+      .l-mast {
+        position: absolute;
+        top: 30px;
+        left: 24px;
+        right: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .l-mast .mark {
+        border-radius: 9px;
+      }
+
+      .l-mast .brand {
+        font-size: 23px;
+      }
+
+      .l-mast .tagline {
+        font-size: 14px;
+      }
+
+      .l-mast .nav-cta {
+        font-size: 15px;
+        font-weight: 650;
+        padding: 8px 18px;
+        text-decoration: none;
+      }
+
+      /* Positioned by an unzoomed wrapper: zoom scales an element's own
+         top/left too, which had pushed the card right and into the bottom edge. */
+      .l-pos {
+        position: absolute;
+        top: 92px;
+        left: 24px;
+        width: 1152px;
+      }
+
+      .l-demo {
+        width: calc(1152px / 1.36);
+        margin: 0;
+        zoom: 1.36;
+      }
+
+      .l-body {
+        height: auto;
+        min-height: 100%;
+        overflow: hidden;
+      }
+
+      .l-idle {
+        height: 100%;
+      }
+
+      .fold-panes {
+        align-items: start;
+      }
+
+      .fold-arrow {
+        align-self: stretch;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage" id="stage">
+      <div class="grid-bg"></div>
+
+      <header class="l-mast">
+        <span class="brand-lockup">
+          <img src="brand-icon.svg" alt="" width="38" height="38" class="mark" />
+          <span class="brand-block">
+            <span class="brand">prompt<span class="brand-accent">2md</span></span>
+            <span class="tagline">A Markdown Magic</span>
+          </span>
+        </span>
+        <span class="nav-cta">prompt2md.vercel.app</span>
+      </header>
+
+      <div class="l-pos">
+      <div class="fold-demo l-demo" id="demo">
+        <div class="fold-panes">
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">Your prompt</span>
+              <button class="link-btn">reset</button>
+            </div>
+            <div id="inBody"></div>
+          </div>
+
+          <div class="fold-arrow" aria-hidden="true"><span></span></div>
+
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">Token-optimized Markdown</span>
+              <button class="link-btn" id="copyBtn">copy</button>
+            </div>
+            <div id="outSlot" style="position: relative">
+              <div class="pane-body pane-idle l-idle" id="idle">
+                <span>Press Fold to run this through the real pipeline.</span>
+              </div>
+              <div id="outHost" style="position: absolute; left: 0; right: 0; top: 0"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fold-actions">
+          <button class="btn" id="foldBtn">Fold it</button>
+          <div class="ledger" id="ledger" role="status">
+            <span class="metric"><span class="metric-k">before</span><span class="metric-v" id="mBefore">150</span></span>
+            <span class="ledger-sep" aria-hidden="true">→</span>
+            <span class="metric"><span class="metric-k">after</span><span class="metric-v" id="mAfter">127</span></span>
+            <span class="metric" id="mPctWrap"><span class="metric-k">of original</span><span class="metric-v ok" id="mPct">85%</span></span>
+          </div>
+          <span class="fold-note" id="note">Runs live against this deployment. Nothing is stored on our side.</span>
+        </div>
+      </div>
+      </div>
+
+      <div class="md-cursor-dot" id="cur"><div class="md-cursor-dot-inner" id="curIn">#</div></div>
+    </div>
+
+    <script src="lib.js"></script>
+    <script src="content.js"></script>
+    <script>
+      (function () {
+        "use strict";
+        const { seg, ease, clamp, lerp, esc, runsHTML, Accordion } = P2;
+        const C = CONTENT;
+        const $ = (id) => document.getElementById(id);
+
+        const DURATION = 9;
+        const ZOOM = 1.36;
+
+        // One loop. The last frame is the first frame, so it plays forever without a seam.
+        const T = {
+          curA: 0.18, curB: 0.84,
+          press: 0.94,
+          busyA: 1.0, busyB: 2.08,
+          dimA: 1.02, dimB: 1.34,
+          unfoldA: 1.26, unfoldB: 2.08,
+          ledgerA: 2.1,
+          scrollA: 3.3, scrollB: 5.3,
+          closeA: 7.1, closeB: 7.8,
+          undimA: 7.55, undimB: 7.95,
+          idleBackA: 7.7,
+          noteBackA: 7.9,
+          curBackA: 8.45, curBackB: 8.95,
+        };
+
+        let outAcc;
+        let outScrollMax = 0;
+        let bodyH = 0;
+        let btnPt = { x: 0, y: 0 };
+        const START = { x: 1090, y: 610 };
+
+        const mdHTML = (md) =>
+          md
+            .split("\n")
+            .map((l) => (l === "" ? '<div class="md-gap"></div>' : `<div class="md-line">${esc(l)}</div>`))
+            .join("");
+
+        function measure(html, width, cls) {
+          const m = document.createElement("div");
+          m.className = cls;
+          m.style.cssText = `position:absolute;left:-9999px;top:0;visibility:hidden;width:${width}px;height:auto;min-height:0`;
+          m.innerHTML = html;
+          $("demo").appendChild(m);
+          const h = m.getBoundingClientRect().height;
+          m.remove();
+          return Math.ceil(h / ZOOM);
+        }
+
+        async function build() {
+          await document.fonts.ready;
+          const inW = $("inBody").getBoundingClientRect().width / ZOOM;
+          bodyH = measure(runsHTML(C.PROMPT_RUNS, 1e9, 0, false), inW, "pane-body l-body");
+          $("inBody").style.height = `${bodyH}px`;
+          $("outSlot").style.height = `${bodyH}px`;
+
+          const outW = $("outHost").getBoundingClientRect().width / ZOOM;
+          const outFull = measure(mdHTML(C.OUTPUT), outW, "pane-body l-body");
+          outScrollMax = Math.max(0, outFull - bodyH);
+          outAcc = new Accordion($("outHost"), { strips: 6, height: bodyH });
+          outAcc.setHTML(`<div class="pane-body l-body">${mdHTML(C.OUTPUT)}</div>`);
+
+          render(T.curB);
+          const r = $("foldBtn").getBoundingClientRect();
+          btnPt = { x: r.right - 8, y: r.bottom - 8 };
+          window.__ready = true;
+        }
+
+        function count(el, t, t0, t1, to) {
+          el.textContent = String(Math.round(to * seg(t, t0, t1, ease.out)));
+        }
+
+        function render(t) {
+          t = ((t % DURATION) + DURATION) % DURATION;
+
+          // Input: the prompt as the landing page ships it; dropped words dim, then return.
+          const dim = t < T.undimA ? seg(t, T.dimA, T.dimB) : 1 - seg(t, T.undimA, T.undimB);
+          $("inBody").innerHTML = `<div class="pane-body l-body" style="height:100%">${runsHTML(C.PROMPT_RUNS, 1e9, dim, false)}</div>`;
+
+          // Output: opens out after the click, scrolls like the real pane, folds shut to loop.
+          let angle;
+          if (t < T.unfoldA) angle = 90;
+          else if (t < T.closeA) angle = 90 * (1 - seg(t, T.unfoldA, T.unfoldB, ease.brand));
+          else angle = 90 * seg(t, T.closeA, T.closeB, ease.fold);
+          outAcc.setAngle(angle);
+          outAcc.setScroll(t < T.closeB ? outScrollMax * seg(t, T.scrollA, T.scrollB, ease.inOut) : 0);
+          $("outHost").style.visibility = angle >= 90 ? "hidden" : "visible";
+
+          const idleOn = t < T.busyA ? 1 - seg(t, T.busyA - 0.01, T.busyA + 0.2) : t >= T.idleBackA ? seg(t, T.idleBackA, T.idleBackA + 0.4) : 0;
+          $("idle").style.opacity = String(t < T.busyA ? 1 : idleOn);
+          $("copyBtn").style.visibility = angle < 30 ? "visible" : "hidden";
+
+          const btn = $("foldBtn");
+          const busy = t >= T.busyA && t < T.busyB;
+          btn.textContent = busy ? "Folding…" : "Fold it";
+          btn.style.opacity = busy ? "0.5" : "1";
+          btn.style.transform = t >= T.press && t < T.press + 0.1 ? "translateY(1px)" : "none";
+
+          // Idle: the note. Busy: nothing. Result: the ledger. Exactly as LiveFold renders.
+          const note = $("note");
+          const ledger = $("ledger");
+          if (t < T.busyA) {
+            note.style.display = "";
+            note.style.opacity = "1";
+            ledger.style.display = "none";
+          } else if (t < T.ledgerA) {
+            note.style.display = "none";
+            ledger.style.display = "none";
+          } else if (t < T.closeA + 0.45) {
+            note.style.display = "none";
+            ledger.style.display = "";
+            const lk = seg(t, T.ledgerA, T.ledgerA + 0.3);
+            const out = 1 - seg(t, T.closeA, T.closeA + 0.4);
+            ledger.style.opacity = (lk * out).toFixed(3);
+            count($("mBefore"), t, T.ledgerA, T.ledgerA + 0.42, C.REPORT.inputTokens);
+            count($("mAfter"), t, T.ledgerA + 0.14, T.ledgerA + 0.56, C.REPORT.outputTokens);
+            const pk = seg(t, T.ledgerA + 0.56, T.ledgerA + 0.86, ease.brand);
+            const pw = $("mPctWrap");
+            pw.style.opacity = pk.toFixed(3);
+            pw.style.transform = `scale(${(0.86 + 0.14 * pk).toFixed(4)})`;
+            pw.style.transformOrigin = "0% 60%";
+          } else {
+            ledger.style.display = "none";
+            note.style.display = "";
+            note.style.opacity = seg(t, T.noteBackA, T.noteBackA + 0.4).toFixed(3);
+          }
+
+          // The site's "#" cursor: rests, travels, clicks, leaves, comes back to rest.
+          const cur = $("cur");
+          const inner = $("curIn");
+          let x = START.x, y = START.y, op = 1, over = false, pressed = false;
+          if (t < T.curB) {
+            const k = seg(t, T.curA, T.curB, ease.brand);
+            x = lerp(START.x, btnPt.x, k);
+            y = lerp(START.y, btnPt.y, k) - Math.sin(k * Math.PI) * 40;
+            over = t >= T.curB - 0.06;
+          } else if (t < T.curBackA) {
+            x = btnPt.x;
+            y = btnPt.y;
+            over = true;
+            pressed = t >= T.press && t < T.press + 0.12;
+            op = 1 - seg(t, T.press + 0.2, T.press + 0.5);
+          } else {
+            op = seg(t, T.curBackA, T.curBackB);
+          }
+          cur.style.transform = `translate3d(${(x - 15).toFixed(2)}px, ${(y - 15).toFixed(2)}px, 0)`;
+          cur.style.opacity = op.toFixed(3);
+          inner.style.transform = over ? `scale(${pressed ? 1.14 : 1.32})` : "none";
+          inner.style.background = over ? "var(--text)" : "";
+          inner.style.color = over ? "var(--surface-1)" : "";
+          inner.style.borderColor = over ? "var(--text)" : "";
+        }
+
+        window.__duration = DURATION;
+        window.__render = render;
+        build().then(() => render(Number(new URLSearchParams(location.search).get("t") ?? 0)));
+      })();
+    </script>
+  </body>
+</html>

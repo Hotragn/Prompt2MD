@@ -1,0 +1,313 @@
+<template id="02-folded-template">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+
+<style>
+@font-face{font-family:"EB Garamond";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/EBGaramond-400.woff2") format("woff2");}
+@font-face{font-family:"EB Garamond";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/EBGaramond-700.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/Inter-400.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/Inter-700.woff2") format("woff2");}
+@font-face{font-family:"JetBrains Mono";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/JetBrainsMono-400.woff2") format("woff2");}
+@font-face{font-family:"JetBrains Mono";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/JetBrainsMono-700.woff2") format("woff2");}
+</style>
+
+<style>
+  /* ---- frame root (styled by id, never by class) ---- */
+  #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+
+  /* ---- layers ---- */
+  #root .f02-layer { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+  #root .f02-ground { z-index: 0; background: #FAF9F6; }
+  #root .f02-sheet-layer { z-index: 1; }
+  #root .f02-card-layer { z-index: 2; }
+  #root .f02-brand-layer { z-index: 3; }
+
+  /* ---- handoff 01 -> 02 (verbatim values, scoped under the root) ---- */
+  #root .p2-sheet { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; background: #0F0E11; }
+  #root .p2-kicker { position: absolute; left: 97px; top: 140px; font-family: "JetBrains Mono", monospace; font-size: 29px; line-height: 1.2; letter-spacing: 0.16em; text-transform: uppercase; color: #78748A; white-space: nowrap; }
+  #root .p2-kicker i { font-style: normal; color: #7C5CFF; margin-right: 15px; }
+  #root .p2-counter { position: absolute; right: 97px; top: 130px; text-align: right; font-family: "JetBrains Mono", monospace; }
+  #root .p2-counter small { display: block; font-size: 26px; line-height: 1.2; letter-spacing: 0.16em; text-transform: uppercase; color: #78748A; }
+  #root .p2-counter b { display: block; margin-top: 16px; font-size: 97px; line-height: 1; font-weight: 400; color: #F2EFEA; }
+  #root .p2-typed { position: absolute; left: 86px; top: 389px; width: 908px; font-family: "JetBrains Mono", monospace; color: #F2EFEA; font-variant-ligatures: none; white-space: normal; overflow-wrap: normal; }
+  #root .p2-hero { font-size: 69px; line-height: 91px; }
+  #root .p2-rest { margin-top: 32px; font-size: 37px; line-height: 55px; color: rgba(242, 239, 234, 0.55); -webkit-mask-image: linear-gradient(#000 40%, transparent); mask-image: linear-gradient(#000 40%, transparent); }
+  #root .p2-fill { color: #634CBE; }
+  #root .p2-caret { display: inline-block; width: 6px; height: 71px; background: #7C5CFF; vertical-align: -13px; margin-left: 6px; }
+
+  /* ---- the paper fold (fold-recipe.md): one 3D stage, N strips hinged at their top edge ---- */
+  #root .f02-fold-stage { position: absolute; left: 0; top: 0; perspective: 2200px; perspective-origin: 50% 50%; transform-style: preserve-3d; }
+  #root .f02-sheet-stage { width: 1080px; height: 1920px; }
+  #root .f02-card-stage { width: 908px; height: 1016px; }
+  #root .f02-strip { position: absolute; left: 0; top: 0; overflow: hidden; transform-origin: 50% 0%; transform-style: preserve-3d; }
+  #root .f02-face { position: absolute; left: 0; }
+  #root .f02-shade { position: absolute; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none; opacity: 0; }
+  #root .f02-crease { position: absolute; left: 0; right: 0; height: 1px; background: rgba(23, 21, 26, 0.14); pointer-events: none; opacity: 0; }
+
+  /* ---- the Markdown card (paper) ---- */
+  #root .f02-card-wrap { position: absolute; left: 86px; top: 497px; width: 908px; height: 1016px; }
+  #root .f02-card-shadow { position: absolute; left: 0; top: 0; width: 908px; height: 1016px; border-radius: 12px; box-shadow: 0 1px 3px rgba(23, 21, 26, 0.08), 0 4px 16px rgba(23, 21, 26, 0.04); opacity: 0; }
+  #root .f02-paper { position: absolute; left: 0; top: 0; width: 908px; height: 1016px; box-sizing: border-box; background: #FAF9F6; border: 1px solid rgba(23, 21, 26, 0.12); border-radius: 12px; }
+  #root .f02-md { position: absolute; left: 132px; top: 541px; width: 816px; font-family: "JetBrains Mono", monospace; font-weight: 400; font-size: 30px; line-height: 45px; color: #17151A; font-variant-ligatures: none; white-space: normal; overflow-wrap: normal; word-break: normal; }
+  #root .f02-md .f02-h { color: #5B3DF5; }
+  #root .f02-md .f02-gap-s { margin-top: 10px; }
+  #root .f02-md .f02-gap-l { margin-top: 26px; }
+
+  /* ---- lockup: crane badge + wordmark, tagline ---- */
+  #root .f02-lockup { position: absolute; left: 0; right: 0; top: 162px; height: 152px; display: flex; align-items: center; justify-content: center; gap: 35px; }
+  #root .f02-badge { position: relative; z-index: 2; flex: 0 0 auto; width: 152px; height: 152px; perspective: 1400px; perspective-origin: 50% 50%; }
+  #root .f02-square { position: absolute; left: 0; top: 0; width: 152px; height: 152px; display: block; transform-origin: 50% 50%; }
+  #root .f02-cloud { position: absolute; left: 0; top: 0; width: 152px; height: 152px; transform-style: preserve-3d; }
+  #root .f02-facet { position: absolute; left: 0; top: 0; width: 152px; height: 152px; display: block; overflow: visible; transform-style: preserve-3d; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+  #root .f02-wm-mask { position: relative; z-index: 1; flex: 0 0 auto; display: block; overflow: hidden; padding: 16px 10px 28px 40px; margin: -16px -10px -28px -40px; }
+  #root .f02-wm { display: block; white-space: nowrap; font-family: "Inter", sans-serif; font-weight: 700; font-size: 104px; line-height: 1; letter-spacing: -0.035em; color: #17151A; }
+  #root .f02-wm b { font-weight: 700; color: #5B3DF5; }
+  #root .f02-tagline { position: absolute; left: 0; right: 0; top: 356px; text-align: center; padding-left: 0.22em; font-family: "EB Garamond", serif; font-style: italic; font-weight: 400; font-size: 45px; line-height: 1.2; letter-spacing: 0.22em; color: #5F5B66; white-space: nowrap; }
+</style>
+
+<div data-hf-id="hf-87ue" id="root" data-composition-id="02-folded" data-start="0" data-duration="3.7" data-width="1080" data-height="1920">
+
+  <!-- paper ground, revealed as the ink sheet folds away -->
+  <div data-hf-id="hf-hp5o" class="clip f02-layer f02-ground" data-start="0" data-duration="3.7" data-track-index="0"></div>
+
+  <!-- the ink sheet: 01's last frame, split into 8 strips at setup -->
+  <div data-hf-id="hf-0cc3" class="clip f02-layer f02-sheet-layer" data-start="0" data-duration="3.7" data-track-index="1">
+    <div data-hf-id="hf-06j2" class="f02-fold-stage f02-sheet-stage">
+      <div data-hf-id="hf-nq5g" class="p2-sheet">
+        <div data-hf-id="hf-5fkv" class="p2-kicker"><i data-hf-id="hf-hkst">◣</i>your prompt</div>
+        <div data-hf-id="hf-nzs5" class="p2-counter"><small data-hf-id="hf-6rsm">tokens</small><b data-hf-id="hf-tqtd">150</b></div>
+        <div data-hf-id="hf-vsil" class="p2-typed">
+          <div data-hf-id="hf-b8u0" class="p2-hero"><span data-hf-id="hf-xgep" class="p2-fill">ok so </span>what i need is <span data-hf-id="hf-bipx" class="p2-fill">basically </span>a python script that takes a folder of csv files<span data-hf-id="hf-va9p" class="p2-caret"></span></div>
+          <div data-hf-id="hf-bdop" class="p2-rest">and merges them but ONLY the ones that have a "date" column, and also it should skip empty files. <span data-hf-id="hf-eujp" class="p2-fill">oh and </span>the output should be a single parquet file. <span data-hf-id="hf-l8nk" class="p2-fill">also </span>please use pandas. <span data-hf-id="hf-ed2a" class="p2-fill">actually </span>it also needs to handle dates in different formats, some are MM/DD/YYYY and some are ISO. <span data-hf-id="hf-pt20" class="p2-fill">like i said </span>merge them all into one parquet. <span data-hf-id="hf-1p0o" class="p2-fill">also </span>add logging. <span data-hf-id="hf-wg5n" class="p2-fill">did i mention to skip empty files? yeah </span>skip those. <span data-hf-id="hf-n34p" class="p2-fill">one more thing - </span>if a file fails to parse dont crash, just log it and continue. <span data-hf-id="hf-hxi1" class="p2-fill">use pandas like i said. thanks!!! also </span>python 3.11</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- the Markdown card: paper unfolds (8 strips), then the real output lands line by line -->
+  <div data-hf-id="hf-b1dt" class="clip f02-layer f02-card-layer" data-start="0" data-duration="3.7" data-track-index="2">
+    <div data-hf-id="hf-bmak" class="f02-card-wrap">
+      <div data-hf-id="hf-znrg" class="f02-card-shadow"></div>
+      <div data-hf-id="hf-c859" class="f02-fold-stage f02-card-stage">
+        <div data-hf-id="hf-6flx" class="f02-paper"></div>
+      </div>
+    </div>
+    <div data-hf-id="hf-6ke6" class="f02-md">
+      <div data-hf-id="hf-h8bo" class="f02-ln"><span data-hf-id="hf-0uci" class="f02-h">##</span> Goal</div>
+      <div data-hf-id="hf-st0x" class="f02-ln f02-gap-s">what i need is a python script that takes a folder of csv files and merges them but ONLY the ones that have a "date" column, and also it should skip empty files</div>
+      <div data-hf-id="hf-6ir7" class="f02-ln f02-gap-l"><span data-hf-id="hf-01hi" class="f02-h">##</span> Requirements</div>
+      <div data-hf-id="hf-t8ok" class="f02-ln f02-gap-s">- the output should be a single parquet file</div>
+      <div data-hf-id="hf-xb4s" class="f02-ln">- please use pandas</div>
+      <div data-hf-id="hf-djel" class="f02-ln">- it also needs to handle dates in different formats, some are MM/DD/YYYY and some are ISO</div>
+      <div data-hf-id="hf-bl8g" class="f02-ln">- add logging</div>
+      <div data-hf-id="hf-ex40" class="f02-ln">- skip those</div>
+      <div data-hf-id="hf-vw6m" class="f02-ln">- if a file fails to parse dont crash, just log it and continue</div>
+      <div data-hf-id="hf-y0q5" class="f02-ln f02-gap-l"><span data-hf-id="hf-0fsj" class="f02-h">##</span> Constraints</div>
+      <div data-hf-id="hf-pw0q" class="f02-ln f02-gap-s">- python 3.11</div>
+      <div data-hf-id="hf-xipo" class="f02-ln f02-gap-l"><span data-hf-id="hf-0u3k" class="f02-h">##</span> Notes</div>
+      <div data-hf-id="hf-i8vu" class="f02-ln f02-gap-s">- merge them all into one parquet</div>
+    </div>
+  </div>
+
+  <!-- the lockup: crane badge built from its five facets, wordmark, tagline -->
+  <div data-hf-id="hf-jfgz" class="clip f02-layer f02-brand-layer" data-start="0" data-duration="3.7" data-track-index="3">
+    <div data-hf-id="hf-16ez" class="f02-lockup">
+      <div data-hf-id="hf-onee" class="f02-badge">
+        <svg data-hf-id="hf-yck7" class="f02-square" viewBox="0 0 64 64" aria-hidden="true"><rect data-hf-id="hf-40v1" x="2" y="2" width="60" height="60" rx="15" fill="#5B3DF5" /></svg>
+        <div data-hf-id="hf-wqw0" class="f02-cloud">
+          <!-- DOM order = the logo's paint order; data-order = the assembly order (wing, neck, body, tail, beak) -->
+          <svg data-hf-id="hf-0w34" class="f02-facet" data-order="2" style="transform-origin: 51.56% 65.63%;" viewBox="0 0 64 64" aria-hidden="true"><polygon data-hf-id="hf-emri" points="20,44 26,36 40,36 46,44 33,50" fill="#FFFFFF" stroke="#5B3DF5" stroke-width="1.2" stroke-linejoin="round" /></svg>
+          <svg data-hf-id="hf-qcwo" class="f02-facet" data-order="0" style="transform-origin: 52.6% 44.79%;" viewBox="0 0 64 64" aria-hidden="true"><polygon data-hf-id="hf-ekfg" points="26,36 40,36 35,14" fill="#FFFFFF" stroke="#5B3DF5" stroke-width="1.2" stroke-linejoin="round" /></svg>
+          <svg data-hf-id="hf-egv9" class="f02-facet" data-order="1" style="transform-origin: 32.29% 51.56%;" viewBox="0 0 64 64" aria-hidden="true"><polygon data-hf-id="hf-d54n" points="20,44 26,36 16,19" fill="#FFFFFF" stroke="#5B3DF5" stroke-width="1.2" stroke-linejoin="round" /></svg>
+          <svg data-hf-id="hf-pch8" class="f02-facet" data-order="3" style="transform-origin: 73.96% 58.33%;" viewBox="0 0 64 64" aria-hidden="true"><polygon data-hf-id="hf-v6gq" points="46,44 40,36 56,32" fill="#FFFFFF" stroke="#5B3DF5" stroke-width="1.2" stroke-linejoin="round" /></svg>
+          <svg data-hf-id="hf-zaiy" class="f02-facet" data-order="4" style="transform-origin: 21.88% 34.38%;" viewBox="0 0 64 64" aria-hidden="true"><polygon data-hf-id="hf-6vti" points="16,19 9,23 17,24" fill="#17151A" /></svg>
+        </div>
+      </div>
+      <div data-hf-id="hf-muf2" class="f02-wm-mask"><span data-hf-id="hf-pxxe" class="f02-wm">prompt<b data-hf-id="hf-d9l0">2md</b></span></div>
+    </div>
+    <div data-hf-id="hf-c2qu" class="f02-tagline">A Markdown Magic</div>
+  </div>
+
+</div>
+
+<script>
+  (function () {
+    var root = document.querySelector('[data-composition-id="02-folded"]');
+    var DUR = 3.2;
+    var DEG = Math.PI / 180;
+
+    // ---- the paper fold (fold-recipe.md) ----
+    // Split a face of size W x H into n strips of height h. Each strip is an overflow-hidden band
+    // holding a copy of the face shifted up by k*h, so the flat strips tile it exactly.
+    // Strips overlap their neighbour by 1px (same pixels at rest) so no crease seam opens mid-fold.
+    function buildStrips(stage, source, n, h, W, H, look) {
+      var strips = [];
+      for (var k = 0; k < n; k++) {
+        var strip = document.createElement("div");
+        strip.className = "f02-strip";
+        strip.style.width = W + "px";
+        strip.style.height = (k < n - 1 ? h + 1 : h) + "px";
+
+        var face = document.createElement("div");
+        face.className = "f02-face";
+        face.style.top = (-k * h) + "px";
+        face.style.width = W + "px";
+        face.style.height = H + "px";
+        face.appendChild(k === 0 ? source : source.cloneNode(true));
+        strip.appendChild(face);
+
+        var shade = document.createElement("div");
+        shade.className = "f02-shade";
+        shade.style.background = k % 2 ? look.dark : look.lit;
+        if (look.radius) {
+          if (k === 0) shade.style.borderRadius = look.radius + "px " + look.radius + "px 0 0";
+          if (k === n - 1) shade.style.borderRadius = "0 0 " + look.radius + "px " + look.radius + "px";
+        }
+        strip.appendChild(shade);
+
+        var crease = null;
+        if (k < n - 1) {
+          crease = document.createElement("div");
+          crease.className = "f02-crease";
+          crease.style.top = (h - 1) + "px";
+          strip.appendChild(crease);
+        }
+
+        stage.appendChild(strip);
+        strips.push({ el: strip, shade: shade, crease: crease });
+      }
+      return strips;
+    }
+
+    // One proxy drives every strip; placed in onUpdate, so every seek is exact.
+    function makePlacer(strips, h, fold) {
+      return function () {
+        var t = fold.a * 88;
+        var c = Math.cos(t * DEG);
+        var s = Math.sin(t * DEG);
+        for (var k = 0; k < strips.length; k++) {
+          gsap.set(strips[k].el, {
+            y: k * h * c,
+            z: k % 2 ? h * s : 0,
+            rotationX: k % 2 ? -t : t,
+          });
+          gsap.set(strips[k].shade, { opacity: s });
+          if (strips[k].crease) gsap.set(strips[k].crease, { opacity: s });
+        }
+      };
+    }
+
+    // the ink sheet: H = 1920, N = 8, h = 240 (dark-sheet shading)
+    var SHEET_H = 240;
+    var sheetStage = root.querySelector(".f02-sheet-stage");
+    var sheetStrips = buildStrips(sheetStage, sheetStage.querySelector(".p2-sheet"), 8, SHEET_H, 1080, 1920, {
+      lit: "rgba(255, 255, 255, 0.10)",
+      dark: "rgba(0, 0, 0, 0.35)",
+      radius: 0,
+    });
+    var sheetFold = { a: 0 };
+    var placeSheet = makePlacer(sheetStrips, SHEET_H, sheetFold);
+    placeSheet();
+
+    // the Markdown card: H = 1016, N = 8, h = 127 (paper shading)
+    var CARD_H = 127;
+    var cardStage = root.querySelector(".f02-card-stage");
+    var cardStrips = buildStrips(cardStage, cardStage.querySelector(".f02-paper"), 8, CARD_H, 908, 1016, {
+      lit: "rgba(255, 255, 255, 0.35)",
+      dark: "rgba(23, 21, 26, 0.20)",
+      radius: 12,
+    });
+    var cardShadow = root.querySelector(".f02-card-shadow");
+    var cardFold = { a: 1 };
+    var placeCardStrips = makePlacer(cardStrips, CARD_H, cardFold);
+    function placeCard() {
+      placeCardStrips();
+      gsap.set(cardShadow, { opacity: Math.pow(1 - cardFold.a, 3) });
+    }
+    placeCard();
+
+    window.__timelines = window.__timelines || {};
+    var tl = gsap.timeline({ paused: true });
+
+    // ---- Scene 1 (0.00-0.70): the ink sheet folds upward from rest, the paper ground shows through ----
+    tl.to(sheetFold, { a: 1, duration: 0.7, ease: "power2.inOut", onUpdate: placeSheet }, 0);
+    // The folded stack is a thin band of 8 strip copies; it leaves as it goes edge-on,
+    // so no stacked copies of the prompt linger over the paper.
+    tl.to(sheetStage, { autoAlpha: 0, duration: 0.15, ease: "power1.in" }, 0.6);
+
+    // ---- Scene 2 (0.20-1.02): five facets fly in from a depth cloud and lock (depth-scatter-assemble) ----
+    var GOLDEN = Math.PI * (3 - Math.sqrt(5));
+    var ROT_Z = [-32, 26, -18, 34, -28];
+    var T_FACETS = 0.2;
+    var STAGGER = 0.035;
+    var ASSEMBLE = 0.7;
+    var facets = root.querySelectorAll(".f02-facet");
+    for (var f = 0; f < facets.length; f++) {
+      var el = facets[f];
+      var i = Number(el.getAttribute("data-order"));
+      var ang = i * GOLDEN + 0.6;
+      tl.fromTo(
+        el,
+        {
+          x: 120 + Math.cos(ang) * 300,
+          y: 40 + Math.sin(ang) * 190,
+          z: 300 - (i / 4) * 600,
+          rotationX: Math.sin(ang) * 60,
+          rotationY: Math.cos(ang) * 60,
+          rotation: ROT_Z[i],
+          opacity: 0,
+        },
+        { x: 0, y: 0, z: 0, rotationX: 0, rotationY: 0, rotation: 0, opacity: 1, duration: ASSEMBLE, ease: "power3.out" },
+        T_FACETS + i * STAGGER
+      );
+    }
+    // the cloud turns a little while it collapses, and lands square (the finished badge is never rotated)
+    tl.fromTo(
+      root.querySelector(".f02-cloud"),
+      { rotationY: -18 },
+      { rotationY: 0, duration: 4 * STAGGER + ASSEMBLE, ease: "power2.out" },
+      T_FACETS
+    );
+    // the violet badge square scales in behind the facets as they lock (spring-pop-entrance, smooth)
+    tl.fromTo(
+      root.querySelector(".f02-square"),
+      { scale: 0, opacity: 0 },
+      { scale: 1, opacity: 1, duration: 0.5, ease: "power3.out" },
+      0.38
+    );
+    // the wordmark slides out from behind the badge through its clip window (techniques.md #12)
+    tl.fromTo(
+      root.querySelector(".f02-wm"),
+      { xPercent: -112 },
+      { xPercent: 0, duration: 0.46, ease: "power3.out" },
+      0.56
+    );
+
+    // ---- Scene 3 (1.00-2.90): tagline, the card unfolds (Scene 1 in reverse), lines land on their words ----
+    tl.fromTo(
+      root.querySelector(".f02-tagline"),
+      { opacity: 0, y: 16 },
+      { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" },
+      1.0
+    );
+    tl.fromTo(root.querySelector(".f02-card-wrap"), { opacity: 0 }, { opacity: 1, duration: 0.14, ease: "power1.out" }, 1.02);
+    tl.fromTo(cardFold, { a: 1 }, { a: 0, duration: 0.7, ease: "power2.inOut", onUpdate: placeCard }, 1.02);
+
+    // "## Goal" on "clean" (1.79); Requirements + six bullets on "Markdown" (1.99-2.44); Constraints, Notes by 2.6
+    var LINE_AT = [1.79, 1.87, 1.99, 2.06, 2.135, 2.21, 2.285, 2.36, 2.435, 2.47, 2.51, 2.55, 2.59];
+    var lines = root.querySelectorAll(".f02-ln");
+    for (var j = 0; j < lines.length; j++) {
+      tl.fromTo(
+        lines[j],
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: j >= 9 ? 0.32 : 0.4, ease: "power3.out" },
+        LINE_AT[j]
+      );
+    }
+
+    // ---- Scene 4 (2.60-3.20): held read; the timeline spans the full frame ----
+    tl.to({}, { duration: DUR }, 0);
+
+    window.__timelines["02-folded"] = tl;
+  })();
+</script>
+</template>

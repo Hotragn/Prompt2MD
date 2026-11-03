@@ -1,0 +1,22 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="fonts.css"><style>
+/* Drawn OVER the film: paper everywhere except a rounded window at the film's position.
+   Window: 342x608 at (96,34), radius 18. Rendered with a transparent background. */
+html,body{width:1200px;height:675px;background:transparent;overflow:hidden}
+.window{position:absolute;left:96px;top:34px;width:342px;height:608px;border-radius:18px;
+  box-shadow:0 0 0 1px rgba(23,21,26,0.12),0 22px 44px -14px rgba(23,21,26,0.22),0 0 0 3000px #FAF9F6}
+.copy{position:absolute;left:520px;top:150px;width:600px}
+.wordmark{font-size:76px}
+.tagline{font-size:25px;margin-top:16px}
+.line{font-family:"EB Garamond";font-size:40px;color:var(--ink);line-height:1.18;margin-top:40px;letter-spacing:-0.01em}
+.sub{font-family:"Inter";font-size:20px;color:var(--muted);margin-top:16px}
+.url{font-size:22px;padding:13px 26px;margin-top:34px}
+</style></head><body>
+<div class="window"></div>
+<div class="copy">
+  <div class="wordmark">prompt<b>2md</b></div>
+  <div class="tagline">A Markdown Magic</div>
+  <div class="line">Paste the mess.<br>Get clean Markdown.</div>
+  <div class="sub">Honest token counts. No API key. Open source.</div>
+  <div class="url">prompt2md.vercel.app</div>
+</div>
+</body></html>

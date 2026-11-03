@@ -1,0 +1,441 @@
+<template>
+  <style>
+@font-face{font-family:"EB Garamond";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/EBGaramond-400.woff2") format("woff2");}
+@font-face{font-family:"EB Garamond";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/EBGaramond-700.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/Inter-400.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/Inter-700.woff2") format("woff2");}
+@font-face{font-family:"JetBrains Mono";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/JetBrainsMono-400.woff2") format("woff2");}
+@font-face{font-family:"JetBrains Mono";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/JetBrainsMono-700.woff2") format("woff2");}
+  </style>
+  <style>
+    /* 05-fit · 1080x1920 portrait · 1cqw = 10.8px · keep-out: nothing below y = 1594 */
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      /* The anchors are verbatim output: JetBrains Mono would otherwise turn
+         "<!--" and "-->" into ligature arrows and change the characters shown. */
+      font-variant-ligatures: none;
+      font-feature-settings: "liga" 0, "calt" 0;
+    }
+    #\30 5-fit-bg {
+      position: absolute;
+      inset: 0;
+      background: #FAF9F6;
+    }
+    #\30 5-fit-scene {
+      position: absolute;
+      inset: 0;
+    }
+
+    /* kicker (sketch .kicker: left 9cqw, top 13cqw, 2.7cqw, 0.16em) */
+    #\30 5-fit-kicker {
+      position: absolute;
+      left: 97.2px;
+      top: 140.4px;
+      display: flex;
+      align-items: center;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 29.16px;
+      line-height: 1;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #8B8794;
+      white-space: nowrap;
+    }
+    #\30 5-fit-kicker svg {
+      display: block;
+      flex: none;
+      width: 22px;
+      height: 22px;
+      margin-right: 15.12px;
+    }
+
+    /* number lockup (sketch .lockrow top 21cqw, figures 15cqw) */
+    .\30 5-fit-fig {
+      position: absolute;
+      top: 226.8px;
+      font-family: "EB Garamond", serif;
+      font-weight: 400;
+      font-size: 162px;
+      line-height: 0.9;
+      letter-spacing: -0.03em;
+      color: #17151A;
+      white-space: nowrap;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    #\30 5-fit-from {
+      right: 545.27px;
+      text-align: right;
+    }
+    #\30 5-fit-count {
+      left: 650.57px;
+      transform-origin: 0px 130px;
+    }
+    #\30 5-fit-arrow {
+      position: absolute;
+      left: 560.65px;
+      top: 284.5px;
+      width: 64px;
+      height: 40px;
+    }
+    #\30 5-fit-arrow svg {
+      display: block;
+      width: 64px;
+      height: 40px;
+    }
+    .\30 5-fit-unit {
+      position: absolute;
+      top: 421.2px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 38.88px;
+      line-height: 1;
+      color: #5F5B66;
+      white-space: nowrap;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    #\30 5-fit-tokens {
+      left: 295.06px;
+    }
+    #\30 5-fit-pct {
+      left: 505.01px;
+      color: #15803D;
+    }
+
+    /* the sheet: a window clipped above the caption band, the card inside it */
+    #\30 5-fit-window {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1080px;
+      height: 1594px;
+      overflow: hidden;
+      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 84px), transparent 100%);
+      mask-image: linear-gradient(to bottom, #000 calc(100% - 84px), transparent 100%);
+    }
+    #\30 5-fit-card {
+      position: absolute;
+      left: 75.6px;
+      top: 540px;
+      width: 928.8px;
+      height: 1240px;
+      box-sizing: border-box;
+      background: #FAF9F6;
+      border: 1px solid rgba(23, 21, 26, 0.12);
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(23, 21, 26, 0.08), 0 4px 16px rgba(23, 21, 26, 0.04);
+    }
+    #\30 5-fit-head {
+      position: absolute;
+      left: 47.5px;
+      right: 47.5px;
+      top: 43.2px;
+      margin: 0;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 700;
+      font-size: 35.64px;
+      line-height: 46px;
+      color: #17151A;
+      white-space: nowrap;
+    }
+    #\30 5-fit-list {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 111px;
+      bottom: 0;
+      overflow: hidden;
+    }
+    #\30 5-fit-rule {
+      position: absolute;
+      left: 47.5px;
+      right: 47.5px;
+      top: 0;
+      height: 1px;
+      background: #E7E4DC;
+      z-index: 2;
+    }
+    .\30 5-fit-row {
+      position: absolute;
+      left: 47.5px;
+      right: 47.5px;
+      top: 0;
+      border-top: 1px solid #E7E4DC;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 27.5px;
+      line-height: 40px;
+    }
+    .\30 5-fit-sum {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      padding-top: 14px;
+    }
+    .\30 5-fit-sumtext {
+      color: #17151A;
+    }
+    .\30 5-fit-anchor {
+      color: #8B8794;
+      font-size: 24px;
+      line-height: 34px;
+      white-space: nowrap;
+    }
+    .\30 5-fit-foldwrap {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 390px;
+    }
+    /* the paper fold (fold-recipe.md): one 3D stage per paragraph, 6 strips hinged at their top edge */
+    .\30 5-fit-stage {
+      position: absolute;
+      inset: 0;
+      perspective: 2200px;
+      perspective-origin: 50% 50%;
+      transform-style: preserve-3d;
+    }
+    .\30 5-fit-strip {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 65px;
+      overflow: hidden;
+      background: #FAF9F6;
+      transform-origin: 50% 0%;
+      transform-style: preserve-3d;
+    }
+    .\30 5-fit-copy {
+      position: absolute;
+      left: 0;
+      right: 0;
+      padding-top: 14px;
+      color: #5F5B66;
+    }
+    .\30 5-fit-shade {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      box-shadow: inset 0 -1px 0 rgba(23, 21, 26, 0.14);
+    }
+    .\30 5-fit-even {
+      background: rgba(255, 255, 255, 0.35);
+    }
+    .\30 5-fit-odd {
+      background: rgba(23, 21, 26, 0.2);
+    }
+    .\30 5-fit-body {
+      padding-top: 14px;
+      color: #5F5B66;
+    }
+  </style>
+
+  <div data-hf-id="hf-j1c4" id="root" data-composition-id="05-fit" data-width="1080" data-height="1920" data-duration="4.2">
+    <div data-hf-id="hf-0y91" id="05-fit-bg" class="clip" data-start="0" data-duration="4.2" data-track-index="0"></div>
+
+    <div data-hf-id="hf-6ryp" id="05-fit-scene" class="clip" data-start="0" data-duration="4.2" data-track-index="1">
+      <div data-hf-id="hf-633c" id="05-fit-kicker">
+        <svg data-hf-id="hf-azyc" viewBox="0 0 22 22" aria-hidden="true"><path data-hf-id="hf-dssd" d="M0 0 L0 22 L22 22 Z" fill="#5B3DF5" /></svg>
+        <span data-hf-id="hf-a0yc">long context</span>
+      </div>
+
+      <div data-hf-id="hf-m8kg" id="05-fit-from" class="05-fit-fig">1,449</div>
+      <div data-hf-id="hf-pr9a" id="05-fit-arrow">
+        <svg data-hf-id="hf-a4qy" viewBox="0 0 64 40" aria-hidden="true"><path data-hf-id="hf-yk5w" d="M4 20 H58 M44 7 L58 20 L44 33" fill="none" stroke="#8B8794" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      </div>
+      <div data-hf-id="hf-3ref" id="05-fit-count" class="05-fit-fig">1,449</div>
+
+      <div data-hf-id="hf-etl4" id="05-fit-tokens" class="05-fit-unit">tokens</div>
+      <div data-hf-id="hf-0vx7" id="05-fit-pct" class="05-fit-unit">33% of input</div>
+
+      <div data-hf-id="hf-td0k" id="05-fit-window" data-layout-allow-overflow="">
+        <div data-hf-id="hf-hch5" id="05-fit-card">
+          <div data-hf-id="hf-ydj8" id="05-fit-head"># Incident 4417, full timeline</div>
+          <div data-hf-id="hf-nliw" id="05-fit-list" data-layout-allow-overflow="">
+            <div data-hf-id="hf-pmel" id="05-fit-rule"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      const FID = "05-fit";
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      const $ = (name) => document.getElementById(FID + "-" + name);
+      const el = (tag, cls, text) => {
+        const e = document.createElement(tag);
+        if (cls) e.className = cls.split(" ").map((c) => FID + "-" + c).join(" ");
+        if (text != null) e.textContent = text;
+        return e;
+      };
+
+      // ---- the real document: `prompt2md compress incident.md -b 300` (verbatim) ----
+      const SENT = "Extended narrative describing dashboards, hypotheses, and dead ends in detail.";
+      const SRC = "c6199e0698ecc214";
+      const OFF = [
+        [32, 436], [438, 842], [844, 1248], [1250, 1654], [1656, 2060], [2062, 2466], [2468, 2872],
+        [2874, 3278], [3280, 3684], [3686, 4090], [4092, 4499], [4501, 4908], [4910, 5317], [5319, 5726],
+      ];
+      const para = (n) =>
+        "Update " + n + ": engineers investigated subsystem " + n + " and recorded observations. " +
+        [SENT, SENT, SENT, SENT].join(" ") + " Key finding f-" + n + ".";
+      const summary = (n) =>
+        "Update " + n + ": engineers investigated subsystem " + n + " and recorded observations. […]";
+      const anchor = (n) => "<!-- p2md:src=" + SRC + "#" + OFF[n][0] + "-" + OFF[n][1] + " -->";
+      const RESOLUTION = "Resolution: root cause was a stale feature flag; fixed at 14:02 UTC.";
+
+      // ---- geometry (px) ----
+      const NFOLD = 8;      // paragraphs 0..7 fold in frame; 8 onward stay full (the sketch's landed state)
+      const NSTRIP = 6;     // fold-recipe: N = 6 for a sheet under 1000 px
+      const SH = 65;        // strip height: 390 / 6
+      const BLOCK = 390;    // paragraph block: 14 pad + 9 lines x 40 + 16 pad
+      const HP = 1 + BLOCK; // full row incl. hairline
+      const HS = 143;       // summary row: 1 + 14 + 2 x 40 + 34 + 14
+      const HR = 111;       // resolution row (2 lines)
+      const DEG = Math.PI / 180;
+
+      // ---- build the rows ----
+      const list = $("list");
+      const rows = [], strips = [], shades = [], wraps = [], sumTexts = [], anchors = [];
+      for (let k = 0; k < 14; k++) {
+        const row = el("div", "row");
+        if (k < NFOLD) {
+          const sum = el("div", "sum");
+          const st = el("div", "sumtext", summary(k));
+          const an = el("div", "anchor", anchor(k));
+          sum.append(st, an);
+          const wrap = el("div", "foldwrap");
+          const stage = el("div", "stage");
+          const ks = [], kh = [];
+          for (let j = 0; j < NSTRIP; j++) {
+            const strip = el("div", "strip");
+            const copy = el("div", "copy", para(k));
+            copy.style.top = -j * SH + "px";
+            const shade = el("div", "shade " + (j % 2 ? "odd" : "even"));
+            strip.append(copy, shade);
+            stage.append(strip);
+            ks.push(strip);
+            kh.push(shade);
+          }
+          wrap.append(stage);
+          row.append(sum, wrap);
+          strips.push(ks);
+          shades.push(kh);
+          wraps.push(wrap);
+          sumTexts.push(st);
+          anchors.push(an);
+        } else {
+          row.append(el("div", "body", para(k)));
+        }
+        list.append(row);
+        rows.push(row);
+      }
+      const last = el("div", "row");
+      last.append(el("div", "body", RESOLUTION));
+      list.append(last);
+      rows.push(last);
+
+      // ---- drivers (proxies; every onUpdate re-derives the whole layout, so seeks are exact) ----
+      const fold = [];
+      for (let k = 0; k < NFOLD; k++) fold.push({ a: 0 }); // 0 = flat, 1 = folded
+      const scroll = { s: 0 };
+
+      function placeStrips(k) {
+        const t = fold[k].a * 88; // stop short of edge-on
+        const c = Math.cos(t * DEG), s = Math.sin(t * DEG);
+        strips[k].forEach((strip, j) => {
+          gsap.set(strip, {
+            y: j * SH * c,             // hinge chain
+            z: j % 2 ? SH * s : 0,     // zigzag toward the viewer
+            rotationX: j % 2 ? -t : t, // alternate mountain / valley
+          });
+          gsap.set(shades[k][j], { opacity: s }); // crease light rides the angle
+        });
+      }
+      // A folding row's height follows the paper's bottom edge (z = 0, so exactly BLOCK * cos θ)
+      // until it reaches the summary slot: the stack below tightens upward with the fold.
+      function rowH(k) {
+        if (k < NFOLD) return Math.max(HS, 1 + BLOCK * Math.cos(fold[k].a * 88 * DEG));
+        return k < 14 ? HP : HR;
+      }
+      function layout() {
+        let y = -scroll.s;
+        for (let k = 0; k < rows.length; k++) {
+          gsap.set(rows[k], { y: y });
+          y += rowH(k);
+        }
+      }
+      for (let k = 0; k < NFOLD; k++) placeStrips(k);
+      layout();
+
+      // ---- count proxy ----
+      const countEl = $("count");
+      const num = { v: 1449 };
+      const fmt = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      const writeCount = () => {
+        countEl.textContent = fmt(Math.round(num.v));
+      };
+      writeCount();
+
+      // ================= Scene 1 (0.00–0.80) "Too long?" =================
+      tl.fromTo($("card"), { y: 1150 }, { y: 0, duration: 0.8, ease: "power3.out" }, 0);
+      tl.fromTo($("kicker"), { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.05);
+      // "1,449 tokens" lands centred above the sheet; it splits into the lockup on "under"
+      gsap.set($("from"), { x: 5.27, xPercent: 50 });
+      tl.fromTo($("from"), { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.55, ease: "expo.out" }, 0.3);
+      gsap.set($("tokens"), { x: 175 });
+      tl.fromTo($("tokens"), { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }, 0.36);
+
+      // ================= Scene 2 (0.80–2.40) "Fold fourteen hundred tokens" =================
+      const T0 = 0.82, STAG = 0.12;
+      for (let k = 0; k < NFOLD; k++) {
+        const T = T0 + k * STAG;
+        // the paper fold: 0.70 s, power2.inOut, one proxy per sheet
+        tl.to(fold[k], {
+          a: 1,
+          duration: 0.7,
+          ease: "power2.inOut",
+          onUpdate: () => {
+            placeStrips(k);
+            layout();
+          },
+        }, T);
+        // the summary line and its anchor arrive in the slot the paper uncovers (short path)
+        tl.fromTo(sumTexts[k], { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, T + 0.42);
+        tl.fromTo(anchors[k], { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, T + 0.48);
+        // the folded band becomes the summary line
+        tl.fromTo(wraps[k], { opacity: 1 }, { opacity: 0, duration: 0.2, ease: "power1.in", immediateRender: false }, T + 0.52);
+      }
+      // the accumulated list climbs under the heading until it fits: summaries 5-7 over paragraph 8
+      tl.to(scroll, { s: 5 * HS, duration: 0.9, ease: "power2.inOut", onUpdate: layout }, 1.5);
+
+      // ================= Scene 3 (2.40–3.10) "under five hundred" =================
+      // the figure splits: "1,449" steps left as the reference, the live count takes the right slot
+      tl.fromTo($("from"), { x: 5.27, xPercent: 50 }, { x: 0, xPercent: 0, duration: 0.6, ease: "expo.out", immediateRender: false }, 2.37);
+      tl.fromTo($("tokens"), { x: 175 }, { x: 0, duration: 0.6, ease: "expo.out", immediateRender: false }, 2.37);
+      tl.fromTo($("arrow"), { opacity: 0, x: -12 }, { opacity: 1, x: 0, duration: 0.4, ease: "expo.out" }, 2.5);
+      tl.fromTo(countEl, { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 2.42);
+      // counting-dynamic-scale: value and scale share timing + ease; lands on "hundred" (2.96)
+      tl.fromTo(num, { v: 1449 }, { v: 475, duration: 0.54, ease: "power3.out", onUpdate: writeCount }, 2.42);
+      tl.fromTo(countEl, { scale: 0.6 }, { scale: 1, duration: 0.54, ease: "power3.out" }, 2.42);
+      tl.fromTo($("pct"), { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "expo.out" }, 3.0);
+
+      // ================= Scene 4 (3.10–3.70) held read: nothing moves =================
+
+      window.__timelines[FID] = tl;
+    })();
+  </script>
+</template>

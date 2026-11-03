@@ -1,0 +1,10 @@
+@font-face{font-family:"EB Garamond";font-weight:400;font-style:normal;src:url("../../assets/fonts/EBGaramond-400.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:400;src:url("../../assets/fonts/Inter-400.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:700;src:url("../../assets/fonts/Inter-700.woff2") format("woff2");}
+@font-face{font-family:"JetBrains Mono";font-weight:400;src:url("../../assets/fonts/JetBrainsMono-400.woff2") format("woff2");}
+:root{--paper:#FAF9F6;--ink:#17151A;--muted:#5F5B66;--violet:#5B3DF5;--line:#E7E4DC;--deep:#0F0E11;}
+*{box-sizing:border-box;margin:0;padding:0}
+.wordmark{font-family:"Inter";font-weight:700;letter-spacing:-0.035em;color:var(--ink);line-height:1}
+.wordmark b{color:var(--violet);font-weight:700}
+.tagline{font-family:"EB Garamond";font-style:italic;letter-spacing:0.22em;color:var(--muted)}
+.url{display:inline-block;font-family:"Inter";font-weight:700;color:var(--paper);background:var(--ink);border-radius:999px;letter-spacing:-0.01em}

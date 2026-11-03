@@ -1,0 +1,694 @@
+{
+  "total_duration_s": 32,
+  "width": 1080,
+  "height": 1920,
+  "groups": [
+    {
+      "id": "caption-group-0",
+      "frame": 1,
+      "start": 0.066,
+      "end": 0.538,
+      "text": "You write",
+      "words": [
+        {
+          "id": "caption-word-0-0",
+          "text": "You",
+          "start": 0.066,
+          "end": 0.302
+        },
+        {
+          "id": "caption-word-0-1",
+          "text": "write",
+          "start": 0.302,
+          "end": 0.538
+        }
+      ]
+    },
+    {
+      "id": "caption-group-1",
+      "frame": 1,
+      "start": 0.538,
+      "end": 1.367,
+      "text": "prompts like this.",
+      "words": [
+        {
+          "id": "caption-word-1-0",
+          "text": "prompts",
+          "start": 0.538,
+          "end": 0.775
+        },
+        {
+          "id": "caption-word-1-1",
+          "text": "like",
+          "start": 0.775,
+          "end": 1.011
+        },
+        {
+          "id": "caption-word-1-2",
+          "text": "this.",
+          "start": 1.011,
+          "end": 1.247
+        }
+      ]
+    },
+    {
+      "id": "caption-group-2",
+      "frame": 2,
+      "start": 2.4,
+      "end": 4.191,
+      "text": "prompt2md folds it into",
+      "words": [
+        {
+          "id": "caption-word-2-0",
+          "text": "prompt2md",
+          "start": 2.4,
+          "end": 3.395
+        },
+        {
+          "id": "caption-word-2-1",
+          "text": "folds",
+          "start": 3.395,
+          "end": 3.594
+        },
+        {
+          "id": "caption-word-2-2",
+          "text": "it",
+          "start": 3.594,
+          "end": 3.793
+        },
+        {
+          "id": "caption-word-2-3",
+          "text": "into",
+          "start": 3.793,
+          "end": 4.191
+        }
+      ]
+    },
+    {
+      "id": "caption-group-3",
+      "frame": 2,
+      "start": 4.191,
+      "end": 4.908,
+      "text": "clean Markdown.",
+      "words": [
+        {
+          "id": "caption-word-3-0",
+          "text": "clean",
+          "start": 4.191,
+          "end": 4.39
+        },
+        {
+          "id": "caption-word-3-1",
+          "text": "Markdown.",
+          "start": 4.39,
+          "end": 4.788
+        }
+      ]
+    },
+    {
+      "id": "caption-group-4",
+      "frame": 3,
+      "start": 5.6,
+      "end": 6.554,
+      "text": "Paste the mess.",
+      "words": [
+        {
+          "id": "caption-word-4-0",
+          "text": "Paste",
+          "start": 5.6,
+          "end": 5.878
+        },
+        {
+          "id": "caption-word-4-1",
+          "text": "the",
+          "start": 5.878,
+          "end": 6.156
+        },
+        {
+          "id": "caption-word-4-2",
+          "text": "mess.",
+          "start": 6.156,
+          "end": 6.434
+        }
+      ]
+    },
+    {
+      "id": "caption-group-5",
+      "frame": 3,
+      "start": 6.604,
+      "end": 7.373,
+      "text": "Hit Fold it.",
+      "words": [
+        {
+          "id": "caption-word-5-0",
+          "text": "Hit",
+          "start": 6.604,
+          "end": 6.82
+        },
+        {
+          "id": "caption-word-5-1",
+          "text": "Fold",
+          "start": 6.82,
+          "end": 7.037
+        },
+        {
+          "id": "caption-word-5-2",
+          "text": "it.",
+          "start": 7.037,
+          "end": 7.253
+        }
+      ]
+    },
+    {
+      "id": "caption-group-6",
+      "frame": 4,
+      "start": 8.4,
+      "end": 9.643,
+      "text": "Structured Markdown,",
+      "words": [
+        {
+          "id": "caption-word-6-0",
+          "text": "Structured",
+          "start": 8.4,
+          "end": 8.962
+        },
+        {
+          "id": "caption-word-6-1",
+          "text": "Markdown,",
+          "start": 8.962,
+          "end": 9.523
+        }
+      ]
+    },
+    {
+      "id": "caption-group-7",
+      "frame": 4,
+      "start": 9.74,
+      "end": 10.332,
+      "text": "an honest",
+      "words": [
+        {
+          "id": "caption-word-7-0",
+          "text": "an",
+          "start": 9.74,
+          "end": 9.937
+        },
+        {
+          "id": "caption-word-7-1",
+          "text": "honest",
+          "start": 9.937,
+          "end": 10.332
+        }
+      ]
+    },
+    {
+      "id": "caption-group-8",
+      "frame": 4,
+      "start": 10.332,
+      "end": 11.043,
+      "text": "token count,",
+      "words": [
+        {
+          "id": "caption-word-8-0",
+          "text": "token",
+          "start": 10.332,
+          "end": 10.726
+        },
+        {
+          "id": "caption-word-8-1",
+          "text": "count,",
+          "start": 10.726,
+          "end": 10.923
+        }
+      ]
+    },
+    {
+      "id": "caption-group-9",
+      "frame": 4,
+      "start": 11.22,
+      "end": 12.247,
+      "text": "and no API",
+      "words": [
+        {
+          "id": "caption-word-9-0",
+          "text": "and",
+          "start": 11.22,
+          "end": 11.426
+        },
+        {
+          "id": "caption-word-9-1",
+          "text": "no",
+          "start": 11.426,
+          "end": 11.631
+        },
+        {
+          "id": "caption-word-9-2",
+          "text": "API",
+          "start": 11.631,
+          "end": 12.247
+        }
+      ]
+    },
+    {
+      "id": "caption-group-10",
+      "frame": 4,
+      "start": 12.247,
+      "end": 12.573,
+      "text": "key.",
+      "words": [
+        {
+          "id": "caption-word-10-0",
+          "text": "key.",
+          "start": 12.247,
+          "end": 12.453
+        }
+      ]
+    },
+    {
+      "id": "caption-group-11",
+      "frame": 5,
+      "start": 12.7,
+      "end": 13.393,
+      "text": "Too long?",
+      "words": [
+        {
+          "id": "caption-word-11-0",
+          "text": "Too",
+          "start": 12.7,
+          "end": 12.987
+        },
+        {
+          "id": "caption-word-11-1",
+          "text": "long?",
+          "start": 12.987,
+          "end": 13.273
+        }
+      ]
+    },
+    {
+      "id": "caption-group-12",
+      "frame": 5,
+      "start": 13.522,
+      "end": 14.104,
+      "text": "Fold fourteen",
+      "words": [
+        {
+          "id": "caption-word-12-0",
+          "text": "Fold",
+          "start": 13.522,
+          "end": 13.716
+        },
+        {
+          "id": "caption-word-12-1",
+          "text": "fourteen",
+          "start": 13.716,
+          "end": 14.104
+        }
+      ]
+    },
+    {
+      "id": "caption-group-13",
+      "frame": 5,
+      "start": 14.104,
+      "end": 14.88,
+      "text": "hundred tokens",
+      "words": [
+        {
+          "id": "caption-word-13-0",
+          "text": "hundred",
+          "start": 14.104,
+          "end": 14.492
+        },
+        {
+          "id": "caption-word-13-1",
+          "text": "tokens",
+          "start": 14.492,
+          "end": 14.88
+        }
+      ]
+    },
+    {
+      "id": "caption-group-14",
+      "frame": 5,
+      "start": 14.88,
+      "end": 15.463,
+      "text": "to under",
+      "words": [
+        {
+          "id": "caption-word-14-0",
+          "text": "to",
+          "start": 14.88,
+          "end": 15.074
+        },
+        {
+          "id": "caption-word-14-1",
+          "text": "under",
+          "start": 15.074,
+          "end": 15.463
+        }
+      ]
+    },
+    {
+      "id": "caption-group-15",
+      "frame": 5,
+      "start": 15.463,
+      "end": 16.165,
+      "text": "five hundred.",
+      "words": [
+        {
+          "id": "caption-word-15-0",
+          "text": "five",
+          "start": 15.463,
+          "end": 15.657
+        },
+        {
+          "id": "caption-word-15-1",
+          "text": "hundred.",
+          "start": 15.657,
+          "end": 16.045
+        }
+      ]
+    },
+    {
+      "id": "caption-group-16",
+      "frame": 6,
+      "start": 16.4,
+      "end": 17.016,
+      "text": "Other tools",
+      "words": [
+        {
+          "id": "caption-word-16-0",
+          "text": "Other",
+          "start": 16.4,
+          "end": 16.811
+        },
+        {
+          "id": "caption-word-16-1",
+          "text": "tools",
+          "start": 16.811,
+          "end": 17.016
+        }
+      ]
+    },
+    {
+      "id": "caption-group-17",
+      "frame": 6,
+      "start": 17.016,
+      "end": 17.427,
+      "text": "cut and",
+      "words": [
+        {
+          "id": "caption-word-17-0",
+          "text": "cut",
+          "start": 17.016,
+          "end": 17.222
+        },
+        {
+          "id": "caption-word-17-1",
+          "text": "and",
+          "start": 17.222,
+          "end": 17.427
+        }
+      ]
+    },
+    {
+      "id": "caption-group-18",
+      "frame": 6,
+      "start": 17.427,
+      "end": 17.752,
+      "text": "hope.",
+      "words": [
+        {
+          "id": "caption-word-18-0",
+          "text": "hope.",
+          "start": 17.427,
+          "end": 17.632
+        }
+      ]
+    },
+    {
+      "id": "caption-group-19",
+      "frame": 6,
+      "start": 17.885,
+      "end": 18.674,
+      "text": "This folds.",
+      "words": [
+        {
+          "id": "caption-word-19-0",
+          "text": "This",
+          "start": 17.885,
+          "end": 18.219
+        },
+        {
+          "id": "caption-word-19-1",
+          "text": "folds.",
+          "start": 18.219,
+          "end": 18.554
+        }
+      ]
+    },
+    {
+      "id": "caption-group-20",
+      "frame": 7,
+      "start": 19,
+      "end": 20.351,
+      "text": "Unfold any summary.",
+      "words": [
+        {
+          "id": "caption-word-20-0",
+          "text": "Unfold",
+          "start": 19,
+          "end": 19.352
+        },
+        {
+          "id": "caption-word-20-1",
+          "text": "any",
+          "start": 19.352,
+          "end": 19.704
+        },
+        {
+          "id": "caption-word-20-2",
+          "text": "summary.",
+          "start": 19.704,
+          "end": 20.231
+        }
+      ]
+    },
+    {
+      "id": "caption-group-21",
+      "frame": 7,
+      "start": 20.613,
+      "end": 21.918,
+      "text": "The exact original",
+      "words": [
+        {
+          "id": "caption-word-21-0",
+          "text": "The",
+          "start": 20.613,
+          "end": 20.8
+        },
+        {
+          "id": "caption-word-21-1",
+          "text": "exact",
+          "start": 20.8,
+          "end": 21.173
+        },
+        {
+          "id": "caption-word-21-2",
+          "text": "original",
+          "start": 21.173,
+          "end": 21.918
+        }
+      ]
+    },
+    {
+      "id": "caption-group-22",
+      "frame": 7,
+      "start": 21.918,
+      "end": 22.411,
+      "text": "comes back.",
+      "words": [
+        {
+          "id": "caption-word-22-0",
+          "text": "comes",
+          "start": 21.918,
+          "end": 22.105
+        },
+        {
+          "id": "caption-word-22-1",
+          "text": "back.",
+          "start": 22.105,
+          "end": 22.291
+        }
+      ]
+    },
+    {
+      "id": "caption-group-23",
+      "frame": 8,
+      "start": 23.4,
+      "end": 23.848,
+      "text": "It plugs",
+      "words": [
+        {
+          "id": "caption-word-23-0",
+          "text": "It",
+          "start": 23.4,
+          "end": 23.624
+        },
+        {
+          "id": "caption-word-23-1",
+          "text": "plugs",
+          "start": 23.624,
+          "end": 23.848
+        }
+      ]
+    },
+    {
+      "id": "caption-group-24",
+      "frame": 8,
+      "start": 23.848,
+      "end": 24.865,
+      "text": "into Claude Code,",
+      "words": [
+        {
+          "id": "caption-word-24-0",
+          "text": "into",
+          "start": 23.848,
+          "end": 24.297
+        },
+        {
+          "id": "caption-word-24-1",
+          "text": "Claude",
+          "start": 24.297,
+          "end": 24.521
+        },
+        {
+          "id": "caption-word-24-2",
+          "text": "Code,",
+          "start": 24.521,
+          "end": 24.745
+        }
+      ]
+    },
+    {
+      "id": "caption-group-25",
+      "frame": 8,
+      "start": 25.007,
+      "end": 25.598,
+      "text": "Cursor,",
+      "words": [
+        {
+          "id": "caption-word-25-0",
+          "text": "Cursor,",
+          "start": 25.007,
+          "end": 25.478
+        }
+      ]
+    },
+    {
+      "id": "caption-group-26",
+      "frame": 8,
+      "start": 25.78,
+      "end": 26.858,
+      "text": "and any MCP",
+      "words": [
+        {
+          "id": "caption-word-26-0",
+          "text": "and",
+          "start": 25.78,
+          "end": 25.96
+        },
+        {
+          "id": "caption-word-26-1",
+          "text": "any",
+          "start": 25.96,
+          "end": 26.319
+        },
+        {
+          "id": "caption-word-26-2",
+          "text": "MCP",
+          "start": 26.319,
+          "end": 26.858
+        }
+      ]
+    },
+    {
+      "id": "caption-group-27",
+      "frame": 8,
+      "start": 26.858,
+      "end": 27.337,
+      "text": "client.",
+      "words": [
+        {
+          "id": "caption-word-27-0",
+          "text": "client.",
+          "start": 26.858,
+          "end": 27.217
+        }
+      ]
+    },
+    {
+      "id": "caption-group-28",
+      "frame": 9,
+      "start": 27.4,
+      "end": 28.4,
+      "text": "Open source.",
+      "words": [
+        {
+          "id": "caption-word-28-0",
+          "text": "Open",
+          "start": 27.4,
+          "end": 27.987
+        },
+        {
+          "id": "caption-word-28-1",
+          "text": "source.",
+          "start": 27.987,
+          "end": 28.28
+        }
+      ]
+    },
+    {
+      "id": "caption-group-29",
+      "frame": 9,
+      "start": 28.625,
+      "end": 28.999,
+      "text": "Try it",
+      "words": [
+        {
+          "id": "caption-word-29-0",
+          "text": "Try",
+          "start": 28.625,
+          "end": 28.812
+        },
+        {
+          "id": "caption-word-29-1",
+          "text": "it",
+          "start": 28.812,
+          "end": 28.999
+        }
+      ]
+    },
+    {
+      "id": "caption-group-30",
+      "frame": 9,
+      "start": 28.999,
+      "end": 31.18,
+      "text": "at prompt2md.vercel.app.",
+      "words": [
+        {
+          "id": "caption-word-30-0",
+          "text": "at",
+          "start": 28.999,
+          "end": 29.187
+        },
+        {
+          "id": "caption-word-30-1",
+          "text": "prompt2md.vercel.app.",
+          "start": 29.187,
+          "end": 31.06
+        }
+      ]
+    }
+  ]
+}

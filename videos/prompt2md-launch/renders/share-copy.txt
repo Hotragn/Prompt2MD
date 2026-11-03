@@ -1,0 +1,1 @@
+Everything else cuts. prompt2md folds: paste a rambling prompt and get structured Markdown with an honest token count (150 → 127, no API key), and any line it summarizes unfolds back to the byte-exact original. Open source, and it works in Claude Code, Cursor and any MCP client: prompt2md.vercel.app

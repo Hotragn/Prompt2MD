@@ -1,0 +1,331 @@
+<template id="04-ledger-template">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+@font-face{font-family:"EB Garamond";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/EBGaramond-400.woff2") format("woff2");}
+@font-face{font-family:"EB Garamond";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/EBGaramond-700.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/Inter-400.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/Inter-700.woff2") format("woff2");}
+@font-face{font-family:"JetBrains Mono";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/JetBrainsMono-400.woff2") format("woff2");}
+@font-face{font-family:"JetBrains Mono";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/JetBrainsMono-700.woff2") format("woff2");}
+</style>
+<style>
+  /* 04-ledger: the number lockup on paper. Authored in cqw against a 1080-wide size container (1cqw = 10.8px). */
+  #root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+  [id="04-ledger-ground"] {
+    position: absolute;
+    inset: 0;
+    background: #FAF9F6; /* cream paper */
+  }
+  [id="04-ledger-stage"] {
+    position: absolute;
+    inset: 0;
+    container-type: size;
+    --ledger-ink: #17151A;
+    --ledger-muted: rgba(23, 21, 26, 0.68);
+    --ledger-faint: rgba(23, 21, 26, 0.5);
+    --ledger-coral: #5B3DF5;
+    --ledger-savings: #15803D;
+    --ledger-tile: #F4F2ED;
+    color: var(--ledger-ink);
+    font-family: "Inter", sans-serif;
+  }
+  [id="04-ledger-stage"] * { box-sizing: border-box; }
+
+  /* kicker-spike */
+  [id="04-ledger-kicker"] {
+    position: absolute;
+    left: 9cqw;
+    top: 13cqw;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 400;
+    font-size: 2.7cqw;
+    line-height: 1;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ledger-faint);
+    white-space: nowrap;
+  }
+  [id="04-ledger-spike"] {
+    display: inline-block;
+    width: 0.72em;
+    height: 0.72em;
+    margin-right: 1.4cqw;
+    vertical-align: baseline;
+    fill: var(--ledger-coral);
+  }
+
+  /* the ghost of 02's Markdown card */
+  [id="04-ledger-ghost"] {
+    position: absolute;
+    left: 14cqw;
+    right: 14cqw;
+    top: 22cqw;
+    height: 26cqw;
+    padding: 3.6cqw;
+    background: #FFFFFF;
+    border: 1px solid rgba(23, 21, 26, 0.12);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(23, 21, 26, 0.08), 0 4px 16px rgba(23, 21, 26, 0.04);
+    overflow: hidden;
+  }
+  [id="04-ledger-md"] {
+    height: 100%;
+    overflow: hidden;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 400;
+    font-size: 3.05cqw;
+    line-height: 1.55;
+    color: var(--ledger-ink);
+    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+  }
+  [class~="04-ledger-h"] { color: var(--ledger-coral); }
+  [class~="04-ledger-gap"] { height: 1.2cqw; }
+
+  /* number-lockup: serif figures, mono unit */
+  [id="04-ledger-row"] {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 64cqw;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 2.4cqw;
+    white-space: nowrap;
+  }
+  [id="04-ledger-slot150"] { display: inline-block; }
+  [class~="04-ledger-fig"] {
+    display: inline-block;
+    font-family: "EB Garamond", serif;
+    font-weight: 400;
+    font-size: 22cqw;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    font-variant-numeric: lining-nums tabular-nums;
+    color: var(--ledger-ink);
+  }
+  [id="04-ledger-fig150"] { transform-origin: 50% 54%; }
+  [id="04-ledger-fig127"] { transform-origin: 50% 89%; }
+  [id="04-ledger-arrow"] {
+    display: block;
+    align-self: center;
+    position: relative;
+    top: 1cqw;
+    width: 8cqw;
+    height: 4.8cqw;
+    flex: none;
+  }
+  [id="04-ledger-unit"] {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 88cqw;
+    text-align: center;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 400;
+    font-size: 3.6cqw;
+    line-height: 1.2;
+    color: var(--ledger-muted);
+  }
+
+  /* the measured ratio, in savings green, unit named */
+  [id="04-ledger-pct"] {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 99cqw;
+    text-align: center;
+  }
+  [id="04-ledger-pct-lock"] {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 1.8cqw;
+    white-space: nowrap;
+    transform-origin: 50% 50%;
+    color: var(--ledger-savings);
+  }
+  [id="04-ledger-pct-fig"] {
+    font-family: "EB Garamond", serif;
+    font-weight: 400;
+    font-size: 11cqw;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+  [id="04-ledger-pct-unit"] {
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 400;
+    font-size: 3.6cqw;
+    line-height: 1;
+  }
+
+  /* the mono pill, typed on */
+  [id="04-ledger-pillrow"] {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 118cqw;
+    text-align: center;
+  }
+  [id="04-ledger-pill"] {
+    display: inline-flex;
+    align-items: center;
+    padding: 1.4cqw 3.4cqw;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 400;
+    font-size: 3.2cqw;
+    line-height: 1.2;
+    color: var(--ledger-muted);
+    background: var(--ledger-tile);
+    border: 1px solid rgba(23, 21, 26, 0.2);
+    border-radius: 9999px;
+  }
+  [id="04-ledger-pill-wrap"] {
+    display: inline-flex;
+    align-items: center;
+    min-width: 10ch; /* = the final "no API key" width: no edge jitter while typing */
+    white-space: pre;
+  }
+  [id="04-ledger-caret"] {
+    display: inline-block;
+    flex: none;
+    width: 0.12em;
+    height: 1em;
+    margin-left: 0.08em;
+    margin-right: -0.2em; /* net zero width: the caret never shifts the pill */
+    background: var(--ledger-muted);
+  }
+</style>
+
+<div data-hf-id="hf-vgmi" id="root" data-composition-id="04-ledger" data-width="1080" data-height="1920" data-duration="4.7">
+  <div data-hf-id="hf-q6sz" id="04-ledger-ground" class="clip" data-start="0" data-duration="4.7" data-track-index="0"></div>
+
+  <div data-hf-id="hf-06mr" id="04-ledger-stage" class="clip" data-start="0" data-duration="4.7" data-track-index="1">
+    <div data-hf-id="hf-6kqx" id="04-ledger-kicker"><svg data-hf-id="hf-y2m5" id="04-ledger-spike" viewBox="0 0 10 10" aria-hidden="true"><polygon data-hf-id="hf-m00h" points="0,0 0,10 10,10" /></svg>the ledger</div>
+
+    <div data-hf-id="hf-77n9" id="04-ledger-ghost" data-layout-allow-overflow="" aria-hidden="true">
+      <div data-hf-id="hf-xgoh" id="04-ledger-md">
+        <div data-hf-id="hf-gboz"><span data-hf-id="hf-ngu8" class="04-ledger-h">##</span> Goal</div>
+        <div data-hf-id="hf-4i7x" class="04-ledger-gap"></div>
+        <div data-hf-id="hf-eaa9">what i need is a python script that takes a folder of csv files and merges them but ONLY the ones that have a "date" column, and also it should skip empty files</div>
+        <div data-hf-id="hf-1cgh" class="04-ledger-gap"></div>
+        <div data-hf-id="hf-duzc"><span data-hf-id="hf-y4fs" class="04-ledger-h">##</span> Requirements</div>
+        <div data-hf-id="hf-2jdk" class="04-ledger-gap"></div>
+        <div data-hf-id="hf-d39w">- the output should be a single parquet file</div>
+        <div data-hf-id="hf-evn5">- please use pandas</div>
+        <div data-hf-id="hf-252j" class="04-ledger-gap"></div>
+        <div data-hf-id="hf-onfw"><span data-hf-id="hf-wxip" class="04-ledger-h">##</span> Constraints</div>
+        <div data-hf-id="hf-2iyi">- python 3.11</div>
+        <div data-hf-id="hf-05je" class="04-ledger-gap"></div>
+        <div data-hf-id="hf-c5p9"><span data-hf-id="hf-xbtq" class="04-ledger-h">##</span> Notes</div>
+        <div data-hf-id="hf-4gt6">- merge them all into one parquet</div>
+      </div>
+    </div>
+
+    <div data-hf-id="hf-heiy" id="04-ledger-row">
+      <span data-hf-id="hf-vdgx" id="04-ledger-slot150"><span data-hf-id="hf-w61h" id="04-ledger-fig150" class="04-ledger-fig">150</span></span>
+      <svg data-hf-id="hf-w9em" id="04-ledger-arrow" viewBox="0 0 80 48" aria-hidden="true"><g data-hf-id="hf-wtwr" fill="none" stroke="rgba(23,21,26,0.45)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><line data-hf-id="hf-dqqv" x1="6" y1="24" x2="72" y2="24" /><polyline data-hf-id="hf-av4l" points="56,10 72,24 56,38" /></g></svg>
+      <span data-hf-id="hf-wiv7" id="04-ledger-fig127" class="04-ledger-fig">150</span>
+    </div>
+    <div data-hf-id="hf-x42m" id="04-ledger-unit">tokens</div>
+
+    <div data-hf-id="hf-qx2b" id="04-ledger-pct"><span data-hf-id="hf-0yy6" id="04-ledger-pct-lock"><span data-hf-id="hf-0ys7" id="04-ledger-pct-fig">85%</span><span data-hf-id="hf-2g6n" id="04-ledger-pct-unit">of original</span></span></div>
+
+    <div data-hf-id="hf-m5qp" id="04-ledger-pillrow"><span data-hf-id="hf-94rw" id="04-ledger-pill"><span data-hf-id="hf-m7v5" id="04-ledger-pill-wrap"><span data-hf-id="hf-fip8" id="04-ledger-pill-text"></span><span data-hf-id="hf-9w8q" id="04-ledger-caret"></span></span></span></div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    function el(name) {
+      return document.getElementById("04-ledger-" + name);
+    }
+    var ghost = el("ghost");
+    var kicker = el("kicker");
+    var slot150 = el("slot150");
+    var fig150 = el("fig150");
+    var arrow = el("arrow");
+    var fig127 = el("fig127");
+    var unit = el("unit");
+    var pct = el("pct-lock");
+    var pill = el("pill");
+    var pillText = el("pill-text");
+    var caret = el("caret");
+
+    window.__timelines = window.__timelines || {};
+    var tl = gsap.timeline({ paused: true });
+
+    // Scene 1 (0.00-1.30): "Structured Markdown". The ghost of 02's card settles; kicker at 0.1.
+    tl.fromTo(ghost, { opacity: 0, y: 28 }, { opacity: 0.35, y: 0, duration: 0.85, ease: "power3.out" }, 0.05);
+    tl.fromTo(kicker, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.1);
+
+    // Scene 2 (1.30-2.45): "an honest token count".
+    // 150 lands dead-center (spring-pop-entrance, smooth power3, no overshoot) with its mono unit...
+    tl.fromTo(fig150, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power3.out" }, 1.4);
+    tl.fromTo(unit, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 1.48);
+    // ...then makes room: its slot glides from screen center (ink center at x=540) to the lockup's left slot.
+    tl.fromTo(slot150, { x: 218 }, { x: 0, duration: 0.36, ease: "power3.inOut" }, 1.6);
+    // The arrow fades in 1.7-1.9.
+    tl.fromTo(arrow, { opacity: 0, x: -16 }, { opacity: 1, x: 0, duration: 0.2, ease: "power2.out" }, 1.7);
+    // counting-dynamic-scale: one proxy 150 -> 127, text via Math.round, scale grows on the same ease + timing.
+    var count = { v: 150 };
+    tl.to(count, {
+      v: 127,
+      duration: 0.55,
+      ease: "power3.out",
+      onUpdate: function () {
+        fig127.textContent = String(Math.round(count.v));
+      }
+    }, 1.9);
+    tl.fromTo(fig127, { scale: 0.6 }, { scale: 1, duration: 0.55, ease: "power3.out" }, 1.9);
+    tl.fromTo(fig127, { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power2.out" }, 1.9);
+
+    // Scene 3 (2.45-3.40): "85% of original" pops in green (spring-pop-entrance, power3, no overshoot).
+    tl.fromTo(pct, { scale: 0, opacity: 0, y: 12 }, { scale: 1, opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 2.5);
+
+    // "no API key": the pill arrives, then discrete-text-sequence types it on 3.0-3.4.
+    tl.fromTo(pill, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.22, ease: "power3.out" }, 2.94);
+    var SEQUENCE = [
+      { t: 0.0, text: "" },
+      { t: 0.02, text: "n" },
+      { t: 0.08, text: "no" },
+      { t: 0.15, text: "no A" },
+      { t: 0.21, text: "no API" },
+      { t: 0.29, text: "no API k" },
+      { t: 0.35, text: "no API ke" },
+      { t: 0.41, text: "no API key" }
+    ];
+    function textAt(time) {
+      for (var i = SEQUENCE.length - 1; i >= 0; i--) {
+        if (time >= SEQUENCE[i].t) return SEQUENCE[i].text;
+      }
+      return "";
+    }
+    var driver = { t: 0 };
+    tl.to(driver, {
+      t: 0.5,
+      duration: 0.5,
+      ease: "none",
+      onUpdate: function () {
+        pillText.textContent = textAt(driver.t);
+        // Solid caret only while typing (it rides inside the still-hidden pill before 2.94);
+        // it is gone before the hold so the held read is completely still.
+        caret.style.opacity = driver.t < 0.47 ? "1" : "0";
+      }
+    }, 3.0);
+
+    // Scene 4 (3.40-4.30): held read, everything still. Pad the timeline to the frame length.
+    tl.set({}, {}, 4.3);
+
+    window.__timelines["04-ledger"] = tl;
+  })();
+</script>
+</template>

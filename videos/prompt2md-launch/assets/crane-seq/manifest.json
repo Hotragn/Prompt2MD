@@ -1,0 +1,14 @@
+{
+  "source": "Blender render of the prompt2md origami crane (the same frames as assets/crane-turntable.mp4, lossless)",
+  "size": [
+    720,
+    720
+  ],
+  "fps": 24,
+  "frames": 60,
+  "loop_s": 2.5,
+  "seamless": true,
+  "files": "assets/crane-seq/f01.png … assets/crane-seq/f60.png",
+  "rule": "At frame-local time t >= t0 (the crane's entrance), show f[(floor((t - t0) * 24) mod 60) + 1]; exactly one image visible at a time.",
+  "ground": "baked on paper within ±1 level of #FAF9F6 (no alpha); place on the paper ground, no blend mode"
+}

@@ -1,0 +1,205 @@
+<template id="01-typed-template" data-composition-id="01-typed" data-width="1080" data-height="1920">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+
+<style>
+@font-face{font-family:"EB Garamond";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/EBGaramond-400.woff2") format("woff2");}
+@font-face{font-family:"EB Garamond";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/EBGaramond-700.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/Inter-400.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/Inter-700.woff2") format("woff2");}
+@font-face{font-family:"JetBrains Mono";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/JetBrainsMono-400.woff2") format("woff2");}
+@font-face{font-family:"JetBrains Mono";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/JetBrainsMono-700.woff2") format("woff2");}
+</style>
+
+<style>
+  /* Frame root: styled by #root only. */
+  #root { position: absolute; inset: 0; width: 1080px; height: 1920px; overflow: hidden; }
+
+  /* ---- Handoff 01 -> 02: the typed sheet, values verbatim from .hyperframes/handoff-01-02.html ---- */
+  #root .p2-sheet { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; background: #0F0E11; }
+  #root .p2-kicker { position: absolute; left: 97px; top: 140px; font-family: "JetBrains Mono", monospace; font-size: 29px; line-height: 1.2; letter-spacing: 0.16em; text-transform: uppercase; color: #78748A; white-space: nowrap; }
+  #root .p2-kicker i { font-style: normal; color: #7C5CFF; margin-right: 15px; }
+  #root .p2-counter { position: absolute; right: 97px; top: 130px; text-align: right; font-family: "JetBrains Mono", monospace; }
+  #root .p2-counter small { display: block; font-size: 26px; line-height: 1.2; letter-spacing: 0.16em; text-transform: uppercase; color: #78748A; }
+  #root .p2-counter b { display: block; margin-top: 16px; font-size: 97px; line-height: 1; font-weight: 400; color: #F2EFEA; }
+  #root .p2-typed { position: absolute; left: 86px; top: 389px; width: 908px; font-family: "JetBrains Mono", monospace; color: #F2EFEA; font-variant-ligatures: none; white-space: normal; overflow-wrap: normal; --n: 0; }
+  #root .p2-hero { font-size: 69px; line-height: 91px; }
+  #root .p2-rest { margin-top: 32px; font-size: 37px; line-height: 55px; color: rgba(242, 239, 234, 0.55); -webkit-mask-image: linear-gradient(#000 40%, transparent); mask-image: linear-gradient(#000 40%, transparent); }
+  #root .p2-fill { color: #634CBE; }
+  #root .p2-caret { display: inline-block; width: 6px; height: 71px; background: #7C5CFF; vertical-align: -13px; margin-left: 6px; }
+
+  /* ---- Typing layer (adds no layout: every character is in the DOM from t = 0) ----
+     --n = characters typed so far (set per frame on the timeline); --i = a character's index.
+     An untyped character has opacity 0, so no line ever reflows while typing. */
+  #root .p2-typed [class~="01-typed-c"] { opacity: clamp(0, calc(var(--n) - var(--i)), 1); }
+  /* Word wrappers stop the zero-width caret boxes from adding mid-word wrap points. */
+  #root .p2-typed [class~="01-typed-w"] { white-space: nowrap; }
+
+  /* Moving caret (hero only, data-cm="move"): a zero-net-width box after the last typed
+     character, same geometry as .p2-caret, so it never changes a line break. */
+  #root .p2-typed[data-cm="move"] .p2-hero::before { content: ""; display: inline-block; width: 6px; height: 71px; background: #7C5CFF; vertical-align: -13px; margin-right: -6px; opacity: clamp(0, calc(1 - var(--n)), 1); }
+  #root .p2-typed[data-cm="move"] .p2-hero [class~="01-typed-c"]::after { content: ""; display: inline-block; width: 6px; height: 71px; background: #7C5CFF; vertical-align: -13px; margin-left: 6px; margin-right: -12px; opacity: clamp(0, calc(var(--i) + 2 - var(--n)), 1); }
+  /* context-sensitive caret: it dims to the filler tint while it types a filler run */
+  #root .p2-typed[data-cm="move"] .p2-hero .p2-fill [class~="01-typed-c"]::after { background: #634CBE; }
+  /* The snippet's own inline caret takes over once the hero line is complete. */
+  #root .p2-typed:not([data-cm="fixed"]) .p2-caret { opacity: 0; }
+
+  /* Typo overlay "basicly": cells 6-7 of "basically" show l, y (same mono cells, net width 0). */
+  #root .p2-typed[data-ty="1"] [class~="01-typed-ty"] { color: transparent; }
+  #root .p2-typed[data-ty="1"] [class~="01-typed-ty"]::before { content: attr(data-g); color: #F2EFEA; margin-right: -0.6em; }
+</style>
+
+<div data-hf-id="hf-6r81" id="root" data-composition-id="01-typed" data-start="0" data-duration="2.4" data-width="1080" data-height="1920">
+  <div data-hf-id="hf-2xci" class="p2-sheet clip" data-start="0" data-duration="2.4" data-track-index="0">
+    <div data-hf-id="hf-5fkv" class="p2-kicker"><i data-hf-id="hf-hkst">◣</i>your prompt</div>
+    <div data-hf-id="hf-nzs5" class="p2-counter"><small data-hf-id="hf-6rsm">tokens</small><b data-hf-id="hf-0mu6" id="01-typed-count">0</b></div>
+    <div data-hf-id="hf-aaja" class="p2-typed" id="01-typed-typed" data-cm="move" data-ty="0">
+      <div data-hf-id="hf-g76x" class="p2-hero" id="01-typed-hero"><span data-hf-id="hf-xgep" class="p2-fill">ok so </span>what i need is <span data-hf-id="hf-bipx" class="p2-fill">basically </span>a python script that takes a folder of csv files<span data-hf-id="hf-va9p" class="p2-caret"></span></div>
+      <div data-hf-id="hf-yppa" class="p2-rest" id="01-typed-rest">and merges them but ONLY the ones that have a "date" column, and also it should skip empty files. <span data-hf-id="hf-eujp" class="p2-fill">oh and </span>the output should be a single parquet file. <span data-hf-id="hf-l8nk" class="p2-fill">also </span>please use pandas. <span data-hf-id="hf-ed2a" class="p2-fill">actually </span>it also needs to handle dates in different formats, some are MM/DD/YYYY and some are ISO. <span data-hf-id="hf-pt20" class="p2-fill">like i said </span>merge them all into one parquet. <span data-hf-id="hf-1p0o" class="p2-fill">also </span>add logging. <span data-hf-id="hf-wg5n" class="p2-fill">did i mention to skip empty files? yeah </span>skip those. <span data-hf-id="hf-n34p" class="p2-fill">one more thing - </span>if a file fails to parse dont crash, just log it and continue. <span data-hf-id="hf-hxi1" class="p2-fill">use pandas like i said. thanks!!! also </span>python 3.11</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var FPS = 30;
+    var LAST_F = 72; // t = 2.40 s
+    var typed = document.getElementById("01-typed-typed");
+    var hero = document.getElementById("01-typed-hero");
+    var rest = document.getElementById("01-typed-rest");
+    var countEl = document.getElementById("01-typed-count");
+
+    // ---- 1. Split the fixed layout into per-character spans (nested inside the runs) ----
+    var chars = [];
+    function textNodesOf(node, out) {
+      for (var c = node.firstChild; c; c = c.nextSibling) {
+        if (c.nodeType === 3) out.push(c);
+        else if (c.nodeType === 1) textNodesOf(c, out);
+      }
+      return out;
+    }
+    function split(container, wrapWords) {
+      textNodesOf(container, []).forEach(function (tn) {
+        var text = tn.nodeValue;
+        var frag = document.createDocumentFragment();
+        var word = null;
+        for (var k = 0; k < text.length; k++) {
+          var ch = text.charAt(k);
+          var s = document.createElement("span");
+          s.className = "01-typed-c";
+          s.textContent = ch;
+          s.style.setProperty("--i", String(chars.length));
+          chars.push(s);
+          if (wrapWords && ch !== " ") {
+            if (!word) {
+              word = document.createElement("span");
+              word.className = "01-typed-w";
+              frag.appendChild(word);
+            }
+            word.appendChild(s);
+          } else {
+            word = null;
+            frag.appendChild(s);
+          }
+        }
+        tn.parentNode.replaceChild(frag, tn);
+      });
+    }
+    split(hero, true);
+    var H = chars.length; // hero characters (79)
+    split(rest, false);
+    var TOTAL = chars.length; // whole prompt (596)
+    var R = TOTAL - H;
+
+    // Typo cells: "basicly" fills cells 6-7 of "basically" with l, y.
+    var heroText = chars.slice(0, H).map(function (s) { return s.textContent; }).join("");
+    var B = heroText.indexOf("basically");
+    var TY1 = B + 5, TY2 = B + 6;
+    [[TY1, "l"], [TY2, "y"]].forEach(function (p) {
+      chars[p[0]].className = "01-typed-c 01-typed-ty";
+      chars[p[0]].setAttribute("data-g", p[1]);
+    });
+
+    // ---- 2. Keystroke schedule: [time, typed count after the key, typo overlay on] ----
+    var EV = [[0, 0, 0]];
+    function typeRange(from, to, t0, t1) {
+      var cnt = to - from;
+      for (var k = 0; k < cnt; k++) {
+        var u = cnt === 1 ? 0 : k / (cnt - 1);
+        var jit = k === 0 || k === cnt - 1 ? 0 : (((k * 7 + from) % 5) - 2) * 0.004; // fixed, human unevenness
+        var t = Math.max(t0 + (t1 - t0) * u + jit, EV[EV.length - 1][0] + 0.001);
+        EV.push([t, from + k + 1, 0]);
+      }
+    }
+    typeRange(0, 6, 0.05, 0.16);          // ok so
+    typeRange(6, B, 0.20, 0.44);          // what i need is
+    typeRange(B, TY1, 0.475, 0.56);       // basic
+    EV.push([0.585, TY1 + 1, 1]);         // typo l
+    EV.push([0.615, TY2 + 1, 1]);         // typo y   -> "basicly"
+    EV.push([0.745, TY1 + 1, 1]);         // backspace
+    EV.push([0.785, TY1, 0]);             // backspace
+    typeRange(TY1, B + 10, 0.82, 0.915);  // ally + space
+    typeRange(B + 10, H, 0.945, 1.215);   // a python script that takes a folder of csv files
+
+    // Rest of the prompt streams in below (texture), accelerating; lands at ~2.0 s.
+    var R0 = 1.265, R1 = 1.995;
+    // Scene 4: the caret blinks once (off 2.20-2.30) and is ON from 2.30 s.
+    var OFF_F0 = 66, OFF_F1 = 69;
+
+    function stateAt(f) {
+      var t = f / FPS;
+      var e = EV[0];
+      for (var k = EV.length - 1; k >= 0; k--) {
+        if (EV[k][0] <= t) { e = EV[k]; break; }
+      }
+      var n = e[1], ty = e[2], cm = "move";
+      if (n >= H) {
+        var u = Math.min(1, Math.max(0, (t - R0) / (R1 - R0)));
+        n = H + Math.floor(R * Math.pow(u, 1.25) + 1e-9);
+        cm = f >= OFF_F0 && f < OFF_F1 ? "off" : "fixed";
+      }
+      // counter climbs in step with the typed characters and lands on 150
+      return { n: n, ty: ty, cm: cm, v: Math.round((150 * n) / TOTAL) };
+    }
+    var S = [];
+    for (var f = 0; f <= LAST_F; f++) S.push(stateAt(f));
+
+    // ---- 3. Timeline: discrete per-frame state sets (seek-safe, no callbacks) ----
+    window.__timelines = window.__timelines || {};
+    var tl = gsap.timeline({ paused: true });
+
+    for (var g = 1; g <= LAST_F; g++) {
+      var a = S[g - 1], b = S[g];
+      var at = (g - 0.5) / FPS; // half a frame early: frame g always reads the new state
+      var vars = null;
+      if (b.n !== a.n) { vars = vars || {}; vars["--n"] = b.n; }
+      if (b.ty !== a.ty || b.cm !== a.cm) {
+        vars = vars || {};
+        vars.attr = {};
+        if (b.ty !== a.ty) vars.attr["data-ty"] = String(b.ty);
+        if (b.cm !== a.cm) vars.attr["data-cm"] = b.cm;
+      }
+      if (vars) tl.set(typed, vars, at);
+      if (b.v !== a.v) tl.set(countEl, { innerText: b.v }, at);
+    }
+
+    // Filler runs tint faint violet as they land (typed in the line's own colour first).
+    Array.prototype.forEach.call(typed.querySelectorAll(".p2-fill"), function (run) {
+      var cs = run.querySelectorAll('[class~="01-typed-c"]');
+      var last = chars.indexOf(cs[cs.length - 1]);
+      var inHero = last < H;
+      var landF = LAST_F;
+      for (var q = 0; q <= LAST_F; q++) {
+        if (S[q].n > last) { landF = q; break; }
+      }
+      tl.fromTo(
+        run,
+        { color: inHero ? "#F2EFEA" : "rgba(242, 239, 234, 0.55)" },
+        { color: "#634CBE", duration: inHero ? 0.22 : 0.18, ease: "power2.out" },
+        landF / FPS
+      );
+    });
+
+    window.__timelines["01-typed"] = tl;
+  })();
+</script>
+</template>

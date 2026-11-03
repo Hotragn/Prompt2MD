@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en" class="js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>prompt2md feature image</title>
+    <link rel="stylesheet" href="globals.css" />
+    <link rel="stylesheet" href="product.css" />
+    <link rel="stylesheet" href="comp.css" />
+    <style>
+      /* 1400x600, HackerNoon's recommended featured-image size. A still, built
+         from the same parts as the video: hero copy on the left, the landing
+         demo's real output and ledger on the right. */
+      .f-left {
+        position: absolute;
+        top: 50%;
+        left: 80px;
+        width: 590px;
+        transform: translateY(-50%);
+      }
+
+      .f-left .mark {
+        border-radius: 10px;
+      }
+
+      .f-left .brand {
+        font-size: 26px;
+      }
+
+      .f-left .tagline {
+        font-size: 15px;
+      }
+
+      /* Two lines, never three (the site's headline rule). */
+      .f-title {
+        margin: 34px 0 0;
+        font-size: 43px;
+        max-width: none;
+        white-space: nowrap;
+      }
+
+      .f-sub {
+        margin: 22px 0 0;
+        text-wrap: balance;
+        font-size: 18px;
+        line-height: 1.55;
+        color: var(--text-muted);
+        max-width: 30em;
+      }
+
+      .f-sub strong {
+        color: var(--text);
+      }
+
+      .f-url {
+        margin-top: 30px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .f-url .btn {
+        font-size: 16px;
+        padding: 11px 24px;
+      }
+
+      .f-url .eyebrow {
+        margin: 0;
+      }
+
+      .f-card {
+        position: absolute;
+        top: 50%;
+        right: 80px;
+        width: 600px;
+        margin: 0;
+        transform: translateY(-50%);
+      }
+
+      .f-card .pane-body {
+        height: 330px;
+        overflow: hidden;
+        font-size: 13.5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <div class="grid-bg"></div>
+
+      <div class="f-left">
+        <span class="brand-lockup">
+          <img src="brand-icon.svg" alt="" width="44" height="44" class="mark" />
+          <span class="brand-block">
+            <span class="brand">prompt<span class="brand-accent">2md</span></span>
+            <span class="tagline">A Markdown Magic</span>
+          </span>
+        </span>
+        <h1 class="hero-title f-title">Fold any text into<br /><span class="grad">token&#8209;optimized Markdown</span></h1>
+        <p class="f-sub">Other tools cut and hope. prompt2md folds: <strong>smaller Markdown, honest token numbers,</strong> and the byte&#8209;exact original back on demand.</p>
+        <div class="f-url">
+          <span class="btn">prompt2md.vercel.app</span>
+          <span class="eyebrow">Open source, Apache-2.0</span>
+        </div>
+      </div>
+
+      <div class="fold-demo f-card">
+        <div class="pane">
+          <div class="pane-head">
+            <span class="pane-title">Token-optimized Markdown</span>
+            <button class="link-btn">copy</button>
+          </div>
+          <div class="pane-body" id="out"></div>
+        </div>
+        <div class="fold-actions">
+          <button class="btn">Fold it</button>
+          <div class="ledger">
+            <span class="metric"><span class="metric-k">before</span><span class="metric-v">150</span></span>
+            <span class="ledger-sep" aria-hidden="true">→</span>
+            <span class="metric"><span class="metric-k">after</span><span class="metric-v">127</span></span>
+            <span class="metric"><span class="metric-k">of original</span><span class="metric-v ok">85%</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="lib.js"></script>
+    <script src="content.js"></script>
+    <script>
+      (function () {
+        "use strict";
+        const esc = P2.esc;
+        document.getElementById("out").innerHTML = CONTENT.OUTPUT.split("\n")
+          .map((l) => (l === "" ? '<div class="md-gap"></div>' : `<div class="md-line">${esc(l)}</div>`))
+          .join("");
+        window.__duration = 1;
+        window.__render = () => {};
+        document.fonts.ready.then(() => (window.__ready = true));
+      })();
+    </script>
+  </body>
+</html>

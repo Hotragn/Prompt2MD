@@ -1,0 +1,250 @@
+<template id="07-unfold-template" data-composition-id="07-unfold" data-width="1080" data-height="1920" data-duration="4.9">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+@font-face{font-family:"EB Garamond";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/EBGaramond-400.woff2") format("woff2");}
+@font-face{font-family:"EB Garamond";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/EBGaramond-700.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/Inter-400.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/Inter-700.woff2") format("woff2");}
+@font-face{font-family:"JetBrains Mono";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/JetBrainsMono-400.woff2") format("woff2");}
+@font-face{font-family:"JetBrains Mono";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/JetBrainsMono-700.woff2") format("woff2");}
+</style>
+<style>
+  /* 07-unfold: sketch storyboard.html #frame-07, 1 cqw = 10.8 px. Frame-local names start with a
+     digit, so they are matched with [class~=...] attribute selectors (always valid CSS). */
+  #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+  #root, #root * { box-sizing: border-box; }
+
+  [class~="07-unfold-ground"] { position: absolute; inset: 0; background: #FAF9F6; }
+  [class~="07-unfold-scene"] { position: absolute; inset: 0; }
+
+  /* kicker: left 9cqw, top 13cqw, mono 2.7cqw, 0.16em, the violet folded-corner mark */
+  [class~="07-unfold-kicker"] {
+    position: absolute; left: 97.2px; top: 140.4px; margin: 0;
+    font-family: "JetBrains Mono", monospace; font-weight: 400; font-size: 29.16px; line-height: 1.2;
+    letter-spacing: 0.16em; text-transform: uppercase; color: #8B8794; white-space: nowrap;
+    font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0;
+  }
+  [class~="07-unfold-mark"] { display: inline-block; width: 0.66em; height: 0.66em; margin-right: 15.12px; vertical-align: baseline; }
+
+  /* headline: left/right 9cqw, top 20cqw, EB Garamond 10cqw */
+  [class~="07-unfold-head"] {
+    position: absolute; left: 97.2px; right: 97.2px; top: 216px; margin: 0;
+    font-family: "EB Garamond", serif; font-weight: 400; font-size: 108px; line-height: 1.02;
+    letter-spacing: -0.02em; color: #17151A;
+  }
+  [class~="07-unfold-word"] { display: inline-block; }
+
+  /* terminal: left/right 6cqw, top 44cqw, deep ink surface */
+  [class~="07-unfold-term"] {
+    position: absolute; left: 64.8px; right: 64.8px; top: 475.2px;
+    background: #0F0E11; border: 1px solid #2B2830; border-radius: 21.6px; overflow: hidden;
+    box-shadow: 0 17.28px 47.52px -17.28px rgba(23, 21, 26, 0.5);
+    transform-origin: 50% 50%;
+  }
+  [class~="07-unfold-bar"] {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #211E25; border-bottom: 1px solid #2B2830; padding: 21.6px 32.4px;
+    font-family: "JetBrains Mono", monospace; font-weight: 400; font-size: 24.84px; line-height: 1.3;
+    letter-spacing: 0.1em; color: #78748A; text-transform: uppercase;
+    font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0;
+  }
+  [class~="07-unfold-stamp"] {
+    display: inline-block; font-size: 25.92px; line-height: 1.3; letter-spacing: 0.04em;
+    text-transform: none; white-space: nowrap; color: #15803D; background: #F0FAF3;
+    border: 1px solid #BBE3C8; border-radius: 9999px; padding: 5.4px 21.6px;
+    transform-origin: 50% 50%;
+  }
+  [class~="07-unfold-check"] { display: inline-block; width: 0.72em; height: 0.72em; vertical-align: -0.08em; }
+
+  [class~="07-unfold-body"] {
+    padding: 34.56px 36.72px 38.88px;
+    font-family: "JetBrains Mono", monospace; font-weight: 400; font-size: 29.7px; line-height: 48px;
+    color: #F2EFEA; font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0;
+  }
+  [class~="07-unfold-line"] { height: 48px; white-space: pre; }
+  [class~="07-unfold-prompt"] { color: #7C5CFF; }
+  [class~="07-unfold-caret"] {
+    display: inline-block; width: 15px; height: 28px; margin-left: 2px; vertical-align: -6px;
+    background: #F2EFEA;
+  }
+
+  /* stdout: 9 lines x 48 px = 432 px; wraps at 49 columns exactly */
+  [class~="07-unfold-out"] { position: relative; height: 432px; margin-top: 6px; }
+  [class~="07-unfold-sheet"] {
+    position: absolute; top: 0; left: 0; width: calc(49ch + 1px); margin: 0;
+    white-space: pre-wrap; color: #CFCAC0;
+  }
+  [class~="07-unfold-hit"] { position: relative; display: inline-block; }
+  [class~="07-unfold-tint"] {
+    position: absolute; left: -3px; right: -3px; top: 4px; bottom: 4px; border-radius: 6.48px;
+    background: rgba(34, 160, 90, 0.34); box-shadow: inset 0 0 0 1px rgba(34, 160, 90, 0.6);
+  }
+  [class~="07-unfold-hit-t"] { position: relative; }
+
+  /* the paper fold (.hyperframes/fold-recipe.md): 6 strips, top hinges, dark-sheet shading */
+  [class~="07-unfold-fold"] {
+    position: absolute; top: 0; left: 0; width: calc(49ch + 1px); height: 432px;
+    perspective: 2200px; perspective-origin: 50% 50%; transform-style: preserve-3d;
+  }
+  [class~="07-unfold-strip"] {
+    position: absolute; top: 0; left: 0; width: 100%; height: 72px; overflow: hidden;
+    background: #0F0E11; transform-origin: 50% 0%; transform-style: preserve-3d;
+  }
+  [class~="07-unfold-shade"] {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0;
+    box-shadow: inset 0 -1px 0 rgba(23, 21, 26, 0.14);
+  }
+  [class~="07-unfold-shade-even"] { background: rgba(255, 255, 255, 0.10); }
+  [class~="07-unfold-shade-odd"] { background: rgba(0, 0, 0, 0.35); }
+</style>
+
+<div data-hf-id="hf-qhgu" id="root" data-composition-id="07-unfold" data-start="0" data-duration="4.9" data-width="1080" data-height="1920">
+  <div data-hf-id="hf-506r" id="07-unfold-ground" class="07-unfold-ground clip" data-start="0" data-duration="4.9" data-track-index="0"></div>
+
+  <div data-hf-id="hf-xixe" id="07-unfold-scene" class="07-unfold-scene clip" data-start="0" data-duration="4.9" data-track-index="1">
+    <div data-hf-id="hf-4ph2" id="07-unfold-kicker" class="07-unfold-kicker"><svg data-hf-id="hf-wy0b" class="07-unfold-mark" viewBox="0 0 10 10" aria-hidden="true"><polygon data-hf-id="hf-zxrj" points="0,0 0,10 10,10" fill="#5B3DF5" /></svg>unfold</div>
+
+    <h1 data-hf-id="hf-53h1" class="07-unfold-head"><span data-hf-id="hf-dj5y" id="07-unfold-w0" class="07-unfold-word">Unfold</span> <span data-hf-id="hf-z8ab" id="07-unfold-w1" class="07-unfold-word">any</span> <span data-hf-id="hf-vcfu" id="07-unfold-w2" class="07-unfold-word">summary.</span></h1>
+
+    <div data-hf-id="hf-0whu" id="07-unfold-term" class="07-unfold-term">
+      <div data-hf-id="hf-h1bk" class="07-unfold-bar"><span data-hf-id="hf-56fc">command line</span><span data-hf-id="hf-1u9v" id="07-unfold-stamp" class="07-unfold-stamp"><svg data-hf-id="hf-lbzq" class="07-unfold-check" viewBox="0 0 16 16" aria-hidden="true"><path data-hf-id="hf-blej" d="M2.5 8.6 L6.3 12.2 L13.5 4.2" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" /></svg> byte-exact</span></div>
+      <div data-hf-id="hf-0v9x" class="07-unfold-body">
+        <div data-hf-id="hf-do1b" class="07-unfold-line"><span data-hf-id="hf-ysey" class="07-unfold-prompt">$ </span><span data-hf-id="hf-rjfq" id="07-unfold-t1"></span><span data-hf-id="hf-r4a6" id="07-unfold-c1" class="07-unfold-caret"></span></div>
+        <div data-hf-id="hf-fb4f" class="07-unfold-line"><span data-hf-id="hf-nlbp" id="07-unfold-t2"></span><span data-hf-id="hf-n665" id="07-unfold-c2" class="07-unfold-caret"></span></div>
+        <div data-hf-id="hf-ehjo" id="07-unfold-out" class="07-unfold-out">
+          <div data-hf-id="hf-7in1" id="07-unfold-flat" class="07-unfold-sheet">Update 7: engineers investigated subsystem 7 and recorded observations. Extended narrative describing dashboards, hypotheses, and dead ends in detail. Extended narrative describing dashboards, hypotheses, and dead ends in detail. Extended narrative describing dashboards, hypotheses, and dead ends in detail. Extended narrative describing dashboards, hypotheses, and dead ends in detail. <span data-hf-id="hf-aya7" class="07-unfold-hit"><span data-hf-id="hf-mjp3" class="07-unfold-tint"></span><span data-hf-id="hf-no2i" class="07-unfold-hit-t">Key finding f-7.</span></span></div>
+          <div data-hf-id="hf-y96m" id="07-unfold-fold" class="07-unfold-fold"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var P = "07-unfold-";
+    function byId(name) { return document.getElementById(P + name); }
+    function inside(scope, name) { return scope.querySelector('[class~="' + P + name + '"]'); }
+
+    window.__timelines = window.__timelines || {};
+    var tl = gsap.timeline({ paused: true });
+    var DURATION = 4.4;
+
+    var kicker = byId("kicker");
+    var words = [byId("w0"), byId("w1"), byId("w2")];
+    var term = byId("term");
+    var stamp = byId("stamp");
+    var out = byId("out");
+    var flat = byId("flat");
+    var stage = byId("fold");
+    var t1 = byId("t1"), t2 = byId("t2"), c1 = byId("c1"), c2 = byId("c2");
+    var tint = inside(flat, "tint");
+    var hitText = inside(flat, "hit-t");
+
+    // ---- The paper fold, run in reverse (fold-recipe.md): one proxy, a 1 -> 0 ----
+    var N = 6, H = 432, h = H / N, DEG = Math.PI / 180;
+    var strips = [], shade = [];
+    for (var k = 0; k < N; k++) {
+      var strip = document.createElement("div");
+      strip.className = P + "strip";
+      var copy = document.createElement("div");
+      copy.className = P + "sheet " + P + "copy";
+      copy.innerHTML = flat.innerHTML; // same verbatim stdout, shifted up by k*h
+      var copyTint = inside(copy, "tint");
+      if (copyTint) copyTint.parentNode.removeChild(copyTint);
+      copy.style.top = -k * h + "px";
+      var sh = document.createElement("div");
+      sh.className = P + "shade " + P + (k % 2 ? "shade-odd" : "shade-even");
+      strip.appendChild(copy);
+      strip.appendChild(sh);
+      stage.appendChild(strip);
+      strips.push(strip);
+      shade.push(sh);
+    }
+
+    var fold = { a: 1 }; // 1 = folded, 0 = flat
+    function placeStrips() {
+      var t = fold.a * 88;
+      var c = Math.cos(t * DEG), s = Math.sin(t * DEG);
+      strips.forEach(function (el, i) {
+        gsap.set(el, {
+          y: i * h * c,
+          z: i % 2 ? h * s : 0,
+          rotationX: i % 2 ? -t : t,
+        });
+        gsap.set(shade[i], { opacity: s });
+      });
+      // Fully open: show the single flat copy (tiles identically, no strip seams in the hold).
+      var isFlat = fold.a <= 0;
+      stage.style.visibility = isFlat ? "hidden" : "visible";
+      flat.style.visibility = isFlat ? "visible" : "hidden";
+    }
+    placeStrips();
+
+    // ---- Typed command: discrete-text-sequence + context-sensitive-cursor ----
+    var CMD = 'prompt2md retrieve "p2md:src=c6199e0698ecc214#2874-3278"';
+    var SPLIT = 19; // line 1 holds 'prompt2md retrieve ', the quoted anchor wraps to line 2
+    var SEQ = [
+      [0.0, 0],
+      [0.5, 2], [0.54, 4], [0.58, 6], [0.63, 9],
+      [0.7, 10], [0.74, 13], [0.78, 16], [0.82, 18],
+      [0.88, 19],
+      [0.92, 21], [0.96, 25], [1.0, 29], [1.04, 33], [1.08, 37],
+      [1.12, 41], [1.16, 45], [1.2, 48], [1.24, 52], [1.28, 55], [1.32, 56],
+    ];
+    var T_ENTER = 1.45;
+    var GRACE = 0.2;
+    var BLINK = 0.5; // one on/off cycle per 0.5 s before typing starts
+    var PAPER = "#F2EFEA", VIOLET = "#7C5CFF";
+
+    var drv = { t: 0 };
+    function renderCmd() {
+      var t = drv.t, n = 0, i;
+      for (i = SEQ.length - 1; i >= 0; i--) {
+        if (t >= SEQ[i][0]) { n = SEQ[i][1]; break; }
+      }
+      t1.textContent = CMD.slice(0, Math.min(n, SPLIT));
+      t2.textContent = n > SPLIT ? CMD.slice(SPLIT, n) : "";
+      var typing = false;
+      for (i = 1; i < SEQ.length; i++) {
+        if (SEQ[i][0] <= t && t - SEQ[i][0] < GRACE) { typing = true; break; }
+      }
+      var blinkOn = Math.sin((2 * Math.PI * t) / BLINK + 0.01) > 0;
+      var show = t < T_ENTER && (typing || blinkOn);
+      var onLine2 = n > SPLIT;
+      c1.style.opacity = show && !onLine2 ? "1" : "0";
+      c2.style.opacity = show && onLine2 ? "1" : "0";
+      var col = onLine2 && n < CMD.length ? VIOLET : PAPER; // violet while the anchor types
+      c1.style.backgroundColor = col;
+      c2.style.backgroundColor = col;
+    }
+    renderCmd();
+
+    // Scene 1 (0.00-0.90): kicker + headline word by word on the VO; terminal springs in
+    tl.fromTo(kicker, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0);
+    var WORD_AT = [0.0, 0.35, 0.7]; // Unfold · any · summary
+    words.forEach(function (w, i) {
+      tl.fromTo(w, { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, WORD_AT[i]);
+    });
+    tl.fromTo(term, { scale: 0, opacity: 0, y: 12 }, { scale: 1, opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.08);
+
+    // Scene 2 (0.30-1.50): the command types; Enter at 1.45 (caret leaves with the Enter)
+    tl.fromTo(drv, { t: 0 }, { t: 1.5, duration: 1.5, ease: "none", onUpdate: renderCmd }, 0);
+
+    // Scene 3 (1.55-2.95): stdout arrives folded, then opens out as the accordion unfold
+    tl.fromTo(out, { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 1.47);
+    tl.fromTo(fold, { a: 1 }, { a: 0, duration: 0.7, ease: "power2.inOut", onUpdate: placeStrips }, 1.56);
+    // "Key finding f-7." lights at 2.6 s: static tint + hairline ring sweeps on, no pulse
+    tl.fromTo(tint, { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.3, ease: "power3.out" }, 2.6);
+    tl.fromTo(hitText, { color: "#CFCAC0" }, { color: "#F2EFEA", duration: 0.3, ease: "power3.out" }, 2.6);
+
+    // Scene 4 (2.95-3.30): the stamp lands in the title bar, settled by 3.30
+    tl.fromTo(stamp, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: "power3.out" }, 2.95);
+
+    // Scene 5 (3.30-4.40): the held frame. Nothing is scheduled after 3.30.
+    tl.to({}, { duration: DURATION }, 0);
+
+    window.__timelines["07-unfold"] = tl;
+  })();
+</script>
+</template>

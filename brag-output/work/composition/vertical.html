@@ -1,0 +1,781 @@
+<!doctype html>
+<html lang="en" class="js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>prompt2md launch</title>
+    <link rel="stylesheet" href="globals.css" />
+    <link rel="stylesheet" href="product.css" />
+    <link rel="stylesheet" href="comp.css" />
+    <style>
+      /* Rendered at 450x800 CSS px, device scale 2.4 = 1080x1920. At 450px the
+         site's own responsive rules apply, so the demo card below is the
+         landing page's real phone layout, not a re-creation of it. */
+
+      .v-mast {
+        position: absolute;
+        top: 40px;
+        left: 22px;
+      }
+
+      .v-mast .mark {
+        border-radius: 9px;
+      }
+
+      .v-title {
+        position: absolute;
+        top: 98px;
+        left: 22px;
+        right: 22px;
+        margin: 0;
+        font-size: 31px;
+        max-width: none;
+      }
+
+      .v-demo {
+        position: absolute;
+        top: 186px;
+        left: 22px;
+        right: 22px;
+        margin: 0;
+      }
+
+      .v-body {
+        height: auto;
+        min-height: 100%;
+        overflow: hidden;
+        font-size: 12.5px;
+      }
+
+      .v-idle {
+        height: 50px;
+        padding-top: 0;
+        padding-bottom: 0;
+        overflow: hidden;
+      }
+
+      .v-caption {
+        position: absolute;
+        left: 22px;
+        right: 22px;
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--text-muted);
+        font-weight: 600;
+      }
+
+      .v-caption strong {
+        color: var(--text);
+      }
+
+      /* --- scene 2 --- */
+
+      .v-title2 {
+        position: absolute;
+        top: 104px;
+        left: 22px;
+        right: 22px;
+        margin: 0;
+        font-size: 31px;
+        line-height: 1.12;
+        max-width: none;
+      }
+
+      .v-title2 span {
+        display: block;
+      }
+
+      .v-accent {
+        color: var(--brand);
+      }
+
+      .v-stack {
+        position: absolute;
+        top: 196px;
+        left: 22px;
+        right: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .v-doc {
+        height: auto;
+        background: var(--surface-1);
+      }
+
+      .v-docbar {
+        justify-content: space-between;
+      }
+
+      .v-docstat {
+        font-family: var(--font-mono);
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--ok);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .v-docbody {
+        margin: 0;
+        padding: 14px 16px;
+        font-family: var(--font-mono);
+        font-size: 11.5px;
+        line-height: 1.6;
+        color: var(--text);
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: var(--surface-1);
+        height: 100%;
+      }
+
+      .v-anchor {
+        color: var(--text-faint);
+      }
+
+      .v-term .term-body {
+        font-size: 11.5px;
+        padding-bottom: 6px;
+      }
+
+      .v-ret {
+        margin: 0;
+        padding: 2px 16px 16px;
+        font-family: var(--font-mono);
+        font-size: 11.5px;
+        line-height: 1.6;
+        color: #cfcac0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: #17151a;
+        height: 100%;
+      }
+
+      /* The byte-exact stamp rides in the terminal's title bar, beside its name,
+         the same way the doc card carries its token count. */
+      .v-exact {
+        padding: 2px 10px;
+        font-size: 11px;
+        opacity: 0;
+      }
+
+      .v-term .term-bar {
+        min-height: 36px;
+      }
+
+      /* --- scene 3 --- */
+
+      .bloom {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(70% 55% at 50% 30%, color-mix(in srgb, var(--brand) 7%, transparent), transparent 70%);
+        opacity: 0;
+      }
+
+      .s3-wrap {
+        position: absolute;
+        inset: 0;
+      }
+
+      /* The Blender turntable is baked onto paper. Its frames were re-extracted
+         with that paper matched to the page's #FAF9F6 (within one level after
+         JPEG), and the outro drops the grid, so the frame edge never shows.
+         A multiply blend was tried first; it erased the white facets. */
+      #crane {
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        width: 360px;
+        height: 360px;
+        margin-left: -180px;
+      }
+
+      /* The cta-band's violet bloom, drawn on a canvas with dithered alpha (a
+         6% CSS gradient bands into visible rings at 8 bits). Above the crane on
+         purpose: a tint over both the frame and the page cannot draw a seam. */
+      .bloom-over {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        opacity: 0;
+      }
+
+      .v-lock {
+        position: absolute;
+        top: 360px;
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+      }
+
+      .v-lock img {
+        width: 54px;
+        height: 54px;
+        display: block;
+      }
+
+      .v-lock .brand {
+        font-size: 44px;
+        letter-spacing: -0.03em;
+        line-height: 1;
+      }
+
+      .v-tag {
+        position: absolute;
+        top: 428px;
+        left: 0;
+        right: 0;
+        margin: 0;
+        text-align: center;
+        font-size: 17px;
+        letter-spacing: 0.22em;
+      }
+
+      .v-tools {
+        position: absolute;
+        top: 474px;
+        left: 30px;
+        right: 30px;
+        justify-content: center;
+        margin: 0;
+      }
+
+      .v-url {
+        position: absolute;
+        top: 614px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+      }
+
+      .v-url .btn {
+        font-size: 17px;
+        padding: 12px 26px;
+        letter-spacing: -0.01em;
+      }
+
+      .v-oss {
+        position: absolute;
+        top: 676px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+      }
+
+      .v-oss .eyebrow {
+        margin: 0;
+      }
+
+      #cur {
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage" id="stage">
+      <div class="grid-bg" id="grid"></div>
+
+      <header class="v-mast" id="mast">
+        <span class="brand-lockup">
+          <img src="brand-icon.svg" alt="" width="34" height="34" class="mark" />
+          <span class="brand-block">
+            <span class="brand">prompt<span class="brand-accent">2md</span></span>
+            <span class="tagline">A Markdown Magic</span>
+          </span>
+        </span>
+      </header>
+
+      <!-- ============================================================ scene 1 -->
+      <section class="scene" id="s1">
+        <h1 class="hero-title v-title" id="s1Title">
+          Fold any text into <span class="grad">token&#8209;optimized Markdown</span>
+        </h1>
+        <p class="hero-title v-title" id="s1TitleB">No API key.<br /><span class="grad">No account.</span></p>
+
+        <div class="fold-demo v-demo" id="demo">
+          <div class="fold-panes">
+            <div class="pane">
+              <div class="pane-head">
+                <span class="pane-title">Your prompt</span>
+                <button class="link-btn">reset</button>
+              </div>
+              <div id="inHost"></div>
+            </div>
+
+            <div class="fold-arrow" aria-hidden="true"><span></span></div>
+
+            <div class="pane">
+              <div class="pane-head">
+                <span class="pane-title">Token-optimized Markdown</span>
+                <button class="link-btn" id="copyBtn">copy</button>
+              </div>
+              <div class="pane-body pane-idle v-idle" id="idle">
+                <span>Press Fold to run this through the real pipeline.</span>
+              </div>
+              <div id="outHost"></div>
+            </div>
+          </div>
+
+          <div class="fold-actions">
+            <button class="btn" id="foldBtn">Fold it</button>
+            <div class="ledger" id="ledger" role="status">
+              <span class="metric"><span class="metric-k">before</span><span class="metric-v" id="mBefore">150</span></span>
+              <span class="ledger-sep" aria-hidden="true">→</span>
+              <span class="metric"><span class="metric-k">after</span><span class="metric-v" id="mAfter">127</span></span>
+              <span class="metric" id="mPctWrap"><span class="metric-k">of original</span><span class="metric-v ok" id="mPct">85%</span></span>
+            </div>
+            <span class="fold-note" id="note">Runs live against this deployment. Nothing is stored on our side.</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ============================================================ scene 2 -->
+      <section class="scene" id="s2">
+        <h2 class="section-title v-title2" id="s2Title">
+          <span id="s2a">Everything else cuts.</span>
+          <span id="s2b" class="v-accent">This folds.</span>
+        </h2>
+        <h2 class="section-title v-title2" id="s2TitleB">
+          <span>The byte&#8209;exact original,</span>
+          <span class="v-accent">back on demand.</span>
+        </h2>
+
+        <div class="v-stack" id="stack2">
+          <div class="win paper v-doc" id="doc">
+            <div class="win-bar v-docbar">
+              <span class="win-name">incident.md</span>
+              <span class="v-docstat" id="docStat">1,449 → 475 tokens</span>
+            </div>
+            <div id="docHost"></div>
+          </div>
+
+          <div class="term v-term" id="term">
+            <div class="term-bar">
+              <span class="term-name">command line</span>
+              <span class="exact-tag v-exact" id="exact">✓ byte&#8209;exact</span>
+            </div>
+            <div class="term-body"><span class="term-prompt">$ </span><span id="cmd"></span></div>
+            <div id="retHost"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ scene 3 -->
+      <section class="scene" id="s3">
+        <div class="s3-wrap" id="s3wrap">
+          <canvas id="crane" width="720" height="720"></canvas>
+          <canvas class="bloom-over" id="bloom" width="1080" height="1920"></canvas>
+          <div class="v-lock" id="lock">
+            <img src="brand-icon.svg" alt="" />
+            <span class="brand">prompt<span class="brand-accent">2md</span></span>
+          </div>
+          <p class="tagline v-tag" id="tag">A Markdown Magic</p>
+          <ul class="tool-list v-tools" id="tools"></ul>
+          <div class="v-url" id="url"><span class="btn">prompt2md.vercel.app</span></div>
+          <div class="v-oss" id="oss"><p class="eyebrow">Open source, Apache-2.0</p></div>
+        </div>
+      </section>
+
+      <div class="md-cursor-dot" id="cur"><div class="md-cursor-dot-inner" id="curIn">#</div></div>
+    </div>
+
+    <script src="lib.js"></script>
+    <script src="content.js"></script>
+    <script>
+      (function () {
+        "use strict";
+        const { seg, ease, clamp, lerp, reveal, conceal, esc, runsHTML, Accordion } = P2;
+        const C = CONTENT;
+        const $ = (id) => document.getElementById(id);
+
+        const DURATION = 20;
+
+        // Timeline, in seconds. Music is 120 BPM, so bars fall on even seconds:
+        // the fold opens on the downbeat at 2.0, the outro resolves at 14.0.
+        const T = {
+          typeA: 0.06, typeB: 1.12,
+          curA: 0.66, curB: 1.24,
+          press: 1.38,
+          dimA: 1.44, dimB: 1.7,
+          foldA: 1.6, foldB: 2.08,
+          unfoldA: 2.0, unfoldB: 2.86,
+          busyA: 1.44, busyB: 2.86,
+          ledgerA: 2.84,
+          titleSwap: 4.3,
+          scrollA: 4.5, scrollB: 6.5,
+          exitA: 7.5, exitB: 8.0,
+
+          s2A: 8.04,
+          docA: 8.36, docUnfoldA: 8.44, docUnfoldB: 9.24,
+          anchorA: 9.42,
+          termA: 9.5,
+          cmdA: 9.8, cmdB: 10.8,
+          enter: 10.92,
+          retA: 11.02, retB: 11.84,
+          hitA: 11.92,
+          exactA: 12.1,
+          title2Swap: 11.3,
+          exit2A: 13.4, exit2B: 14.0,
+
+          s3A: 14.04,
+          lockA: 14.84,
+          tagA: 15.32,
+          toolsA: 16.02,
+          urlA: 17.0,
+          ossA: 17.26,
+        };
+
+        let inAcc, outAcc, docAcc, retAcc;
+        let outScrollMax = 0;
+        let btnCenter = { x: 0, y: 0 };
+        let anchorEl = null;
+        const cranes = [];
+        const craneCtx = $("crane").getContext("2d");
+
+        const mdHTML = (md) =>
+          md
+            .split("\n")
+            .map((l) => (l === "" ? '<div class="md-gap"></div>' : `<div class="md-line">${esc(l)}</div>`))
+            .join("");
+
+        function docHTML(anchorLit) {
+          return (
+            '<pre class="v-docbody">' +
+            C.COMPRESSED_EXCERPT.map((l) => {
+              if (l.startsWith("<!--")) {
+                const lit = l.includes("#2874-3278") && anchorLit > 0;
+                const style = lit
+                  ? ` style="color: var(--brand); background: color-mix(in srgb, var(--brand) ${(anchorLit * 12).toFixed(1)}%, transparent); border-radius: 4px"`
+                  : "";
+                return `<span class="v-anchor"${style}>${esc(l)}</span>`;
+              }
+              return esc(l);
+            }).join("\n") +
+            "</pre>"
+          );
+        }
+
+        function retHTML(hit) {
+          const key = "Key finding f-7.";
+          const head = C.RETRIEVED.slice(0, C.RETRIEVED.length - key.length);
+          const style =
+            hit > 0
+              ? ` style="color: #f2efea; background: rgb(34 160 90 / ${(hit * 0.34).toFixed(3)}); box-shadow: 0 0 0 1px rgb(34 160 90 / ${(hit * 0.6).toFixed(3)})"`
+              : "";
+          return `<pre class="v-ret">${esc(head)}<span class="hit"${style}>${esc(key)}</span></pre>`;
+        }
+
+        function measure(html, width, cls) {
+          const m = document.createElement("div");
+          m.className = cls;
+          m.style.cssText = `position:absolute;left:-9999px;top:0;visibility:hidden;width:${width}px;height:auto;min-height:0`;
+          m.innerHTML = html;
+          document.body.appendChild(m);
+          const h = m.getBoundingClientRect().height;
+          m.remove();
+          return Math.ceil(h);
+        }
+
+        // radial-gradient(70% 55% at 50% 30%, brand 6%, transparent 70%), with
+        // +-0.5 of an alpha level of seeded noise so the falloff never steps.
+        function drawBloom(cv) {
+          const w = cv.width, h = cv.height;
+          const ctx = cv.getContext("2d");
+          const img = ctx.createImageData(w, h);
+          const d = img.data;
+          const cx = w * 0.5, cy = h * 0.3, rx = w * 0.7, ry = h * 0.55;
+          let seed = 7;
+          const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+          for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+              const dx = (x - cx) / rx, dy = (y - cy) / ry;
+              const k = Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) / 0.7);
+              const i = (y * w + x) * 4;
+              d[i] = 91;
+              d[i + 1] = 61;
+              d[i + 2] = 245;
+              d[i + 3] = Math.max(0, Math.min(255, Math.round(0.06 * 255 * k + rnd() - 0.5)));
+            }
+          }
+          ctx.putImageData(img, 0, 0);
+        }
+
+        function loadImg(src) {
+          return new Promise((res, rej) => {
+            const im = new Image();
+            im.onload = () => (im.decode ? im.decode().then(() => res(im), () => res(im)) : res(im));
+            im.onerror = rej;
+            im.src = src;
+          });
+        }
+
+        async function build() {
+          await document.fonts.ready;
+
+          const inW = $("inHost").getBoundingClientRect().width;
+          const hIn = measure(runsHTML(C.PROMPT_RUNS, 1e9, 0, false), inW, "pane-body v-body");
+          inAcc = new Accordion($("inHost"), { strips: 6, height: hIn });
+
+          const outW = $("outHost").getBoundingClientRect().width;
+          const outFull = measure(mdHTML(C.OUTPUT), outW, "pane-body v-body");
+          const OUT_WINDOW = Math.min(outFull, 286);
+          outScrollMax = Math.max(0, outFull - OUT_WINDOW);
+          outAcc = new Accordion($("outHost"), { strips: 6, height: OUT_WINDOW });
+          outAcc.setHTML(`<div class="pane-body v-body">${mdHTML(C.OUTPUT)}</div>`);
+
+          const docW = $("docHost").getBoundingClientRect().width;
+          const hDoc = measure(docHTML(0), docW, "");
+          docAcc = new Accordion($("docHost"), { strips: 4, height: hDoc });
+
+          const retW = $("retHost").getBoundingClientRect().width;
+          const hRet = measure(retHTML(0), retW, "");
+          retAcc = new Accordion($("retHost"), { strips: 5, height: hRet });
+
+          $("tools").innerHTML = C.TOOLS.map((n) => `<li>${esc(n)}</li>`).join("");
+          drawBloom($("bloom"));
+
+          for (let i = 1; i <= 60; i++) cranes.push(await loadImg(`crane/f${String(i).padStart(2, "0")}.jpg`));
+
+          // Where the Fold it button sits at the moment it is clicked. Measured
+          // after laying the frame out at that time, not in the build-time
+          // layout, where the output pane still occupies space.
+          render(T.curB);
+          const r = $("foldBtn").getBoundingClientRect();
+          // Aim at the pill's lower right so the grown cursor leaves "Fold it" readable.
+          btnCenter = { x: r.right - 6, y: r.bottom - 6 };
+
+          window.__ready = true;
+        }
+
+        // display, not visibility: a child with visibility:visible would still
+        // show through a hidden parent (the copy button did, into the outro).
+        const show = (el, on) => {
+          el.style.display = on ? "" : "none";
+        };
+
+        function count(el, t, t0, t1, to, suffix = "") {
+          const k = seg(t, t0, t1, ease.out);
+          el.textContent = Math.round(to * k) + suffix;
+          return k;
+        }
+
+        // ------------------------------------------------------------------ scene 1
+        function scene1(t) {
+          const on = t < T.exitB + 0.02;
+          show($("s1"), on);
+          if (!on) return;
+
+          // Title slot: what it is while it happens, then why it costs nothing to try.
+          reveal($("s1Title"), t, 0, 0.42, 12);
+          if (t >= T.titleSwap) conceal($("s1Title"), t, T.titleSwap, 0.3);
+          const tb = $("s1TitleB");
+          if (t < T.titleSwap + 0.3) tb.style.opacity = "0";
+          else reveal(tb, t, T.titleSwap + 0.3, 0.46, 12);
+          if (t >= T.exitA) conceal(tb, t, T.exitA, 0.34);
+
+          // The prompt: typed, then dimmed where the pipeline dropped words, then folded.
+          const total = C.PROMPT.length;
+          let html;
+          if (t < T.typeB) {
+            const n = Math.floor(total * seg(t, T.typeA, T.typeB, ease.linear));
+            html = runsHTML(C.PROMPT_RUNS, n, 0, true);
+          } else if (t < T.press) {
+            const blink = Math.floor((t - T.typeB) / 0.5) % 2 === 0;
+            html = runsHTML(C.PROMPT_RUNS, total, 0, blink);
+          } else {
+            html = runsHTML(C.PROMPT_RUNS, total, seg(t, T.dimA, T.dimB), false);
+          }
+          inAcc.setHTML(`<div class="pane-body v-body">${html}</div>`);
+          inAcc.setAngle(90 * seg(t, T.foldA, T.foldB, ease.fold));
+
+          // Idle message fades as the run starts; its slot closes with the fold.
+          const idle = $("idle");
+          const idleK = seg(t, T.foldA, T.foldB, ease.fold);
+          idle.style.opacity = String(1 - seg(t, T.busyA, T.busyA + 0.2));
+          idle.style.height = `${50 * (1 - idleK)}px`;
+          idle.style.display = idleK >= 1 ? "none" : "";
+
+          // Output opens out on the downbeat, then scrolls like the real pane.
+          const unfold = seg(t, T.unfoldA, T.unfoldB, ease.brand);
+          let outAngle = 90 * (1 - unfold);
+          if (t >= T.exitA) outAngle = 90 * seg(t, T.exitA, T.exitA + 0.42, ease.fold);
+          outAcc.setAngle(outAngle);
+          outAcc.setScroll(outScrollMax * seg(t, T.scrollA, T.scrollB, ease.inOut));
+          $("outHost").style.display = t < T.unfoldA ? "none" : "";
+          $("copyBtn").style.visibility = t >= T.unfoldB - 0.1 ? "visible" : "hidden";
+
+          // Button: pressed, then busy exactly as LiveFold renders it.
+          const btn = $("foldBtn");
+          const busy = t >= T.busyA && t < T.busyB;
+          btn.textContent = busy ? "Folding…" : "Fold it";
+          btn.style.opacity = busy ? "0.5" : "1";
+          btn.style.transform = t >= T.press && t < T.press + 0.1 ? "translateY(1px)" : "none";
+
+          // The site's pre-run note wraps to a third row at phone width, which
+          // pushes the card into the strip that platform UI covers. Left out here.
+          $("note").style.display = "none";
+          const ledger = $("ledger");
+          if (t < T.ledgerA) {
+            ledger.style.display = "none";
+          } else {
+            ledger.style.display = "";
+            reveal(ledger, t, T.ledgerA, 0.3, 6);
+            count($("mBefore"), t, T.ledgerA, T.ledgerA + 0.42, C.REPORT.inputTokens);
+            count($("mAfter"), t, T.ledgerA + 0.14, T.ledgerA + 0.56, C.REPORT.outputTokens);
+            const pk = seg(t, T.ledgerA + 0.56, T.ledgerA + 0.86, ease.brand);
+            const pw = $("mPctWrap");
+            pw.style.opacity = pk.toFixed(3);
+            pw.style.transform = `scale(${(0.86 + 0.14 * pk).toFixed(4)})`;
+            pw.style.transformOrigin = "0% 60%";
+          }
+
+          // The card leaves as a sheet: it folds (above) and lifts away.
+          const demo = $("demo");
+          const ek = seg(t, T.exitA + 0.18, T.exitB, ease.in);
+          demo.style.opacity = String(1 - ek);
+          demo.style.transform = ek > 0 ? `translateY(${(-18 * ek).toFixed(2)}px) scale(${(1 - 0.03 * ek).toFixed(4)})` : "none";
+        }
+
+        // The site's "#" cursor, driven by t: glides in, grows over the button, taps.
+        function cursor(t) {
+          const el = $("cur");
+          const inner = $("curIn");
+          if (t < T.curA || t > T.press + 0.5) {
+            el.style.opacity = "0";
+            return;
+          }
+          const k = seg(t, T.curA, T.curB, ease.brand);
+          const x0 = 430, y0 = 770;
+          const x = lerp(x0, btnCenter.x, k);
+          const y = lerp(y0, btnCenter.y, k) - Math.sin(k * Math.PI) * 26;
+          el.style.transform = `translate3d(${(x - 15).toFixed(2)}px, ${(y - 15).toFixed(2)}px, 0)`;
+          const fadeIn = seg(t, T.curA, T.curA + 0.16);
+          const fadeOut = 1 - seg(t, T.press + 0.18, T.press + 0.46);
+          el.style.opacity = (fadeIn * fadeOut).toFixed(3);
+          const over = t >= T.curB - 0.08;
+          el.dataset.state = over ? "active" : "";
+          const pressed = t >= T.press && t < T.press + 0.12;
+          inner.style.transform = over ? `scale(${pressed ? 1.14 : 1.32})` : "none";
+          inner.style.background = over ? "var(--text)" : "";
+          inner.style.color = over ? "var(--surface-1)" : "";
+          inner.style.borderColor = over ? "var(--text)" : "";
+        }
+
+        // ------------------------------------------------------------------ scene 2
+        function scene2(t) {
+          const on = t >= T.s2A - 0.02 && t < T.exit2B + 0.02;
+          show($("s2"), on);
+          if (!on) return;
+
+          // Title slot, as in scene 1: the claim, then what the terminal just proved.
+          reveal($("s2a"), t, T.s2A, 0.44, 12);
+          reveal($("s2b"), t, T.s2A + 0.46, 0.44, 12);
+          if (t >= T.title2Swap) {
+            conceal($("s2a"), t, T.title2Swap, 0.28);
+            conceal($("s2b"), t, T.title2Swap + 0.05, 0.28);
+          }
+          const t2b = $("s2TitleB");
+          if (t < T.title2Swap + 0.3) t2b.style.opacity = "0";
+          else reveal(t2b, t, T.title2Swap + 0.3, 0.46, 12);
+
+          reveal($("doc"), t, T.docA, 0.4, 10);
+          docAcc.setHTML(docHTML(seg(t, T.anchorA, T.anchorA + 0.3)));
+          let docAngle = 90 * (1 - seg(t, T.docUnfoldA, T.docUnfoldB, ease.brand));
+          docAcc.setAngle(docAngle);
+
+          reveal($("term"), t, T.termA, 0.36, 10);
+          const cmdN = Math.floor(C.RETRIEVE_CMD.length * seg(t, T.cmdA, T.cmdB, ease.linear));
+          const typing = t < T.enter;
+          const blink = t < T.cmdA ? Math.floor((t - T.termA) / 0.4) % 2 === 0 : true;
+          $("cmd").innerHTML = esc(C.RETRIEVE_CMD.slice(0, cmdN)) + (typing && blink ? '<span class="caret" style="background:#f2efea"></span>' : "");
+
+          $("retHost").style.display = t < T.retA ? "none" : "";
+          retAcc.setHTML(retHTML(seg(t, T.hitA, T.hitA + 0.3)));
+          retAcc.setAngle(90 * (1 - seg(t, T.retA, T.retB, ease.brand)));
+
+          const ex = $("exact");
+          const xk = seg(t, T.exactA, T.exactA + 0.34, ease.brand);
+          ex.style.opacity = xk.toFixed(3);
+          ex.style.transform = `scale(${(0.9 + 0.1 * xk).toFixed(4)})`;
+
+          // Exit: the whole stack lifts away as the title goes.
+          if (t >= T.exit2A) {
+            conceal(t2b, t, T.exit2A, 0.3);
+            const ek = seg(t, T.exit2A + 0.1, T.exit2B - 0.04, ease.inOut);
+            const st = $("stack2");
+            st.style.opacity = String(1 - ek);
+            st.style.transform = `translateY(${(-18 * ek).toFixed(2)}px) scale(${(1 - 0.03 * ek).toFixed(4)})`;
+          } else {
+            $("stack2").style.opacity = "1";
+            $("stack2").style.transform = "none";
+          }
+        }
+
+        // ------------------------------------------------------------------ scene 3
+        function drawCrane(t) {
+          // The Blender turntable is 24 fps; blend neighbours so it glides at 30.
+          const f = (Math.max(0, t - T.s3A) * 24) % 60;
+          const a = Math.floor(f);
+          const b = (a + 1) % 60;
+          const w = f - a;
+          craneCtx.globalAlpha = 1;
+          craneCtx.drawImage(cranes[a], 0, 0, 720, 720);
+          if (w > 0.001) {
+            craneCtx.globalAlpha = w;
+            craneCtx.drawImage(cranes[b], 0, 0, 720, 720);
+          }
+          craneCtx.globalAlpha = 1;
+        }
+
+        function scene3(t) {
+          const on = t >= T.s3A - 0.02;
+          show($("s3"), on);
+          $("bloom").style.opacity = seg(t, T.s3A, T.s3A + 1.2).toFixed(3);
+          if (!on) return;
+
+          // A slow push on the crane alone keeps the hold alive without isolating the blend.
+          const push = 1 + 0.035 * clamp((t - T.s3A) / (DURATION - T.s3A));
+          drawCrane(t);
+          const cr = $("crane");
+          const ck = seg(t, T.s3A + 0.06, T.s3A + 0.86, ease.brand);
+          cr.style.opacity = ck.toFixed(3);
+          cr.style.transform = `translateY(${((1 - ck) * 26).toFixed(2)}px) scale(${push.toFixed(5)})`;
+
+          reveal($("lock"), t, T.lockA, 0.5, 12);
+          reveal($("tag"), t, T.tagA, 0.5, 8);
+          const items = $("tools").children;
+          for (let i = 0; i < items.length; i++) reveal(items[i], t, T.toolsA + i * 0.13, 0.38, 8);
+          reveal($("url"), t, T.urlA, 0.46, 10);
+          reveal($("oss"), t, T.ossA, 0.46, 8);
+        }
+
+        function render(t) {
+          t = clamp(t, 0, DURATION);
+          // Masthead brands every frame of the two product scenes; the outro has the big lockup.
+          const mast = $("mast");
+          mast.style.opacity = String(1 - seg(t, T.exit2A, T.exit2A + 0.4));
+          // The grid would show through the crane's white facets under multiply,
+          // so the outro sits on plain paper and the bloom.
+          $("grid").style.opacity = String(1 - seg(t, T.exit2A, T.s3A + 0.1));
+          scene1(t);
+          cursor(t);
+          scene2(t);
+          scene3(t);
+        }
+
+        window.__duration = DURATION;
+        window.__render = render;
+        build().then(() => render(Number(new URLSearchParams(location.search).get("t") ?? 0)));
+      })();
+    </script>
+  </body>
+</html>

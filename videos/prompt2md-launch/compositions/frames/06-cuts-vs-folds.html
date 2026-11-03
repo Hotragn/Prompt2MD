@@ -1,0 +1,476 @@
+<template id="06-cuts-vs-folds-template" data-composition-id="06-cuts-vs-folds" data-width="1080" data-height="1920">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+
+<style>
+@font-face{font-family:"EB Garamond";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/EBGaramond-400.woff2") format("woff2");}
+@font-face{font-family:"EB Garamond";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/EBGaramond-700.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/Inter-400.woff2") format("woff2");}
+@font-face{font-family:"Inter";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/Inter-700.woff2") format("woff2");}
+@font-face{font-family:"JetBrains Mono";font-weight:400;font-style:normal;font-display:block;src:url("assets/fonts/JetBrainsMono-400.woff2") format("woff2");}
+@font-face{font-family:"JetBrains Mono";font-weight:700;font-style:normal;font-display:block;src:url("assets/fonts/JetBrainsMono-700.woff2") format("woff2");}
+</style>
+
+<style>
+  /* 06 · cuts vs folds. Sketch units converted at 1cqw = 10.8px. Seam at y = 960; keep-out y <= 1594. */
+  #root {
+    position: relative;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+  }
+
+  /* full-bleed ground (clip layer, lowest track) */
+  [class~="06-cuts-vs-folds-bg"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1080px;
+    height: 1920px;
+    background: #FAF9F6;
+  }
+
+  /* shared perspective parent for the two halves (split-tilt) */
+  [class~="06-cuts-vs-folds-stage"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1080px;
+    height: 1920px;
+    perspective: 2000px;
+    perspective-origin: 50% 50%;
+  }
+
+  [class~="06-cuts-vs-folds-half"] {
+    position: absolute;
+    left: 0;
+    width: 1080px;
+    height: 960px;
+    box-sizing: border-box;
+    overflow: hidden;
+    will-change: transform, opacity;
+  }
+  [class~="06-cuts-vs-folds-half-top"] {
+    top: 0;
+    background: #F1EFEA;
+    transform-origin: 50% 100%; /* hinge on the seam */
+  }
+  [class~="06-cuts-vs-folds-half-bottom"] {
+    top: 960px;
+    background: #FAF9F6;
+    border-top: 1px solid #E7E4DC;
+    transform-origin: 50% 0%; /* hinge on the seam */
+  }
+
+  [class~="06-cuts-vs-folds-title"] {
+    position: absolute;
+    left: 97px;
+    font-family: "EB Garamond", serif;
+    font-weight: 400;
+    font-size: 103px;
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    color: #17151A;
+    will-change: transform, opacity;
+  }
+  [class~="06-cuts-vs-folds-title-top"] { top: 140px; }
+  [class~="06-cuts-vs-folds-title-bottom"] { top: 78px; color: #5B3DF5; }
+
+  /* ---- the page (shared by both halves) ---- */
+  [class~="06-cuts-vs-folds-page"] {
+    position: absolute;
+    left: 0;
+    width: 602px;
+    height: 390px;
+  }
+  [class~="06-cuts-vs-folds-head"] {
+    position: absolute;
+    left: 36px;
+    top: 30px;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 700;
+    font-size: 25px;
+    line-height: 32px;
+    color: #17151A;
+    white-space: nowrap;
+  }
+  [class~="06-cuts-vs-folds-bars"] {
+    position: absolute;
+    left: 36px;
+    right: 36px;
+    height: 312px;
+  }
+  [class~="06-cuts-vs-folds-bar"] {
+    position: absolute;
+    left: 0;
+    height: 12px;
+    border-radius: 6px;
+    background: #CFCAC0;
+  }
+
+  /* ---- top: the cut page ---- */
+  [class~="06-cuts-vs-folds-cutpage"] {
+    position: absolute;
+    left: 238px;
+    top: 352px;
+    width: 604px;
+    height: 392px;
+    transform: rotate(-1.5deg);
+    filter: drop-shadow(0 1px 3px rgba(23, 21, 26, 0.08)) drop-shadow(0 4px 16px rgba(23, 21, 26, 0.04));
+  }
+  [class~="06-cuts-vs-folds-piece"] {
+    position: absolute;
+    left: 0;
+    width: 604px;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #FEFDFB;
+    border: 1px solid rgba(23, 21, 26, 0.12);
+  }
+  [class~="06-cuts-vs-folds-piece-keep"] {
+    top: 0;
+    height: 171px;
+    border-bottom: 0;
+    border-radius: 12px 12px 0 0;
+  }
+  [class~="06-cuts-vs-folds-piece-drop"] {
+    top: 171px;
+    height: 221px;
+    border-top: 0;
+    border-radius: 0 0 12px 12px;
+    transform-origin: 20% 0%;
+    will-change: transform, opacity, filter;
+  }
+  [class~="06-cuts-vs-folds-cutline"] {
+    position: absolute;
+    left: -86px;
+    top: 161px;
+    width: 776px;
+    height: 20px;
+    overflow: visible;
+  }
+  [class~="06-cuts-vs-folds-cutline"] path {
+    fill: none;
+    stroke: #17151A;
+    stroke-width: 4;
+    stroke-linecap: butt;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+  }
+
+  /* ---- bottom: the folded page ---- */
+  [class~="06-cuts-vs-folds-sheet"] {
+    position: absolute;
+    left: 238px;
+    top: 214px; /* bottom edge at y = 1566 */
+    width: 604px;
+    height: 392px;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #FEFDFB;
+    border: 1px solid rgba(23, 21, 26, 0.12);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(23, 21, 26, 0.08), 0 4px 16px rgba(23, 21, 26, 0.04);
+  }
+  [class~="06-cuts-vs-folds-summary"] {
+    position: absolute;
+    left: 36px;
+    right: 36px;
+    top: 78px;
+    height: 312px;
+  }
+  [class~="06-cuts-vs-folds-sumbar"] {
+    position: absolute;
+    left: 0;
+    height: 12px;
+    border-radius: 6px;
+    background: rgba(23, 21, 26, 0.26);
+  }
+  [class~="06-cuts-vs-folds-anchor"] {
+    position: absolute;
+    left: 0;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 400;
+    font-size: 21px;
+    line-height: 26px;
+    white-space: nowrap;
+    color: #8B8794;
+  }
+
+  /* fold recipe: one 3D stage, N strips hinged at their top edge */
+  [class~="06-cuts-vs-folds-foldstage"] {
+    position: absolute;
+    left: 0;
+    top: 78px;
+    width: 602px;
+    height: 312px;
+    perspective: 2200px;
+    perspective-origin: 50% 50%;
+    transform-style: preserve-3d;
+  }
+  [class~="06-cuts-vs-folds-strip"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 602px;
+    height: 52px;
+    overflow: hidden;
+    background: #FEFDFB;
+    transform-origin: 50% 0%;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  [class~="06-cuts-vs-folds-shade"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: inset 0 -1px 0 rgba(23, 21, 26, 0.14); /* crease line on the strip's bottom edge */
+  }
+  [class~="06-cuts-vs-folds-shade-even"] { background-color: rgba(255, 255, 255, 0.35); }
+  [class~="06-cuts-vs-folds-shade-odd"] { background-color: rgba(23, 21, 26, 0.20); }
+
+  /* ---- inner-edge badges (on the parent stage, never inside a half) ---- */
+  [class~="06-cuts-vs-folds-badge"] {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
+    height: 66px;
+    padding: 0 28px;
+    border-radius: 9999px;
+    background: #FEFDFB;
+    font-family: "Inter", sans-serif;
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(23, 21, 26, 0.08), 0 4px 16px rgba(23, 21, 26, 0.04);
+    will-change: transform, opacity;
+  }
+  [class~="06-cuts-vs-folds-badge"] svg {
+    width: 26px;
+    height: 26px;
+    flex: none;
+    fill: none;
+    stroke-width: 2.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  [class~="06-cuts-vs-folds-badge-cut"] {
+    left: 97px;
+    top: 902px; /* straddles the seam from above */
+    color: #5F5B66;
+    border: 1px solid rgba(23, 21, 26, 0.2);
+    transform-origin: 50% 100%;
+  }
+  [class~="06-cuts-vs-folds-badge-cut"] svg { stroke: #8B8794; }
+  [class~="06-cuts-vs-folds-badge-fold"] {
+    right: 97px;
+    top: 952px; /* straddles the seam from below */
+    color: #17151A;
+    border: 1px solid rgba(91, 61, 245, 0.38);
+    transform-origin: 50% 0%;
+  }
+  [class~="06-cuts-vs-folds-badge-fold"] svg { stroke: #5B3DF5; }
+</style>
+
+<div data-hf-id="hf-lj5m" id="root" data-composition-id="06-cuts-vs-folds" data-start="0" data-duration="2.6" data-width="1080" data-height="1920">
+  <div data-hf-id="hf-axm8" id="06-cuts-vs-folds-bg" class="clip 06-cuts-vs-folds-bg" data-start="0" data-duration="2.6" data-track-index="0"></div>
+
+  <div data-hf-id="hf-fd4v" id="06-cuts-vs-folds-stage" class="clip 06-cuts-vs-folds-stage" data-start="0" data-duration="2.6" data-track-index="1">
+    <!-- TOP HALF: everything else cuts -->
+    <div data-hf-id="hf-k82t" id="06-cuts-vs-folds-top" class="06-cuts-vs-folds-half 06-cuts-vs-folds-half-top">
+      <div data-hf-id="hf-glff" id="06-cuts-vs-folds-title-top" class="06-cuts-vs-folds-title 06-cuts-vs-folds-title-top">Everything else cuts.</div>
+
+      <div data-hf-id="hf-4oq9" class="06-cuts-vs-folds-cutpage">
+        <div data-hf-id="hf-up4n" id="06-cuts-vs-folds-keep" class="06-cuts-vs-folds-piece 06-cuts-vs-folds-piece-keep">
+          <div data-hf-id="hf-3j9m" class="06-cuts-vs-folds-page" style="top: 0px">
+            <div data-hf-id="hf-ywlz" class="06-cuts-vs-folds-head"># Incident 4417, full timeline</div>
+            <div data-hf-id="hf-byo4" class="06-cuts-vs-folds-bars" style="top: 78px"></div>
+          </div>
+        </div>
+        <div data-hf-id="hf-guxn" id="06-cuts-vs-folds-drop" class="06-cuts-vs-folds-piece 06-cuts-vs-folds-piece-drop">
+          <div data-hf-id="hf-zzhd" class="06-cuts-vs-folds-page" style="top: -170px">
+            <div data-hf-id="hf-lt3r" class="06-cuts-vs-folds-head"># Incident 4417, full timeline</div>
+            <div data-hf-id="hf-nou4" class="06-cuts-vs-folds-bars" style="top: 78px"></div>
+          </div>
+        </div>
+        <svg data-hf-id="hf-luap" class="06-cuts-vs-folds-cutline" viewBox="0 0 776 20" aria-hidden="true">
+          <path data-hf-id="hf-j8z0" id="06-cuts-vs-folds-cut" d="M 0 10 L 776 10" pathLength="100" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- BOTTOM HALF: this folds -->
+    <div data-hf-id="hf-q4wb" id="06-cuts-vs-folds-bottom" class="06-cuts-vs-folds-half 06-cuts-vs-folds-half-bottom">
+      <div data-hf-id="hf-lgmy" id="06-cuts-vs-folds-title-bottom" class="06-cuts-vs-folds-title 06-cuts-vs-folds-title-bottom">This folds.</div>
+
+      <div data-hf-id="hf-f91d" class="06-cuts-vs-folds-sheet">
+        <div data-hf-id="hf-lesq" class="06-cuts-vs-folds-head"># Incident 4417, full timeline</div>
+        <!-- what the fold leaves: summary lines + their source anchors (revealed as the page folds up) -->
+        <div data-hf-id="hf-l0m8" class="06-cuts-vs-folds-summary">
+          <div data-hf-id="hf-hb6p" class="06-cuts-vs-folds-sumbar" style="top: 28px; width: 86%"></div>
+          <div data-hf-id="hf-1ogf" id="06-cuts-vs-folds-anchor-0" class="06-cuts-vs-folds-anchor" style="top: 52px">p2md:src=c6199e0698ecc214#2062-2466</div>
+          <div data-hf-id="hf-d8mn" class="06-cuts-vs-folds-sumbar" style="top: 124px; width: 78%"></div>
+          <div data-hf-id="hf-z4ch" id="06-cuts-vs-folds-anchor-1" class="06-cuts-vs-folds-anchor" style="top: 148px">p2md:src=c6199e0698ecc214#2468-2872</div>
+          <div data-hf-id="hf-dcwl" class="06-cuts-vs-folds-sumbar" style="top: 220px; width: 82%"></div>
+          <div data-hf-id="hf-rtop" id="06-cuts-vs-folds-anchor-2" class="06-cuts-vs-folds-anchor" style="top: 244px">p2md:src=c6199e0698ecc214#2874-3278</div>
+        </div>
+        <!-- the page body itself: 6 strips built below, folded by the shared recipe -->
+        <div data-hf-id="hf-mjhi" id="06-cuts-vs-folds-foldstage" class="06-cuts-vs-folds-foldstage"></div>
+      </div>
+    </div>
+
+    <!-- inner-edge badges -->
+    <div data-hf-id="hf-4uo1" id="06-cuts-vs-folds-badge-cut" class="06-cuts-vs-folds-badge 06-cuts-vs-folds-badge-cut">
+      <svg data-hf-id="hf-35ls" viewBox="0 0 24 24" aria-hidden="true"><path data-hf-id="hf-1gbk" d="M6 6 L18 18 M18 6 L6 18" /></svg>
+      <span data-hf-id="hf-mj1q">the detail is gone</span>
+    </div>
+    <div data-hf-id="hf-o363" id="06-cuts-vs-folds-badge-fold" class="06-cuts-vs-folds-badge 06-cuts-vs-folds-badge-fold">
+      <svg data-hf-id="hf-46qg" viewBox="0 0 24 24" aria-hidden="true"><path data-hf-id="hf-sqa9" d="M5 12.5 L10 17.5 L19 7" /></svg>
+      <span data-hf-id="hf-jqjy">anchored to the source</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var FID = "06-cuts-vs-folds";
+    function byId(name) {
+      return document.getElementById(FID + "-" + name);
+    }
+
+    // ---- the shared page body: greeked text lines [y px within the 312px body, width %] ----
+    var BARS = [
+      [10, 100], [37, 94], [64, 58],
+      [109, 100], [136, 97], [163, 71],
+      [208, 100], [235, 91], [262, 46],
+    ];
+    var barsHTML = BARS.map(function (b) {
+      return '<div class="' + FID + '-bar" style="top:' + b[0] + "px;width:" + b[1] + '%"></div>';
+    }).join("");
+    var fills = document.getElementsByClassName(FID + "-bars");
+    for (var i = 0; i < fills.length; i++) fills[i].innerHTML = barsHTML;
+
+    // ---- fold recipe geometry: N = 6 strips of h = H / N, each a shifted copy of the body ----
+    var stage = byId("foldstage");
+    var N = 6;
+    var H = 312;
+    var h = H / N; // 52px
+    var strips = [];
+    var shade = [];
+    for (var k = 0; k < N; k++) {
+      var s = document.createElement("div");
+      s.className = FID + "-strip";
+      s.id = FID + "-strip-" + k;
+      s.innerHTML =
+        '<div class="' + FID + '-bars" style="top:' + -k * h + 'px">' + barsHTML + "</div>" +
+        '<div class="' + FID + "-shade " + FID + (k % 2 ? "-shade-odd" : "-shade-even") + '"></div>';
+      stage.appendChild(s);
+      strips.push(s);
+      shade.push(s.lastChild);
+    }
+
+    // ---- fold recipe driver (exact): one proxy, strips placed from it on every update ----
+    var fold = { a: 0 }; // 0 = flat, 1 = folded
+    var DEG = Math.PI / 180;
+    function placeStrips() {
+      var t = fold.a * 88; // theta in degrees (stop short of edge-on)
+      var c = Math.cos(t * DEG);
+      var sn = Math.sin(t * DEG);
+      strips.forEach(function (strip, j) {
+        gsap.set(strip, {
+          y: j * h * c, // hinge chain: each top edge sits on the previous bottom edge
+          z: j % 2 ? h * sn : 0, // zigzag toward the viewer
+          rotationX: j % 2 ? -t : t, // alternate mountain / valley
+        });
+        gsap.set(shade[j], { opacity: sn }); // crease light rides the angle
+      });
+    }
+    placeStrips();
+
+    var tl = gsap.timeline({ paused: true });
+
+    // ---- Scene 1 (0.00-0.45): mirrored book-open tilts; top title slides down ----
+    tl.fromTo(
+      byId("top"),
+      { y: -110, rotationX: -24, opacity: 0 },
+      { y: 0, rotationX: 0, opacity: 1, duration: 0.55, ease: "power3.out" },
+      0
+    );
+    tl.fromTo(
+      byId("bottom"),
+      { y: 110, rotationX: 24, opacity: 0 },
+      { y: 0, rotationX: 0, opacity: 1, duration: 0.55, ease: "power3.out" },
+      0.06
+    );
+    tl.fromTo(
+      byId("title-top"),
+      { y: -56, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" },
+      0.1
+    );
+
+    // ---- Scene 2 (0.45-1.40): "cut" 0.62, one fast stroke; the part below falls and greys by "hope" ----
+    tl.fromTo(
+      byId("cut"),
+      { strokeDashoffset: 100 },
+      { strokeDashoffset: 0, duration: 0.12, ease: "power2.out" },
+      0.62
+    );
+    tl.fromTo(
+      byId("drop"),
+      { y: 0, rotation: 0 },
+      { y: 170, rotation: 6, duration: 0.4, ease: "power2.in" },
+      0.72
+    );
+    tl.fromTo(
+      byId("drop"),
+      { opacity: 1, filter: "grayscale(0)" },
+      { opacity: 0.35, filter: "grayscale(1)", duration: 0.32, ease: "power1.out" },
+      0.74
+    );
+    tl.fromTo(
+      byId("badge-cut"),
+      { scale: 0, opacity: 0 },
+      { scale: 1, opacity: 1, duration: 0.45, ease: "power3.out" },
+      1.1
+    );
+
+    // ---- Scene 3 (1.40-2.25): "This" 1.49 title lands; the page folds (fastest on "folds" 1.82) ----
+    tl.fromTo(
+      byId("title-bottom"),
+      { y: 56, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" },
+      1.49
+    );
+    tl.to(fold, { a: 1, duration: 0.7, ease: "power2.inOut", onUpdate: placeStrips }, 1.49);
+    [0, 1, 2].forEach(function (n) {
+      tl.fromTo(
+        byId("anchor-" + n),
+        { color: "#8B8794" },
+        { color: "#5B3DF5", duration: 0.22, ease: "power2.out" },
+        1.95 + n * 0.06
+      );
+    });
+    tl.fromTo(
+      byId("badge-fold"),
+      { scale: 0, opacity: 0 },
+      { scale: 1, opacity: 1, duration: 0.45, ease: "power3.out" },
+      2.0
+    );
+
+    // ---- Scene 4 (2.25-2.60): held read. Span the full frame duration. ----
+    tl.to({}, { duration: 2.6 }, 0);
+
+    window.__timelines = window.__timelines || {};
+    window.__timelines["06-cuts-vs-folds"] = tl;
+  })();
+</script>
+</template>

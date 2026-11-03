@@ -1,0 +1,35 @@
+<!--
+  Handoff 01 → 02 (hard cut). This is the typed sheet on frame 01's LAST frame (t = 2.40 s)
+  and frame 02's FIRST frame (t = 0). Both frames reproduce this exact DOM + CSS: the same
+  geometry, scale 1, opacity 1, nothing moving across the cut.
+
+  - Frame 01 types INTO this layout. Keep it fixed from the start: an untyped character is
+    hidden (opacity 0 / visibility hidden), so lines never reflow while it types. On the last
+    frame every character is visible, the counter reads 150, and the caret is ON.
+  - Frame 02 opens on it, static at t = 0, then folds it.
+  - Scope every selector under your own composition root; keep the values.
+  - Canvas 1080 × 1920. Fonts come from frame.md § Font loading.
+  - The text is the landing page's sample prompt, verbatim. The violet-tinted runs are the
+    phrases the real /api/convert run dropped, found by diffing its output against this input.
+-->
+<style>
+  .p2-sheet { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; background: #0F0E11; }
+  .p2-kicker { position: absolute; left: 97px; top: 140px; font-family: "JetBrains Mono", monospace; font-size: 29px; line-height: 1.2; letter-spacing: 0.16em; text-transform: uppercase; color: #78748A; white-space: nowrap; }
+  .p2-kicker i { font-style: normal; color: #7C5CFF; margin-right: 15px; }
+  .p2-counter { position: absolute; right: 97px; top: 130px; text-align: right; font-family: "JetBrains Mono", monospace; }
+  .p2-counter small { display: block; font-size: 26px; line-height: 1.2; letter-spacing: 0.16em; text-transform: uppercase; color: #78748A; }
+  .p2-counter b { display: block; margin-top: 16px; font-size: 97px; line-height: 1; font-weight: 400; color: #F2EFEA; }
+  .p2-typed { position: absolute; left: 86px; top: 389px; width: 908px; font-family: "JetBrains Mono", monospace; color: #F2EFEA; font-variant-ligatures: none; white-space: normal; overflow-wrap: normal; }
+  .p2-hero { font-size: 69px; line-height: 91px; }
+  .p2-rest { margin-top: 32px; font-size: 37px; line-height: 55px; color: rgba(242, 239, 234, 0.55); -webkit-mask-image: linear-gradient(#000 40%, transparent); mask-image: linear-gradient(#000 40%, transparent); }
+  .p2-fill { color: #634CBE; }
+  .p2-caret { display: inline-block; width: 6px; height: 71px; background: #7C5CFF; vertical-align: -13px; margin-left: 6px; }
+</style>
+<div class="p2-sheet">
+  <div class="p2-kicker"><i>◣</i>your prompt</div>
+  <div class="p2-counter"><small>tokens</small><b>150</b></div>
+  <div class="p2-typed">
+    <div class="p2-hero"><span class="p2-fill">ok so </span>what i need is <span class="p2-fill">basically </span>a python script that takes a folder of csv files<span class="p2-caret"></span></div>
+    <div class="p2-rest">and merges them but ONLY the ones that have a "date" column, and also it should skip empty files. <span class="p2-fill">oh and </span>the output should be a single parquet file. <span class="p2-fill">also </span>please use pandas. <span class="p2-fill">actually </span>it also needs to handle dates in different formats, some are MM/DD/YYYY and some are ISO. <span class="p2-fill">like i said </span>merge them all into one parquet. <span class="p2-fill">also </span>add logging. <span class="p2-fill">did i mention to skip empty files? yeah </span>skip those. <span class="p2-fill">one more thing - </span>if a file fails to parse dont crash, just log it and continue. <span class="p2-fill">use pandas like i said. thanks!!! also </span>python 3.11</div>
+  </div>
+</div>

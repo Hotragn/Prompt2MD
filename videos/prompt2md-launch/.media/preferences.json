@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "preferences": {
+    "aspect": {
+      "value": "1080x1920",
+      "confirmed_in": [
+        "prompt2md-launch"
+      ],
+      "updated_at": "2026-10-01T06:06:10.332Z"
+    },
+    "storyboard": {
+      "value": "yes",
+      "confirmed_in": [
+        "prompt2md-launch"
+      ],
+      "updated_at": "2026-10-01T06:06:12.231Z"
+    },
+    "voice": {
+      "value": "af_heart",
+      "confirmed_in": [
+        "prompt2md-launch"
+      ],
+      "updated_at": "2026-10-01T09:10:53.684Z"
+    },
+    "style_preset.product-launch-video": {
+      "value": "code-editorial",
+      "confirmed_in": [
+        "prompt2md-launch"
+      ],
+      "updated_at": "2026-10-01T09:10:53.892Z"
+    }
+  },
+  "sightings": {}
+}

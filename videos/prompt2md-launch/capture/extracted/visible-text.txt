@@ -1,0 +1,122 @@
+[a] Skip to content
+[span] prompt
+[span] 2md
+[span] A Markdown Magic
+[a] How it works
+[a] Open studio
+[span] Ch. 01 / 06
+[p] Open source, Apache-2.0
+[h1] Fold any text into
+[span] token‑optimized Markdown
+[p] Other tools cut and hope. prompt2md folds: smaller Markdown, honest token numbers, and the byte-exact original back on demand.
+[a] Open the studio
+[a] Install in your tools
+[span] Your prompt
+[button] reset
+[textarea] ok so what i need is basically a python script that takes a folder of csv files and merges them but ONLY the ones that have a "date" column, and also it should skip empty files. oh and the output should be a single parquet file. also please use pandas. actually it also needs to handle dates in different formats, some are MM/DD/YYYY and some are ISO. like i said merge them all into one parquet. also add logging. did i mention to skip empty files? yeah skip those. one more thing - if a file fails to parse dont crash, just log it and continue. use pandas like i said. thanks!!! also python 3.11
+[span] Token-optimized Markdown
+[span] Press Fold to run this through the real pipeline.
+[button] Fold it
+[span] Runs live against this deployment. Nothing is stored on our side.
+[p] Watch it fold, chapter one
+[span] 332
+[span] tests, green on Linux & Windows
+[span] telemetry, accounts, or uploads
+[span] tools wired by one command
+[span] 100%
+[span] of savings figures reproducible
+[span] The Fold
+[h2] Everything else cuts. This folds.
+[p] The distinction is not stylistic. It is the difference between a transformation you can undo and one you cannot.
+[text] retrieve_original: byte-exact
+[p] Scroll ↓ — this is your pasted text.
+[strong] Fold.
+[strong] Unfold.
+[code] retrieve_original
+[p] The story is the architecture: the original is stored, content‑addressed, before anything is transformed.
+[h3] Cutting
+[li] Truncates to fit a window
+[li] Drops the middle and hopes
+[li] Summaries replace the source
+[li] Savings are estimated, or unstated
+[li] The detail is gone for good
+[h3] Folding
+[li] Structures, dedupes, then summarizes only what is safe
+[li] Head and tail stay verbatim, because models attend to them most
+[li] Tables, code, and headings are never summarized
+[li] Every figure comes from a real run you can repeat
+[code] retrieve_original
+[li] returns the exact source bytes
+[span] The Mechanism
+[h2] How a document becomes cheap context
+[p] Five stages. The interesting one is the third: the pipeline checks its own work and escalates when the cheap engine got it wrong.
+[h3] Sniff
+[p] Cheap byte-level probes read the content itself, never the file extension.
+[h3] Route
+[p] Fast path for text-layer PDFs, HTML, Office, CSV. High-fidelity path for scans and complex tables.
+[h3] Escalate
+[p] The fast path's output is inspected for damage. Degraded tables or low yield trigger a re-run on the heavy engine.
+[h3] Optimize
+[p] Boilerplate, navigation chrome, signatures, and duplicated passages come out. Structure stays.
+[h3] Layout
+[p] Stable content first, volatile last, provider-specific cache breakpoints in between.
+[span] The Proof
+[h2] Built for context budgets, not demos
+[h3] Token cost is an output, not a footnote
+[p] Every conversion returns a report: tokens in, tokens out, compression ratio, per-section costs, and the effective cost of each repeat call under your provider’s cache pricing. Set a budget and it is enforced, not suggested.
+[h3] Lossless by construction
+[p] Originals are stored content-addressed before anything is transformed. Summarized sections carry
+[code] p2md:src
+[p] anchors that resolve to exact bytes.
+[h3] Dual-engine routing
+[p] ~0.6 s fast path for most inputs; TableFormer and OCR only when the content proves it needs them.
+[h3] Cache-aware layout
+[p] Sections are ordered so prompt caches hit. Repeat calls can cost a fraction of the first one.
+[h3] Works with nothing installed
+[p] No API key, no sidecar, no account. With zero configuration you get deterministic cleanup and honest numbers; add an LLM gateway and the same pipeline restructures far more aggressively. Text input never hard-fails.
+[span] The Surfaces
+[h2] Four surfaces, one pipeline
+[p] The same engine behind a command line, an MCP server, an agent skill, and this studio.
+[span] Command line
+[pre] prompt2md convert ./contract.pdf -b 6000
+prompt2md compress big-context.md -b 4000
+prompt2md batch "docs/**/*.html" -d out/ --watch
+prompt2md retrieve "p2md:src=<id>#<start>-<end>"
+[span] MCP server
+[pre] {
+  "mcpServers": {
+    "prompt2md": {
+      "command": "node",
+      "args": ["<repo>/packages/hermes-mcp/dist/bin.js"]
+    }
+  }
+}
+[span] Agent skill
+[pre] cp -r packages/skill/prompt2md ~/.claude/skills/
+
+# then, in any conversation:
+/prompt2md convert this thread to markdown
+[span] The Access
+[h2] One command wires every tool you use
+[p] Detects what is installed, backs up every config before touching it, and is safe to re-run. Preview it first with
+[code] --dry-run
+[span] setup
+[pre] git clone https://github.com/Hotragn/Prompt2MD.git prompt2md
+cd prompt2md && pnpm install && pnpm build
+pnpm setup
+[li] Claude Code
+[li] Claude Desktop
+[li] Cursor
+[li] Windsurf
+[li] Gemini CLI
+[li] Codex CLI
+[li] any MCP client
+[p] Model providers are independent of the tool: point
+[code] P2MD_LITELLM_BASE_URL
+[p] at any OpenAI-compatible endpoint. Claude, GPT, Gemini, Grok, Kimi, or a local model.
+[span] The Invitation
+[h2] See it fold something of yours
+[p] Paste a rambling prompt, a contract, or an email thread. You will get clean Markdown, a number you can check, and a way back to the original.
+[a] Open the studio
+[a] Read the source
+[div] Apache-2.0 open source. Dual-engine pipeline: MarkItDown fast path, Docling high fidelity. Savings math per ADR-003. Token counts are approximate (chars/4) unless an exact tokenizer is configured.

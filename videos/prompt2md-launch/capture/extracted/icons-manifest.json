@@ -1,0 +1,22 @@
+{
+  "schema": "hyperframes.capture.icons.v1",
+  "headline": {
+    "file": "assets/favicon.svg",
+    "source": "assets/icon-icon-any.svg",
+    "rank": 0,
+    "shape": "bare-mark",
+    "reason": "the only candidate is a bare mark"
+  },
+  "icons": [
+    {
+      "file": "assets/icon-icon-any.svg",
+      "url": "https://prompt2md.vercel.app/icon.svg?20e3495b33d30dcd",
+      "rel": "icon",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "rank": 0,
+      "shape": "bare-mark",
+      "shapeReason": "first painted element is <rect> with margins"
+    }
+  ]
+}
